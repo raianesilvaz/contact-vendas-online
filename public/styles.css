@@ -27,3 +27,6 @@
 /* Cores específicas dos status */
 .status-badge.aceite{color:#3168c8;background:#eaf1ff}.status-badge.conectado{color:#16845b;background:#e5f7ef}
 .bko-return.aceite{background:#edf3ff;border-color:#4677d1;color:#315993}.bko-return.conectado{background:#eaf8f2;border-color:#21966c;color:#176b50}
+
+/* Exclusão administrativa da venda */
+.detail-danger{padding:18px 23px;display:flex;align-items:center;justify-content:space-between;gap:18px;background:#fffafa}.detail-danger strong,.detail-danger span{display:block}.detail-danger strong{font-size:12px;color:#7f3030}.detail-danger span{font-size:10px;color:#9a7070;margin-top:4px}.delete-sale{width:42px;height:42px;border:1px solid #f0c7c7;border-radius:10px;background:#fff;color:var(--danger);display:grid;place-items:center;cursor:pointer;transition:.18s}.delete-sale svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.delete-sale:hover{background:var(--danger);border-color:var(--danger);color:#fff;transform:translateY(-1px);box-shadow:0 7px 18px rgba(216,59,59,.2)}.delete-sale:disabled{opacity:.55;cursor:wait;transform:none}
