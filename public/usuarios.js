@@ -46,11 +46,11 @@ async function callPreview(body) {
   await new Promise(resolve => setTimeout(resolve, 250));
   const items = previewUsers();
   if (body.action === 'list') return { ok:true, users:items };
-  if (body.action === 'invite') {
+  if (body.action === 'invite' || body.action === 'create_direct') {
     if (items.some(user => user.email.toLowerCase() === body.email.toLowerCase())) throw new Error('Já existe uma conta com este e-mail na prévia.');
     items.push({ id:crypto.randomUUID(), full_name:body.full_name, email:body.email, role:body.role, active:true, last_sign_in_at:null });
     localStorage.setItem(previewStorageKey, JSON.stringify(items));
-    return { ok:true };
+    return { ok:true, created_direct:body.action === 'create_direct' };
   }
   if (body.action === 'set_active') {
     const user = items.find(item => item.id === body.user_id);
@@ -127,6 +127,20 @@ async function inviteUser(event) {
     await loadUsers();
     showToast('Convite enviado!', `${payload.full_name} receberá um e-mail para criar a senha.`);
   } catch (error) {
+    const rateLimited = /limite temporário|rate.?limit|too many/i.test(error.message || '');
+    if (rateLimited && window.confirm('O envio de e-mail está temporariamente limitado. Deseja criar a conta agora sem enviar e-mail? Depois você poderá definir a senha pelo botão 🔑.')) {
+      try {
+        await callAdminUsers({ ...payload, action:'create_direct' });
+        userForm.reset();
+        createCard.hidden = true;
+        await loadUsers();
+        showToast('Usuário criado!', `${payload.full_name} foi cadastrado. Agora defina a senha pelo botão 🔑.`);
+        return;
+      } catch (directError) {
+        showToast('Não foi possível criar', directError.message, true);
+        return;
+      }
+    }
     showToast('Não foi possível convidar', error.message, true);
   } finally {
     button.disabled = false;
