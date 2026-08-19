@@ -8,7 +8,7 @@ window.authReady = (async () => {
   document.querySelectorAll('[data-user-name]').forEach(el => el.textContent = profile.full_name);
   document.querySelectorAll('[data-user-role]').forEach(el => el.textContent = roleNames[profile.role] || 'Usuário');
   document.querySelectorAll('[data-user-initials]').forEach(el => el.textContent = initials);
-  const isBko = profile.role === 'bko';
+  const isBko = ['bko', 'admin'].includes(profile.role);
   document.querySelectorAll('[data-bko-only]').forEach(el => el.hidden = !isBko);
   window.currentUser = { ...user, profile };
   return window.currentUser;
