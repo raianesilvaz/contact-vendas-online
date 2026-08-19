@@ -5,6 +5,7 @@ const cpfField = cpf.closest('.field');
 const cpfError = cpfField.querySelector('.error');
 const defaultCpfError = cpfError.textContent;
 const valor = document.querySelector('#valor');
+const valorPromo = document.querySelector('#valorPromo');
 const operatorSelect = form.elements.operadora;
 const submitButton = document.querySelector('#submitButton');
 
@@ -13,6 +14,7 @@ function maskCpf(value) { return digits(value).slice(0, 11).replace(/(\d{3})(\d)
 function maskPhone(value) { const d = digits(value).slice(0, 11); return d.length <= 10 ? d.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d)/, '$1-$2') : d.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2'); }
 function validCpf(value) { const d = digits(value); if (d.length !== 11 || /^(\d)\1+$/.test(d)) return false; const calc = (base, factor) => { let sum = 0; for (const n of base) sum += Number(n) * factor--; const r = (sum * 10) % 11; return r === 10 ? 0 : r; }; return calc(d.slice(0, 9), 10) === Number(d[9]) && calc(d.slice(0, 10), 11) === Number(d[10]); }
 function parseMoney(value) { return Number(value.replace(/\./g, '').replace(',', '.')); }
+function formatMoneyInput(input) { const number = Number(digits(input.value)) / 100; input.value = number ? number.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''; }
 function showToast(title, message, error = false) { document.querySelector('#toastTitle').textContent = title; document.querySelector('#toastMessage').textContent = message; toast.classList.toggle('toast-error', error); toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 5000); }
 function showDuplicateCpfError() { cpfError.textContent = 'Este CPF já possui uma venda cadastrada.'; cpfField.classList.add('invalid'); cpf.focus(); showToast('CPF já cadastrado', 'Não é possível criar outra venda para este CPF.', true); }
 
@@ -27,7 +29,8 @@ async function loadOperators() {
 
 cpf.addEventListener('input', () => { cpf.value = maskCpf(cpf.value); cpfError.textContent = defaultCpfError; });
 document.querySelectorAll('.phone').forEach((input) => input.addEventListener('input', () => { input.value = maskPhone(input.value); }));
-valor.addEventListener('input', () => { const number = Number(digits(valor.value)) / 100; valor.value = number ? number.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''; });
+valor.addEventListener('input', () => formatMoneyInput(valor));
+valorPromo?.addEventListener('input', () => formatMoneyInput(valorPromo));
 form.addEventListener('input', (event) => event.target.closest('.field')?.classList.remove('invalid'));
 
 form.addEventListener('submit', async (event) => {
@@ -43,7 +46,8 @@ form.addEventListener('submit', async (event) => {
   submitButton.querySelector('span').textContent = 'Salvando...';
 
   const data = new FormData(form);
-  const sale = { seller_id: user.id, operator_id: data.get('operadora'), plan_name: data.get('plano').trim(), value: parseMoney(data.get('valor')), due_day: Number(digits(data.get('vencimento'))), customer_name: data.get('nome').trim(), mother_name: data.get('mae').trim(), birth_date: data.get('nascimento'), cpf: digits(data.get('cpf')), full_address: data.get('endereco').trim(), address_complement: data.get('complemento').trim() || null, phone_1: digits(data.get('telefone1')), phone_2: digits(data.get('telefone2')) || null, email: data.get('email').trim().toLowerCase() };
+  const promoRaw = data.get('valor_promo')?.trim() || '';
+  const sale = { seller_id: user.id, operator_id: data.get('operadora'), plan_name: data.get('plano').trim(), value: parseMoney(data.get('valor')), promo_value: promoRaw ? parseMoney(promoRaw) : null, due_day: Number(digits(data.get('vencimento'))), customer_name: data.get('nome').trim(), mother_name: data.get('mae').trim(), birth_date: data.get('nascimento'), cpf: digits(data.get('cpf')), full_address: data.get('endereco').trim(), address_complement: data.get('complemento').trim() || null, phone_1: digits(data.get('telefone1')), phone_2: digits(data.get('telefone2')) || null, email: data.get('email').trim().toLowerCase() };
   const { error } = await window.supabaseClient.from('sales').insert(sale);
 
   submitButton.disabled = false;
