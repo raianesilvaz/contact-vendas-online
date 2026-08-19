@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#151921" />
+    <title>Cadastro de Vendas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><span class="brand-mark">C</span><span class="brand-name">CONTACT</span></div>
+      <nav aria-label="Menu principal">
+        <a class="nav-item active" href="index.html"><span>＋</span><span>Nova venda</span></a>
+        <a class="nav-item" href="vendas.html"><span>▤</span><span>Minhas vendas</span></a>
+        <a class="nav-item" href="bko.html" data-bko-only hidden><span>☷</span><span>Fila BKO</span></a>
+        <a class="nav-item" href="#"><span>◫</span><span>Painel</span></a>
+      </nav>
+      <div class="user-mini"><div class="avatar" data-user-initials>--</div><div><strong data-user-name>Carregando...</strong><small data-user-role>Usuário</small></div><button class="logout-button" data-logout aria-label="Sair">↪</button></div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <button class="menu-button" id="menuButton" aria-label="Abrir menu">☰</button>
+        <div class="topbar-title"><span>Vendas</span><b>/</b><strong>Novo cadastro</strong></div>
+        <div class="profile"><div class="avatar" data-user-initials>--</div><span data-user-name>Carregando...</span></div>
+      </header>
+
+      <div class="content">
+        <div class="page-heading">
+          <div><span class="eyebrow">LANÇAMENTO</span><h1>Cadastrar nova venda</h1><p>Preencha os dados abaixo para registrar uma nova contratação.</p></div>
+          <span class="status-pill"><i></i> Rascunho</span>
+        </div>
+
+        <form id="saleForm" novalidate>
+          <section class="form-card">
+            <div class="section-heading"><span class="step">01</span><div><h2>Dados da venda</h2><p>Operadora, plano e informações de cobrança.</p></div></div>
+            <div class="form-grid">
+              <label class="field"><span>Operadora <em>*</em></span><select name="operadora" required disabled><option value="">Carregando operadoras...</option></select><small class="error">Selecione uma operadora.</small></label>
+              <label class="field"><span>Plano <em>*</em></span><input name="plano" placeholder="Ex.: 500 Mega + Wi-Fi" required /><small class="error">Informe o plano contratado.</small></label>
+              <label class="field"><span>Valor <em>*</em></span><div class="input-prefix"><b>R$</b><input id="valor" name="valor" inputmode="decimal" placeholder="0,00" required /></div><small class="error">Informe o valor do plano.</small></label>
+              <label class="field"><span>Vencimento <em>*</em></span><select name="vencimento" required><option value="">Selecione o dia</option><option>Dia 05</option><option>Dia 10</option><option>Dia 15</option><option>Dia 20</option><option>Dia 25</option></select><small class="error">Selecione o vencimento.</small></label>
+            </div>
+          </section>
+
+          <section class="form-card">
+            <div class="section-heading"><span class="step">02</span><div><h2>Dados do cliente</h2><p>Informações pessoais do titular da contratação.</p></div></div>
+            <div class="form-grid">
+              <label class="field field-wide"><span>Nome completo <em>*</em></span><input name="nome" autocomplete="name" placeholder="Digite o nome completo" required /><small class="error">Informe o nome completo.</small></label>
+              <label class="field field-wide"><span>Nome da mãe <em>*</em></span><input name="mae" placeholder="Digite o nome completo da mãe" required /><small class="error">Informe o nome da mãe.</small></label>
+              <label class="field"><span>Data de nascimento <em>*</em></span><input name="nascimento" type="date" required /><small class="error">Informe a data de nascimento.</small></label>
+              <label class="field"><span>CPF <em>*</em></span><input id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" required /><small class="error">Informe um CPF válido.</small></label>
+            </div>
+          </section>
+
+          <section class="form-card">
+            <div class="section-heading"><span class="step">03</span><div><h2>Endereço e contato</h2><p>Local de instalação e canais de contato.</p></div></div>
+            <div class="form-grid">
+              <label class="field field-full"><span>Endereço completo <em>*</em></span><input name="endereco" autocomplete="street-address" placeholder="Rua, número, bairro, cidade, estado e CEP" required /><small class="error">Informe o endereço completo.</small></label>
+              <label class="field field-full"><span>Complemento <small>(opcional)</small></span><input name="complemento" placeholder="Ex.: Casa B, bloco 2, apartamento 14" /></label>
+              <label class="field"><span>Telefone 1 <em>*</em></span><input class="phone" name="telefone1" inputmode="tel" placeholder="(00) 00000-0000" maxlength="15" required /><small class="error">Informe o telefone principal.</small></label>
+              <label class="field"><span>Telefone 2 <small>(opcional)</small></span><input class="phone" name="telefone2" inputmode="tel" placeholder="(00) 00000-0000" maxlength="15" /></label>
+              <label class="field field-wide"><span>E-mail <em>*</em></span><input name="email" type="email" autocomplete="email" placeholder="cliente@email.com" required /><small class="error">Informe um e-mail válido.</small></label>
+            </div>
+          </section>
+
+          <section class="seller-card">
+            <div><span class="seller-label">VENDEDOR RESPONSÁVEL</span><strong data-user-name>Carregando...</strong><small>Preenchido automaticamente pelo login</small></div>
+            <span class="lock">✓ Identificado</span>
+          </section>
+
+          <div class="actions"><button class="button secondary" type="button" id="clearButton">Limpar formulário</button><button class="button primary" type="submit" id="submitButton"><span>Salvar venda</span><b>→</b></button></div>
+        </form>
+      </div>
+    </main>
+
+    <div class="toast" id="toast" role="status"><span>✓</span><div><strong id="toastTitle">Venda cadastrada!</strong><small id="toastMessage">Os dados foram gravados com segurança.</small></div></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
+    <script src="supabase-config.js"></script><script src="auth.js"></script><script src="script.js"></script>
+  </body>
+</html>
