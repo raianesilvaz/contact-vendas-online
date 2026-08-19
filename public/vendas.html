@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#151921" />
+    <title>Minhas vendas — CONTACT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><span class="brand-mark">C</span><span class="brand-name">CONTACT</span></div>
+      <nav aria-label="Menu principal">
+        <a class="nav-item" href="index.html"><span>＋</span><span>Nova venda</span></a>
+        <a class="nav-item active" href="vendas.html"><span>▤</span><span>Minhas vendas</span></a>
+        <a class="nav-item" href="bko.html" data-bko-only hidden><span>☷</span><span>Fila BKO</span></a>
+        <a class="nav-item" href="#"><span>◫</span><span>Painel</span></a>
+      </nav>
+      <div class="user-mini"><div class="avatar" data-user-initials>--</div><div><strong data-user-name>Carregando...</strong><small data-user-role>Usuário</small></div><button class="logout-button" data-logout aria-label="Sair">↪</button></div>
+    </aside>
+    <main>
+      <header class="topbar"><button class="menu-button" id="menuButton" aria-label="Abrir menu">☰</button><div class="topbar-title"><span>Vendas</span><b>/</b><strong>Minhas vendas</strong></div><div class="profile"><div class="avatar" data-user-initials>--</div><span data-user-name>Carregando...</span></div></header>
+      <div class="content queue-content">
+        <div class="page-heading queue-heading"><div><span class="eyebrow">ACOMPANHAMENTO</span><h1>Minhas vendas</h1><p>Acompanhe o status e os retornos da análise de cada cadastro.</p></div><a class="button primary new-sale" href="index.html"><span>＋ Nova venda</span></a></div>
+        <section class="summary-grid" aria-label="Resumo das vendas">
+          <article><span class="summary-icon all">▤</span><div><strong id="totalCount">0</strong><small>Total de vendas</small></div></article>
+          <article><span class="summary-icon pending">◷</span><div><strong id="pendingCount">0</strong><small>Em análise</small></div></article>
+          <article><span class="summary-icon approved">✓</span><div><strong id="connectedCount">0</strong><small>Conectadas</small></div></article>
+          <article><span class="summary-icon rejected">×</span><div><strong id="rejectedCount">0</strong><small>Reprovadas</small></div></article>
+        </section>
+        <section class="queue-toolbar">
+          <label class="search-box"><span>⌕</span><input id="saleSearch" type="search" placeholder="Buscar por cliente, CPF ou plano" aria-label="Buscar vendas" /></label>
+          <div class="filter-tabs" id="filterTabs" aria-label="Filtrar por status"><button class="active" data-filter="todos">Todos</button><button data-filter="pendente">Aguardando análise</button><button data-filter="em_analise">Em análise</button><button data-filter="pendente_aceite">Aguardando aceite</button><button data-filter="conectado">Conectados</button><button data-filter="reprovada">Reprovados</button><button data-filter="cancelada">Cancelados</button></div>
+        </section>
+        <div class="queue-layout"><section class="sales-list" id="salesList" aria-label="Fila de vendas"></section><aside class="detail-panel" id="detailPanel" aria-live="polite"><div class="empty-detail"><span>▤</span><h2>Selecione uma venda</h2><p>Clique em um cartão para visualizar todos os dados e o retorno do BKO.</p></div></aside></div>
+        <div class="empty-list" id="emptyList" hidden><span>⌕</span><h2>Nenhuma venda encontrada</h2><p id="emptyListMessage">Cadastre a primeira venda ou altere os filtros.</p></div>
+      </div>
+    </main>
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
+    <script src="supabase-config.js"></script><script src="auth.js"></script><script src="vendas.js"></script>
+  </body>
+</html>
