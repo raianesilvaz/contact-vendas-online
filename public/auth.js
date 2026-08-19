@@ -3,7 +3,7 @@ window.authReady = (async () => {
   if (error || !user) { window.location.replace('login.html'); return null; }
   const { data: profile } = await window.supabaseClient.from('profiles').select('full_name, role, active').eq('id', user.id).single();
   if (!profile || !profile.active) { await window.supabaseClient.auth.signOut(); window.location.replace('login.html'); return null; }
-  const roleNames = { vendedor:'Vendedor', admin:'Administrador' };
+  const roleNames = { vendedora:'Vendedor', admin:'Administrador' };
   const initials = profile.full_name.split(/\s+/).filter(Boolean).slice(0,2).map(part => part[0]).join('').toUpperCase();
   document.querySelectorAll('[data-user-name]').forEach(el => el.textContent = profile.full_name);
   document.querySelectorAll('[data-user-role]').forEach(el => el.textContent = roleNames[profile.role] || 'Usuário');
