@@ -9,7 +9,7 @@ const createCard = document.querySelector('#userCreateCard');
 const userForm = document.querySelector('#userForm');
 const toast = document.querySelector('#toast');
 
-const roleLabels = { vendedor: 'Vendedor', admin: 'Administrador' };
+const roleLabels = { vendedora: 'Vendedor', admin: 'Administrador' };
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
 const initials = name => String(name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase();
 const formatDate = value => value ? new Date(value).toLocaleString('pt-BR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : 'Nunca acessou';
@@ -28,14 +28,14 @@ function previewUsers() {
   if (saved) {
     const normalized = JSON.parse(saved).map(user => ({
       ...user,
-      role: user.role === 'vendedora' ? 'vendedor' : (['bko', 'supervisora'].includes(user.role) ? 'admin' : user.role),
+      role: user.role === 'vendedor' ? 'vendedora' : (['bko', 'supervisora'].includes(user.role) ? 'admin' : user.role),
     }));
     localStorage.setItem(previewStorageKey, JSON.stringify(normalized));
     return normalized;
   }
   const items = [
     { id:window.currentUser.id, full_name:window.currentUser.profile.full_name, email:window.currentUser.email || 'admin@contact.com.br', role:'admin', active:true, last_sign_in_at:new Date().toISOString() },
-    { id:'preview-seller', full_name:'Vendedor de exemplo', email:'vendedor@contact.com.br', role:'vendedor', active:true, last_sign_in_at:null },
+    { id:'preview-seller', full_name:'Vendedor de exemplo', email:'vendedor@contact.com.br', role:'vendedora', active:true, last_sign_in_at:null },
     { id:'preview-admin', full_name:'Administrador de exemplo', email:'admin2@contact.com.br', role:'admin', active:false, last_sign_in_at:null },
   ];
   localStorage.setItem(previewStorageKey, JSON.stringify(items));
@@ -73,7 +73,7 @@ async function callAdminUsers(body) {
 function renderSummary() {
   document.querySelector('#usersTotal').textContent = users.length;
   document.querySelector('#usersActive').textContent = users.filter(user => user.active).length;
-  document.querySelector('#usersSellers').textContent = users.filter(user => user.role === 'vendedor').length;
+  document.querySelector('#usersSellers').textContent = users.filter(user => user.role === 'vendedora').length;
   document.querySelector('#usersAdmins').textContent = users.filter(user => user.role === 'admin').length;
 }
 
