@@ -58,6 +58,12 @@ async function callPreview(body) {
     localStorage.setItem(previewStorageKey, JSON.stringify(items));
     return { ok:true };
   }
+  if (body.action === 'set_role') {
+    const user = items.find(item => item.id === body.user_id);
+    if (user) user.role = body.role;
+    localStorage.setItem(previewStorageKey, JSON.stringify(items));
+    return { ok:true };
+  }
   if (body.action === 'reset_password' || body.action === 'set_password') return { ok:true };
   throw new Error('Ação de prévia desconhecida.');
 }
@@ -96,7 +102,7 @@ function renderUsers() {
       <td><span class="role-badge ${escapeHtml(user.role)}">${escapeHtml(roleLabels[user.role] || user.role)}</span></td>
       <td><span class="account-status ${user.active ? 'active' : 'inactive'}"><i></i>${user.active ? 'Ativo' : 'Inativo'}</span></td>
       <td><span class="last-access">${escapeHtml(formatDate(user.last_sign_in_at))}</span></td>
-      <td><div class="user-actions"><button type="button" data-action="password" data-id="${user.id}" title="Definir senha temporária" aria-label="Definir senha temporária">🔑</button><button type="button" data-action="reset" data-id="${user.id}" title="Enviar recuperação de senha" aria-label="Enviar recuperação de senha">↻</button><button type="button" class="${user.active ? 'deactivate' : 'activate'}" data-action="toggle" data-id="${user.id}" title="${user.active ? 'Desativar conta' : 'Ativar conta'}" aria-label="${user.active ? 'Desativar conta' : 'Ativar conta'}">${user.active ? '○' : '✓'}</button></div></td>
+      <td><div class="user-actions"><button type="button" data-action="role" data-id="${user.id}" title="Alterar perfil" aria-label="Alterar perfil">✎</button><button type="button" data-action="password" data-id="${user.id}" title="Definir senha temporária" aria-label="Definir senha temporária">🔑</button><button type="button" data-action="reset" data-id="${user.id}" title="Enviar recuperação de senha" aria-label="Enviar recuperação de senha">↻</button><button type="button" class="${user.active ? 'deactivate' : 'activate'}" data-action="toggle" data-id="${user.id}" title="${user.active ? 'Desativar conta' : 'Ativar conta'}" aria-label="${user.active ? 'Desativar conta' : 'Ativar conta'}">${user.active ? '○' : '✓'}</button></div></td>
     </tr>`).join('');
 }
 
@@ -163,6 +169,35 @@ async function toggleUser(user) {
   }
 }
 
+async function changeRole(user) {
+  if (user.id === window.currentUser.id) {
+    showToast('Ação bloqueada', 'Você não pode alterar o próprio perfil.', true);
+    return;
+  }
+  const currentLabel = roleLabels[user.role] || user.role;
+  const nextRole = window.prompt(`Perfil atual de ${user.full_name}: ${currentLabel}\n\nDigite 1 para Vendedor ou 2 para Administrador:`);
+  if (nextRole === null) return;
+  const role = nextRole.trim() === '1' ? 'vendedora' : nextRole.trim() === '2' ? 'admin' : null;
+  if (!role) {
+    showToast('Perfil inválido', 'Digite 1 para Vendedor ou 2 para Administrador.', true);
+    return;
+  }
+  if (role === user.role) {
+    showToast('Sem alterações', `${user.full_name} já possui o perfil ${roleLabels[role]}.`);
+    return;
+  }
+  if (!window.confirm(`Alterar ${user.full_name} de ${currentLabel} para ${roleLabels[role]}?`)) return;
+  try {
+    await callAdminUsers({ action:'set_role', user_id:user.id, role });
+    user.role = role;
+    renderSummary();
+    renderUsers();
+    showToast('Perfil atualizado', `${user.full_name} agora é ${roleLabels[role]}.`);
+  } catch (error) {
+    showToast('Não foi possível alterar o perfil', error.message, true);
+  }
+}
+
 async function setTemporaryPassword(user) {
   const password = window.prompt(`Digite a senha temporária para ${user.full_name}:`);
   if (password === null) return;
@@ -203,6 +238,7 @@ usersList.addEventListener('click', event => {
   const user = users.find(item => item.id === button.dataset.id);
   if (!user) return;
   if (button.dataset.action === 'toggle') return toggleUser(user);
+  if (button.dataset.action === 'role') return changeRole(user);
   if (button.dataset.action === 'password') return setTemporaryPassword(user);
   return resetPassword(user);
 });
