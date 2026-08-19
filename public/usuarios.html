@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#151921">
+  <title>Usuários — CONTACT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><span class="brand-mark">C</span><span class="brand-name">CONTACT</span></div>
+    <nav aria-label="Menu principal">
+      <a class="nav-item" href="index.html"><span>＋</span><span>Nova venda</span></a>
+      <a class="nav-item" href="vendas.html"><span>▤</span><span>Minhas vendas</span></a>
+      <a class="nav-item" href="bko.html" data-admin-only hidden><span>☷</span><span>Fila BKO</span></a>
+      <a class="nav-item" href="#" data-admin-only hidden><span>◫</span><span>Painel</span></a>
+      <span class="nav-section-title" data-admin-only hidden>CONFIGURAÇÕES</span>
+      <a class="nav-item active" href="usuarios.html" data-admin-only hidden><span>♙</span><span>Usuários</span></a>
+    </nav>
+    <div class="user-mini"><div class="avatar" data-user-initials>--</div><div><strong data-user-name>Carregando...</strong><small data-user-role>Usuário</small></div><button class="logout-button" data-logout aria-label="Sair">↪</button></div>
+  </aside>
+
+  <main>
+    <header class="topbar"><button class="menu-button" id="menuButton" aria-label="Abrir menu">☰</button><div class="topbar-title"><span>Administração</span><b>/</b><strong>Usuários</strong></div><div class="profile"><div class="avatar" data-user-initials>--</div><span data-user-name>Carregando...</span></div></header>
+    <div class="content users-content">
+      <div class="page-heading users-heading">
+        <div><span class="eyebrow">ADMINISTRAÇÃO</span><h1>Gestão de usuários</h1><p>Cadastre administradores e vendedores sem acessar diretamente o banco de dados.</p></div>
+        <button class="button primary new-user-button" id="newUserButton" type="button"><span>＋ Novo usuário</span></button>
+      </div>
+
+      <div class="preview-notice" id="previewNotice"><strong>Prévia de teste</strong><span>As ações desta página são simuladas e não alteram o Supabase oficial.</span></div>
+
+      <section class="summary-grid users-summary" aria-label="Resumo de usuários">
+        <article><span class="summary-icon all">♙</span><div><strong id="usersTotal">0</strong><small>Total de usuários</small></div></article>
+        <article><span class="summary-icon approved">✓</span><div><strong id="usersActive">0</strong><small>Contas ativas</small></div></article>
+        <article><span class="summary-icon pending">V</span><div><strong id="usersSellers">0</strong><small>Vendedores</small></div></article>
+        <article><span class="summary-icon rejected">A</span><div><strong id="usersAdmins">0</strong><small>Administradores</small></div></article>
+      </section>
+
+      <section class="user-create-card" id="userCreateCard" hidden>
+        <div class="user-create-heading"><div><span class="step">＋</span><div><h2>Convidar novo usuário</h2><p>O usuário receberá um e-mail para definir a própria senha.</p></div></div><button class="close-create" id="closeCreate" type="button" aria-label="Fechar">×</button></div>
+        <form id="userForm" class="user-form">
+          <label class="field"><span>Nome completo <em>*</em></span><input name="full_name" autocomplete="name" placeholder="Digite o nome completo" required></label>
+          <label class="field"><span>E-mail <em>*</em></span><input name="email" type="email" autocomplete="email" placeholder="usuario@empresa.com.br" required></label>
+          <label class="field"><span>Perfil <em>*</em></span><select name="role" required><option value="vendedor">Vendedor</option><option value="admin">Administrador</option></select></label>
+          <button class="button primary invite-button" id="inviteButton" type="submit"><span>Enviar convite</span><b>→</b></button>
+        </form>
+      </section>
+
+      <section class="users-panel">
+        <div class="users-toolbar"><label class="search-box"><span>⌕</span><input id="userSearch" type="search" placeholder="Buscar por nome ou e-mail" aria-label="Buscar usuários"></label><div class="users-filter" id="userFilters"><button class="active" data-filter="todos">Todos</button><button data-filter="vendedor">Vendedores</button><button data-filter="admin">Administradores</button><button data-filter="inativos">Inativos</button></div></div>
+        <div class="users-table-wrap"><table class="users-table"><thead><tr><th>Usuário</th><th>Perfil</th><th>Status</th><th>Último acesso</th><th><span class="sr-only">Ações</span></th></tr></thead><tbody id="usersList"><tr><td colspan="5" class="users-loading">Carregando usuários...</td></tr></tbody></table></div>
+        <div class="users-empty" id="usersEmpty" hidden><span>♙</span><h2>Nenhum usuário encontrado</h2><p>Altere a busca ou convide um novo usuário.</p></div>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status"><span>✓</span><div><strong id="toastTitle">Usuário atualizado</strong><small id="toastMessage">A alteração foi salva.</small></div></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
+  <script src="supabase-config.js"></script><script src="auth.js"></script><script src="usuarios.js"></script>
+</body>
+</html>
