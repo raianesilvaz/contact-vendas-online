@@ -19,13 +19,13 @@ O Contact Vendas Online reúne o lançamento das vendas, o acompanhamento da ven
 ### Login
 
 <p align="center">
-  <img src="docs/screenshots/login.png" alt="Tela de login do Contact Vendas Online" width="78%">
+  <img src="docs/screenshots/login.jpg" alt="Tela de login do Contact Vendas Online" width="78%">
 </p>
 
 ### Cadastro de nova venda
 
 <p align="center">
-  <img src="docs/screenshots/nova-venda.png" alt="Tela de cadastro de uma nova venda" width="100%">
+  <img src="docs/screenshots/nova-venda.jpg" alt="Tela de cadastro de uma nova venda" width="100%">
 </p>
 
 ## Perfis de acesso
