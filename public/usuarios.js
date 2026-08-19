@@ -58,7 +58,7 @@ async function callPreview(body) {
     localStorage.setItem(previewStorageKey, JSON.stringify(items));
     return { ok:true };
   }
-  if (body.action === 'reset_password') return { ok:true };
+  if (body.action === 'reset_password' || body.action === 'set_password') return { ok:true };
   throw new Error('Ação de prévia desconhecida.');
 }
 
@@ -96,7 +96,7 @@ function renderUsers() {
       <td><span class="role-badge ${escapeHtml(user.role)}">${escapeHtml(roleLabels[user.role] || user.role)}</span></td>
       <td><span class="account-status ${user.active ? 'active' : 'inactive'}"><i></i>${user.active ? 'Ativo' : 'Inativo'}</span></td>
       <td><span class="last-access">${escapeHtml(formatDate(user.last_sign_in_at))}</span></td>
-      <td><div class="user-actions"><button type="button" data-action="reset" data-id="${user.id}" title="Enviar recuperação de senha" aria-label="Enviar recuperação de senha">↻</button><button type="button" class="${user.active ? 'deactivate' : 'activate'}" data-action="toggle" data-id="${user.id}" title="${user.active ? 'Desativar conta' : 'Ativar conta'}" aria-label="${user.active ? 'Desativar conta' : 'Ativar conta'}">${user.active ? '○' : '✓'}</button></div></td>
+      <td><div class="user-actions"><button type="button" data-action="password" data-id="${user.id}" title="Definir senha temporária" aria-label="Definir senha temporária">🔑</button><button type="button" data-action="reset" data-id="${user.id}" title="Enviar recuperação de senha" aria-label="Enviar recuperação de senha">↻</button><button type="button" class="${user.active ? 'deactivate' : 'activate'}" data-action="toggle" data-id="${user.id}" title="${user.active ? 'Desativar conta' : 'Ativar conta'}" aria-label="${user.active ? 'Desativar conta' : 'Ativar conta'}">${user.active ? '○' : '✓'}</button></div></td>
     </tr>`).join('');
 }
 
@@ -149,6 +149,25 @@ async function toggleUser(user) {
   }
 }
 
+async function setTemporaryPassword(user) {
+  const password = window.prompt(`Digite a senha temporária para ${user.full_name}:`);
+  if (password === null) return;
+  if (password.length < 6) {
+    showToast('Senha inválida', 'A senha temporária precisa ter pelo menos 6 caracteres.', true);
+    return;
+  }
+  if (!window.confirm(`Definir a nova senha temporária para ${user.full_name}?`)) return;
+  try {
+    await callAdminUsers({ action:'set_password', user_id:user.id, password });
+    user.active = true;
+    renderSummary();
+    renderUsers();
+    showToast('Senha temporária definida', `${user.full_name} já pode entrar no sistema com a nova senha.`);
+  } catch (error) {
+    showToast('Não foi possível definir a senha', error.message, true);
+  }
+}
+
 async function resetPassword(user) {
   if (!window.confirm(`Enviar um e-mail de recuperação de senha para ${user.email}?`)) return;
   try {
@@ -164,7 +183,15 @@ document.querySelector('#closeCreate').addEventListener('click', () => { createC
 userForm.addEventListener('submit', inviteUser);
 userSearch.addEventListener('input', renderUsers);
 userFilters.addEventListener('click', event => { const button = event.target.closest('button[data-filter]'); if (!button) return; userFilters.querySelector('.active')?.classList.remove('active'); button.classList.add('active'); currentFilter = button.dataset.filter; renderUsers(); });
-usersList.addEventListener('click', event => { const button = event.target.closest('button[data-action]'); if (!button) return; const user = users.find(item => item.id === button.dataset.id); if (!user) return; button.dataset.action === 'toggle' ? toggleUser(user) : resetPassword(user); });
+usersList.addEventListener('click', event => {
+  const button = event.target.closest('button[data-action]');
+  if (!button) return;
+  const user = users.find(item => item.id === button.dataset.id);
+  if (!user) return;
+  if (button.dataset.action === 'toggle') return toggleUser(user);
+  if (button.dataset.action === 'password') return setTemporaryPassword(user);
+  return resetPassword(user);
+});
 document.querySelector('#menuButton').addEventListener('click', () => document.querySelector('#sidebar').classList.toggle('open'));
 
 (async () => {
