@@ -1,3 +1,13 @@
+(() => {
+  if (!document.querySelector('link[rel="icon"]')) {
+    const favicon = document.createElement('link');
+    favicon.rel = 'icon';
+    favicon.type = 'image/svg+xml';
+    favicon.href = 'favicon.svg';
+    document.head.appendChild(favicon);
+  }
+})();
+
 window.authReady = (async () => {
   const { data: { user }, error } = await window.supabaseClient.auth.getUser();
   if (error || !user) { window.location.replace('login.html'); return null; }
