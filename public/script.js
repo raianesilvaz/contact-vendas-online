@@ -23,7 +23,9 @@ async function loadOperators() {
   if (!user) return;
   const { data, error } = await window.supabaseClient.from('operators').select('id, name').eq('active', true).order('name');
   if (error) { operatorSelect.innerHTML = '<option value="">Não foi possível carregar</option>'; showToast('Falha na conexão', 'Atualize a página e tente novamente.', true); return; }
-  operatorSelect.innerHTML = '<option value="">Selecione a operadora</option>' + data.map((item) => `<option value="${item.id}">${item.name}</option>`).join('');
+  const operators = user.profile.role === 'parceiro' ? data.filter((item) => item.name.toLowerCase() === 'claro') : data;
+  operatorSelect.innerHTML = '<option value="">Selecione a operadora</option>' + operators.map((item) => `<option value="${item.id}">${item.name}</option>`).join('');
+  if (user.profile.role === 'parceiro' && operators.length === 1) operatorSelect.value = operators[0].id;
   operatorSelect.disabled = false;
 }
 
@@ -42,23 +44,24 @@ form.addEventListener('submit', async (event) => {
 
   const user = await window.authReady;
   if (!user) return;
+  const isPartner = user.profile.role === 'parceiro';
   submitButton.disabled = true;
   submitButton.querySelector('span').textContent = 'Salvando...';
 
   const data = new FormData(form);
   const promoRaw = data.get('valor_promo')?.trim() || '';
-  const sale = { seller_id: user.id, operator_id: data.get('operadora'), plan_name: data.get('plano').trim(), value: parseMoney(data.get('valor')), promo_value: promoRaw ? parseMoney(promoRaw) : null, due_day: Number(digits(data.get('vencimento'))), customer_name: data.get('nome').trim(), mother_name: data.get('mae').trim(), birth_date: data.get('nascimento'), cpf: digits(data.get('cpf')), full_address: data.get('endereco').trim(), address_complement: data.get('complemento').trim() || null, phone_1: digits(data.get('telefone1')), phone_2: digits(data.get('telefone2')) || null, email: data.get('email').trim().toLowerCase() };
+  const sale = { seller_id: user.id, origin: isPartner ? 'parceiro' : 'interna', operator_id: data.get('operadora'), plan_name: data.get('plano').trim(), value: parseMoney(data.get('valor')), promo_value: promoRaw ? parseMoney(promoRaw) : null, due_day: Number(digits(data.get('vencimento'))), customer_name: data.get('nome').trim(), mother_name: data.get('mae').trim(), birth_date: data.get('nascimento'), cpf: digits(data.get('cpf')), full_address: data.get('endereco').trim(), address_complement: data.get('complemento').trim() || null, phone_1: digits(data.get('telefone1')), phone_2: digits(data.get('telefone2')) || null, email: data.get('email').trim().toLowerCase() };
   const { error } = await window.supabaseClient.from('sales').insert(sale);
 
   submitButton.disabled = false;
-  submitButton.querySelector('span').textContent = 'Salvar venda';
+  submitButton.querySelector('span').textContent = isPartner ? 'Enviar indicação' : 'Salvar venda';
   if (error) {
     if (error.code === '23505') { showDuplicateCpfError(); return; }
     showToast('Não foi possível salvar', error.code === '42501' ? 'Seu usuário não tem permissão para cadastrar vendas.' : 'Confira os dados e tente novamente.', true);
     return;
   }
 
-  showToast('Venda cadastrada!', 'Os dados foram gravados e já estão em Minhas vendas.');
+  showToast(isPartner ? 'Indicação enviada!' : 'Venda cadastrada!', isPartner ? 'Os dados foram gravados e já estão em Minhas indicações.' : 'Os dados foram gravados e já estão em Minhas vendas.');
   form.reset();
   setTimeout(() => { window.location.href = 'vendas.html'; }, 1400);
 });
