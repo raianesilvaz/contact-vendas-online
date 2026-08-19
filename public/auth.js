@@ -6,6 +6,12 @@
     favicon.href = 'favicon.svg';
     document.head.appendChild(favicon);
   }
+  if (!document.querySelector('link[href="notifications.css"]')) {
+    const stylesheet = document.createElement('link');
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = 'notifications.css';
+    document.head.appendChild(stylesheet);
+  }
 })();
 
 window.authReady = (async () => {
@@ -21,6 +27,16 @@ window.authReady = (async () => {
   const isAdmin = profile.role === 'admin';
   document.querySelectorAll('[data-admin-only]').forEach(el => el.hidden = !isAdmin);
   window.currentUser = { ...user, profile };
+
+  if (!document.querySelector('script[src="notifications.js"]')) {
+    const script = document.createElement('script');
+    script.src = 'notifications.js';
+    script.onload = () => window.initNotifications?.();
+    document.body.appendChild(script);
+  } else {
+    window.initNotifications?.();
+  }
+
   return window.currentUser;
 })();
 document.querySelectorAll('[data-logout]').forEach(button => button.addEventListener('click', async () => { await window.supabaseClient.auth.signOut(); window.location.replace('login.html'); }));
