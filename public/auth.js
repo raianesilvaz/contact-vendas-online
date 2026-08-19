@@ -12,6 +12,12 @@
     stylesheet.href = 'notifications.css';
     document.head.appendChild(stylesheet);
   }
+  if (!document.querySelector('link[href="sale-status-extra.css"]')) {
+    const stylesheet = document.createElement('link');
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = 'sale-status-extra.css';
+    document.head.appendChild(stylesheet);
+  }
 })();
 
 window.authReady = (async () => {
@@ -35,6 +41,12 @@ window.authReady = (async () => {
     document.body.appendChild(script);
   } else {
     window.initNotifications?.();
+  }
+
+  if (!document.querySelector('script[src="sale-status-extra.js"]')) {
+    const statusScript = document.createElement('script');
+    statusScript.src = 'sale-status-extra.js';
+    document.body.appendChild(statusScript);
   }
 
   return window.currentUser;
