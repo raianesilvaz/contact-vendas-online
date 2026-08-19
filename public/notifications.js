@@ -120,6 +120,26 @@
     window.location.href = `${target}?sale=${encodeURIComponent(item.sale_id)}`;
   }
 
+  function openSaleFromQuery() {
+    const saleId = new URLSearchParams(window.location.search).get('sale');
+    if (!saleId || !['bko.html','vendas.html'].some(page => window.location.pathname.endsWith(page))) return;
+    const tryOpen = () => {
+      const card = document.querySelector(`[data-id="${CSS.escape(saleId)}"]`);
+      if (!card) return false;
+      card.click();
+      const cleanUrl = `${window.location.pathname}${window.location.hash || ''}`;
+      history.replaceState(null, '', cleanUrl);
+      return true;
+    };
+    if (tryOpen()) return;
+    const observer = new MutationObserver(() => {
+      if (tryOpen()) observer.disconnect();
+    });
+    const target = document.querySelector('#salesList') || document.body;
+    observer.observe(target, { childList:true, subtree:true });
+    setTimeout(() => observer.disconnect(), 10000);
+  }
+
   function setupRealtime() {
     const user = window.currentUser;
     if (!user || notificationChannel) return;
@@ -141,6 +161,7 @@
     buildUi();
     await loadNotifications();
     setupRealtime();
+    openSaleFromQuery();
   };
 
   window.addEventListener('beforeunload', () => {
