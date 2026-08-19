@@ -10,6 +10,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
+    <style>
+      .price-pair{grid-column:span 2;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+      .price-pair .field{grid-column:auto}
+      @media(max-width:900px){.price-pair{grid-column:span 1}}
+      @media(max-width:600px){.price-pair{grid-column:1;grid-template-columns:1fr 1fr;gap:10px}}
+    </style>
   </head>
   <body>
     <aside class="sidebar" id="sidebar">
@@ -44,7 +50,10 @@
             <div class="form-grid">
               <label class="field"><span>Operadora <em>*</em></span><select name="operadora" required disabled><option value="">Carregando operadoras...</option></select><small class="error">Selecione uma operadora.</small></label>
               <label class="field"><span>Plano <em>*</em></span><input name="plano" placeholder="Ex.: 500 Mega + Wi-Fi" required /><small class="error">Informe o plano contratado.</small></label>
-              <label class="field"><span>Valor <em>*</em></span><div class="input-prefix"><b>R$</b><input id="valor" name="valor" inputmode="decimal" placeholder="0,00" required /></div><small class="error">Informe o valor do plano.</small></label>
+              <div class="price-pair">
+                <label class="field"><span>Valor <em>*</em></span><div class="input-prefix"><b>R$</b><input id="valor" name="valor" inputmode="decimal" placeholder="0,00" required /></div><small class="error">Informe o valor do plano.</small></label>
+                <label class="field"><span>Valor promo <small>(opcional)</small></span><div class="input-prefix"><b>R$</b><input id="valorPromo" name="valor_promo" inputmode="decimal" placeholder="0,00" /></div></label>
+              </div>
               <label class="field"><span>Vencimento <em>*</em></span><select name="vencimento" required><option value="">Selecione o dia</option><option>Dia 05</option><option>Dia 10</option><option>Dia 15</option><option>Dia 20</option><option>Dia 25</option></select><small class="error">Selecione o vencimento.</small></label>
             </div>
           </section>
