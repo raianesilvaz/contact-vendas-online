@@ -21,22 +21,51 @@ Sistema interno de cadastro, acompanhamento e tratamento de vendas da CONTACT. O
 - Pode administrar usuários conforme as ferramentas existentes no sistema.
 
 ### Vendedor
-- Cadastra vendas.
+- Cadastra vendas internas.
 - Visualiza suas próprias vendas e retornos.
 
-## Perfil planejado — Indicador / Parceiro
+### Parceiro
+- Perfil implementado e liberado em produção.
+- Acesso apenas a **Nova indicação** e **Minhas indicações**.
+- Não acessa Fila BKO, Painel ou Usuários.
+- Usa o mesmo formulário-base de venda, com nomenclatura adaptada para indicação.
+- Operadora permitida: **Claro**.
+- Cada indicação é registrada na tabela `sales` com `origin = parceiro` e `seller_id` igual ao usuário Parceiro autenticado.
+- O Parceiro visualiza apenas as próprias indicações, seguindo as regras de RLS.
 
-Ainda não implementado.
+## Fluxo de Parceiros
 
-Direção aprovada para discussão/implementação futura:
-- Criar perfil separado de vendedor interno.
-- Acesso enxuto: Nova indicação + Minhas indicações.
-- Sem acesso à Fila BKO, Painel, Usuários ou vendas de terceiros.
-- Usar a mesma tabela/fluxo de vendas, evitando duplicação de estrutura.
-- Identificar origem da venda como interna ou indicação.
-- Possível `indicator_id`/responsável pela indicação.
-- Manter indicações na mesma Fila BKO, com identificação visual e possibilidade de filtro por origem.
-- Estrutura deve permitir futuramente comissão, ranking e relatórios de indicação.
+Implementação concluída em agosto de 2026.
+
+### Estrutura
+- `user_role` inclui `parceiro`.
+- `sales` possui a coluna `origin` com valores `interna` e `parceiro`.
+- Vendas antigas e vendas de vendedores internos permanecem como `interna`.
+- Não existe tabela ou fila separada para indicações.
+
+### Cadastro
+- Administradores podem criar, convidar, ativar/desativar, definir senha e alterar usuários para o perfil Parceiro pela Gestão de Usuários.
+- Parceiros só podem cadastrar vendas próprias.
+- Parceiros só podem cadastrar com origem `parceiro`.
+- Parceiros só podem usar a operadora Claro.
+- Vendedores internos continuam cadastrando vendas com origem `interna`.
+
+### Fila BKO
+- Indicações entram na mesma Fila BKO das vendas internas.
+- Recebem exatamente o mesmo tratamento operacional, status, contrato e OBS BKO.
+- A única diferença visual no card é o selo roxo **PARCEIRO** quando `origin = parceiro`.
+- Não há filtro separado por origem nesta versão.
+
+### Validação inicial
+- Primeiro usuário Parceiro de teste: John Lima.
+- Login, menu restrito, operadora Claro, cadastro de indicação e entrada na Fila BKO foram validados em produção.
+- Uma indicação de teste foi confirmada no banco com `origin = parceiro` e apareceu normalmente na fila.
+
+### Futuro possível
+- Comissão por indicação.
+- Ranking de parceiros.
+- Relatórios por parceiro/origem.
+- Dashboard de conversão de indicações.
 
 ## Status de venda
 
@@ -77,14 +106,14 @@ Arquitetura aprovada:
 
 1. **Nova venda cadastrada**
    - Recebe: Administradores/BKO.
-   - O vendedor que acabou de cadastrar não precisa receber a própria ação.
+   - O vendedor/parceiro que acabou de cadastrar não precisa receber a própria ação.
 
 2. **Status alterado**
-   - Recebe: somente o vendedor responsável pela venda.
+   - Recebe: somente o responsável pela venda/indicação.
    - Admin/BKO não recebe notificação da mudança que realizou.
 
 3. **Venda cancelada**
-   - Recebe: somente o vendedor responsável.
+   - Recebe: somente o responsável.
    - Pode ter tratamento visual de alerta especial.
 
 Eventos deliberadamente removidos da V1 como notificações separadas: venda entrou em análise, venda conectada, venda reprovada, retorno/correção para análise, usuário criado, perfil alterado e conta ativada/desativada.
@@ -97,14 +126,15 @@ Também existe atualização manual no topo como alternativa operacional quando 
 
 ## Fila BKO
 
-- Continua sendo a fila operacional central.
-- Alterar um status deve refletir para o vendedor responsável via Realtime/notificação conforme as regras acima.
+- Continua sendo a fila operacional central para vendas internas e indicações.
+- Alterar um status deve refletir para o responsável via Realtime/notificação conforme as regras acima.
 - O status Pendente de instalação deve aparecer em roxo.
-- Ao adicionar futuramente vendas de indicação, a preferência é manter a mesma fila e diferenciar visualmente a origem, com filtro `Todos | Internas | Indicações` se necessário.
+- Vendas de Parceiro são identificadas somente pelo selo visual **PARCEIRO**, mantendo o restante do card e fluxo iguais ao padrão de produção.
 
 ## Operadoras
 
-A operadora Algar foi adicionada às opções do sistema.
+- Algar está disponível para o fluxo interno.
+- Parceiros estão restritos à operadora Claro.
 
 ## Identidade / navegação
 
@@ -122,6 +152,8 @@ A operadora Algar foi adicionada às opções do sistema.
 6. Campos opcionais devem permanecer realmente opcionais no frontend e no banco.
 7. Manter este arquivo atualizado após decisões estruturais importantes.
 
-## Próxima decisão em aberto
+## Próximas decisões em aberto
 
-Detalhar e implementar o perfil **Indicador / Parceiro**, incluindo permissões, identificação de origem da venda e apresentação na Fila BKO.
+- Definir se haverá comissão por indicação.
+- Definir métricas e relatórios específicos para Parceiros.
+- Avaliar futuramente um dashboard próprio para Parceiros, apenas se houver necessidade operacional.
