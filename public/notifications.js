@@ -4,7 +4,6 @@
   let toastTimer = null;
 
   const iconByType = { new_sale: '🛒', status_changed: '🔄', sale_cancelled: '⚠️' };
-
   const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
   const formatRelative = value => {
     const diff = Math.max(0, Date.now() - new Date(value).getTime());
@@ -13,8 +12,7 @@
     if (minutes < 60) return `${minutes} min`;
     const hours = Math.floor(minutes / 60);
     if (hours < 24) return `${hours} h`;
-    const days = Math.floor(hours / 24);
-    return `${days} d`;
+    return `${Math.floor(hours / 24)} d`;
   };
 
   function buildUi() {
@@ -24,22 +22,27 @@
 
     const wrap = document.createElement('div');
     wrap.className = 'topbar-notification-wrap';
-    wrap.innerHTML = `<div class="topbar-notifications"><button class="notification-bell" id="notificationBell" type="button" aria-label="Abrir notificações">🔔<span class="notification-count" id="notificationCount" hidden>0</span></button></div>`;
     profile.parentNode.insertBefore(wrap, profile);
+    wrap.innerHTML = `<div class="topbar-notifications"><button class="notification-bell" id="notificationBell" type="button" aria-label="Abrir notificações">🔔<span class="notification-count" id="notificationCount" hidden>0</span></button></div>`;
     wrap.appendChild(profile);
 
-    document.body.insertAdjacentHTML('beforeend', `
-      <div class="notification-overlay" id="notificationOverlay"></div>
+    wrap.insertAdjacentHTML('beforeend', `
       <aside class="notification-panel" id="notificationPanel" aria-hidden="true">
-        <div class="notification-panel-head"><div><span>CENTRAL</span><h2>Notificações</h2></div><button class="notification-panel-close" id="notificationPanelClose" type="button" aria-label="Fechar">×</button></div>
+        <div class="notification-panel-head"><div><span>CENTRAL</span><h2>Notificações</h2></div></div>
         <div class="notification-panel-tools"><button id="notificationMarkAll" type="button">Marcar todas como lidas</button></div>
         <div class="notification-list" id="notificationList"></div>
-      </aside>
+      </aside>`);
+
+    document.body.insertAdjacentHTML('beforeend', `
       <div class="notification-toast" id="notificationToast"><span class="notification-toast-icon" id="notificationToastIcon">🔔</span><div><strong id="notificationToastTitle">Nova notificação</strong><small id="notificationToastMessage"></small></div></div>`);
 
-    document.querySelector('#notificationBell').addEventListener('click', openPanel);
-    document.querySelector('#notificationPanelClose').addEventListener('click', closePanel);
-    document.querySelector('#notificationOverlay').addEventListener('click', closePanel);
+    document.querySelector('#notificationBell').addEventListener('click', event => {
+      event.stopPropagation();
+      togglePanel();
+    });
+    document.querySelector('#notificationPanel').addEventListener('click', event => event.stopPropagation());
+    document.addEventListener('click', closePanel);
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') closePanel(); });
     document.querySelector('#notificationMarkAll').addEventListener('click', markAllRead);
     document.querySelector('#notificationList').addEventListener('click', event => {
       const item = event.target.closest('[data-notification-id]');
@@ -83,17 +86,20 @@
     toastTimer = setTimeout(() => toast.classList.remove('show'), 4500);
   }
 
-  function openPanel() {
+  function togglePanel() {
+    const panel = document.querySelector('#notificationPanel');
+    if (!panel) return;
+    const opening = !panel.classList.contains('open');
     document.querySelector('#notificationToast')?.classList.remove('show');
-    document.querySelector('#notificationPanel')?.classList.add('open');
-    document.querySelector('#notificationOverlay')?.classList.add('show');
-    document.querySelector('#notificationPanel')?.setAttribute('aria-hidden','false');
+    panel.classList.toggle('open', opening);
+    panel.setAttribute('aria-hidden', opening ? 'false' : 'true');
   }
 
   function closePanel() {
-    document.querySelector('#notificationPanel')?.classList.remove('open');
-    document.querySelector('#notificationOverlay')?.classList.remove('show');
-    document.querySelector('#notificationPanel')?.setAttribute('aria-hidden','true');
+    const panel = document.querySelector('#notificationPanel');
+    if (!panel?.classList.contains('open')) return;
+    panel.classList.remove('open');
+    panel.setAttribute('aria-hidden','true');
   }
 
   async function markAllRead() {
@@ -127,16 +133,12 @@
       const card = document.querySelector(`[data-id="${CSS.escape(saleId)}"]`);
       if (!card) return false;
       card.click();
-      const cleanUrl = `${window.location.pathname}${window.location.hash || ''}`;
-      history.replaceState(null, '', cleanUrl);
+      history.replaceState(null, '', `${window.location.pathname}${window.location.hash || ''}`);
       return true;
     };
     if (tryOpen()) return;
-    const observer = new MutationObserver(() => {
-      if (tryOpen()) observer.disconnect();
-    });
-    const target = document.querySelector('#salesList') || document.body;
-    observer.observe(target, { childList:true, subtree:true });
+    const observer = new MutationObserver(() => { if (tryOpen()) observer.disconnect(); });
+    observer.observe(document.querySelector('#salesList') || document.body, { childList:true, subtree:true });
     setTimeout(() => observer.disconnect(), 10000);
   }
 
@@ -147,14 +149,11 @@
       .on('postgres_changes', { event:'INSERT', schema:'public', table:'notifications', filter:`user_id=eq.${user.id}` }, payload => {
         const item = payload.new;
         notifications = [item, ...notifications.filter(row => row.id !== item.id)].slice(0,100);
-        render();
-        showToast(item);
+        render(); showToast(item);
       })
       .on('postgres_changes', { event:'UPDATE', schema:'public', table:'notifications', filter:`user_id=eq.${user.id}` }, payload => {
-        notifications = notifications.map(row => row.id === payload.new.id ? payload.new : row);
-        render();
-      })
-      .subscribe();
+        notifications = notifications.map(row => row.id === payload.new.id ? payload.new : row); render();
+      }).subscribe();
   }
 
   window.initNotifications = async () => {
@@ -164,7 +163,5 @@
     openSaleFromQuery();
   };
 
-  window.addEventListener('beforeunload', () => {
-    if (notificationChannel) window.supabaseClient.removeChannel(notificationChannel);
-  });
+  window.addEventListener('beforeunload', () => { if (notificationChannel) window.supabaseClient.removeChannel(notificationChannel); });
 })();
