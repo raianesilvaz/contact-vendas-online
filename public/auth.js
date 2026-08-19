@@ -18,6 +18,12 @@
     stylesheet.href = 'sale-status-extra.css';
     document.head.appendChild(stylesheet);
   }
+  if (!document.querySelector('link[href="partner-sales-badge.css"]')) {
+    const stylesheet = document.createElement('link');
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = 'partner-sales-badge.css';
+    document.head.appendChild(stylesheet);
+  }
 })();
 
 window.authReady = (async () => {
@@ -74,6 +80,12 @@ window.authReady = (async () => {
     const statusScript = document.createElement('script');
     statusScript.src = 'sale-status-extra.js';
     document.body.appendChild(statusScript);
+  }
+
+  if ((location.pathname.split('/').pop() || '') === 'vendas.html' && !document.querySelector('script[src="partner-sales-badge.js"]')) {
+    const partnerBadgeScript = document.createElement('script');
+    partnerBadgeScript.src = 'partner-sales-badge.js';
+    document.body.appendChild(partnerBadgeScript);
   }
 
   return window.currentUser;
