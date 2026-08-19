@@ -1,0 +1,12 @@
+{
+  "name": "contact-vendas-online",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-worker.mjs && bash scripts/build.sh",
+    "validate": "node scripts/validate-artifact.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.124.0"
+  }
+}
