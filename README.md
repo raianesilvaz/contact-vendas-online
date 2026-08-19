@@ -1,26 +1,21 @@
-# Sites Worker ESM starter
+# Contact Vendas Online
 
-Use this starter for a static microsite, click counter, or simple internal UI whose state is browser-scoped. It has no dependencies and needs no install.
+Sistema web para cadastro, acompanhamento e classificação de vendas da CONTACT.
 
-Edit `worker/index.js`. Use the Sites checkpoint when a coherent milestone is ready to inspect or share; the remote builder then runs the checked-in build and validation scripts. Do not run them as a normal pre-checkpoint step.
+## Perfis
 
-The build copies only `worker/index.js` and `.openai/hosting.json`. Do not add standalone asset files. Embed any essential raster bytes in `worker/index.js` and serve or reference them as a data URL.
+- **Vendedora:** cadastra vendas e acompanha os retornos do BKO.
+- **BKO:** recebe as vendas na fila, atualiza o status, o contrato e a mensagem de retorno.
 
-For targeted diagnosis after a remote build failure, the same commands are available in the Sites Linux environment:
+## Tecnologias
 
-```sh
-bash scripts/build.sh
-node scripts/validate-artifact.mjs
-```
+- HTML, CSS e JavaScript
+- Supabase (autenticação e banco de dados)
+- Cloudflare Workers Static Assets
+- GitHub integrado ao deploy automático
 
-The deterministic build produces:
+## Publicação
 
-```text
-dist/
-├── .openai/
-│   └── hosting.json
-└── server/
-    └── index.js
-```
+A branch `main` está conectada ao Worker `contact-vendas-online`. Novos commits enviados para essa branch iniciam automaticamente uma publicação no Cloudflare.
 
-`dist/server/index.js` is an ES module with a default export containing `fetch(request, env, ctx)`. Edit `worker/index.js`, not the generated file under `dist/`.
+O conteúdo público fica em `public/`, e o comportamento do Worker está configurado em `worker/cloudflare.js` e `wrangler.jsonc`.
