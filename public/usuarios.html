@@ -28,7 +28,7 @@
     <header class="topbar"><button class="menu-button" id="menuButton" aria-label="Abrir menu">☰</button><div class="topbar-title"><span>Administração</span><b>/</b><strong>Usuários</strong></div><div class="profile"><div class="avatar" data-user-initials>--</div><span data-user-name>Carregando...</span></div></header>
     <div class="content users-content">
       <div class="page-heading users-heading">
-        <div><span class="eyebrow">ADMINISTRAÇÃO</span><h1>Gestão de usuários</h1><p>Cadastre administradores e vendedores sem acessar diretamente o banco de dados.</p></div>
+        <div><span class="eyebrow">ADMINISTRAÇÃO</span><h1>Gestão de usuários</h1><p>Cadastre administradores, vendedores e parceiros sem acessar diretamente o banco de dados.</p></div>
         <button class="button primary new-user-button" id="newUserButton" type="button"><span>＋ Novo usuário</span></button>
       </div>
 
@@ -46,13 +46,13 @@
         <form id="userForm" class="user-form">
           <label class="field"><span>Nome completo <em>*</em></span><input name="full_name" autocomplete="name" placeholder="Digite o nome completo" required></label>
           <label class="field"><span>E-mail <em>*</em></span><input name="email" type="email" autocomplete="email" placeholder="usuario@empresa.com.br" required></label>
-          <label class="field"><span>Perfil <em>*</em></span><select name="role" required><option value="vendedora">Vendedor</option><option value="admin">Administrador</option></select></label>
+          <label class="field"><span>Perfil <em>*</em></span><select name="role" required><option value="vendedora">Vendedor</option><option value="parceiro">Parceiro</option><option value="admin">Administrador</option></select></label>
           <button class="button primary invite-button" id="inviteButton" type="submit"><span>Enviar convite</span><b>→</b></button>
         </form>
       </section>
 
       <section class="users-panel">
-        <div class="users-toolbar"><label class="search-box"><span>⌕</span><input id="userSearch" type="search" placeholder="Buscar por nome ou e-mail" aria-label="Buscar usuários"></label><div class="users-filter" id="userFilters"><button class="active" data-filter="todos">Todos</button><button data-filter="vendedora">Vendedores</button><button data-filter="admin">Administradores</button><button data-filter="inativos">Inativos</button></div></div>
+        <div class="users-toolbar"><label class="search-box"><span>⌕</span><input id="userSearch" type="search" placeholder="Buscar por nome ou e-mail" aria-label="Buscar usuários"></label><div class="users-filter" id="userFilters"><button class="active" data-filter="todos">Todos</button><button data-filter="vendedora">Vendedores</button><button data-filter="parceiro">Parceiros</button><button data-filter="admin">Administradores</button><button data-filter="inativos">Inativos</button></div></div>
         <div class="users-table-wrap"><table class="users-table"><thead><tr><th>Usuário</th><th>Perfil</th><th>Status</th><th>Último acesso</th><th><span class="sr-only">Ações</span></th></tr></thead><tbody id="usersList"><tr><td colspan="5" class="users-loading">Carregando usuários...</td></tr></tbody></table></div>
         <div class="users-empty" id="usersEmpty" hidden><span>♙</span><h2>Nenhum usuário encontrado</h2><p>Altere a busca ou convide um novo usuário.</p></div>
       </section>
