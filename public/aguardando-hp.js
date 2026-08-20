@@ -5,19 +5,24 @@
 
   const addStatusStyles=()=>{
     if(document.querySelector('#hp-status-style'))return;
-    const style=document.createElement('style');style.id='hp-status-style';style.textContent=`
+    const style=document.createElement('style');
+    style.id='hp-status-style';
+    style.textContent=`
       .status-badge.hp{background:#eef4ff!important;color:#2f62c9!important}
       .status-badge.hp i{background:#2f62c9!important}
-    `;document.head.appendChild(style);
+    `;
+    document.head.appendChild(style);
   };
 
   function normalizeBadges(){
     document.querySelectorAll('.status-badge').forEach(b=>{
       const t=b.textContent.trim().toLowerCase();
       if(t==='aguardando_hp'||t==='aguardando hp'||t==='undefined'){
-        b.innerHTML='<i></i>Aguardando HP';
+        const alreadyCorrect=b.classList.contains('hp')&&b.textContent.trim()==='Aguardando HP';
+        if(alreadyCorrect)return;
         b.classList.remove('analise','aceite','conectado','reprovada');
         b.classList.add('hp');
+        b.innerHTML='<i></i>Aguardando HP';
       }
     });
   }
@@ -26,13 +31,19 @@
     const tabs=document.querySelector('#filterTabs');
     if(tabs&&!tabs.querySelector('[data-filter="aguardando_hp"]')){
       const ref=tabs.querySelector('[data-filter="em_analise"]');
-      const b=document.createElement('button');b.type='button';b.dataset.filter='aguardando_hp';b.textContent='Aguardando HP';
+      const b=document.createElement('button');
+      b.type='button';
+      b.dataset.filter='aguardando_hp';
+      b.textContent='Aguardando HP';
       if(ref)ref.insertAdjacentElement('afterend',b);else tabs.appendChild(b);
     }
+
     document.querySelectorAll('#detailPanel select[name="status"]').forEach(sel=>{
       if(!sel.querySelector('option[value="aguardando_hp"]')){
         const ref=sel.querySelector('option[value="em_analise"]');
-        const opt=document.createElement('option');opt.value='aguardando_hp';opt.textContent='Aguardando HP';
+        const opt=document.createElement('option');
+        opt.value='aguardando_hp';
+        opt.textContent='Aguardando HP';
         if(ref)ref.insertAdjacentElement('afterend',opt);else sel.appendChild(opt);
       }
       const form=sel.closest('form');
@@ -53,17 +64,31 @@
     const tabs=document.querySelector('#filterTabs');
     if(tabs&&!tabs.querySelector('[data-filter="aguardando_hp"]')){
       const ref=tabs.querySelector('[data-filter="em_analise"]');
-      const b=document.createElement('button');b.type='button';b.dataset.filter='aguardando_hp';b.textContent='Aguardando HP';
+      const b=document.createElement('button');
+      b.type='button';
+      b.dataset.filter='aguardando_hp';
+      b.textContent='Aguardando HP';
       if(ref)ref.insertAdjacentElement('afterend',b);else tabs.appendChild(b);
     }
     normalizeBadges();
     document.querySelectorAll('.bko-return strong,.return-preview').forEach(el=>{
-      if(['aguardando_hp','aguardando hp'].includes(el.textContent.trim().toLowerCase()))el.textContent='Aguardando HP';
+      const t=el.textContent.trim().toLowerCase();
+      if((t==='aguardando_hp'||t==='aguardando hp')&&el.textContent!=='Aguardando HP')el.textContent='Aguardando HP';
     });
   }
 
   addStatusStyles();
   const run=()=>path==='bko'?enhanceBko():enhanceSeller();
-  new MutationObserver(()=>queueMicrotask(run)).observe(document.body,{childList:true,subtree:true});
+
+  let scheduled=false;
+  const observer=new MutationObserver(()=>{
+    if(scheduled)return;
+    scheduled=true;
+    requestAnimationFrame(()=>{
+      scheduled=false;
+      run();
+    });
+  });
+  observer.observe(document.body,{childList:true,subtree:true});
   run();
 })();
