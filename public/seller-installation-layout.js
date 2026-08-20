@@ -16,8 +16,13 @@
     const header=panel.querySelector('.detail-header');
     if(!button||!header)return;
     let slot=header.querySelector('.seller-install-header-action');
-    if(!slot){slot=document.createElement('div');slot.className='seller-install-header-action';header.appendChild(slot)}
+    if(!slot){slot=document.createElement('div');slot.className='seller-install-header-action'}
     if(button.parentElement!==slot)slot.appendChild(button);
+    const close=header.querySelector('.detail-close, .close-detail, [data-close-detail], button[aria-label="Fechar"], button[title="Fechar"]');
+    if(close){
+      if(slot.parentElement!==header||slot.nextElementSibling!==close)header.insertBefore(slot,close);
+      close.style.position='absolute';close.style.right='18px';close.style.top='20px';
+    }else if(slot.parentElement!==header){header.appendChild(slot)}
   };
   new MutationObserver(()=>queueMicrotask(adjust)).observe(document.querySelector('#detailPanel')||document.body,{childList:true,subtree:true});
   adjust();
