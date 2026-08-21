@@ -16,6 +16,7 @@ const promotionMonthsField = document.querySelector('#promotionMonthsField');
 const postPromoValue = document.querySelector('#postPromoValue');
 const postPromoValueField = document.querySelector('#postPromoValueField');
 const promotionNote = document.querySelector('#promotionNote');
+const promotionSummary = document.querySelector('#promotionSummary');
 const isMulti = document.querySelector('#isMulti');
 const multiToggleWrap = document.querySelector('#multiToggleWrap');
 const internetValueField = document.querySelector('#internetValueField');
@@ -58,6 +59,21 @@ function recalculateTotal() {
   if (!selectedOperatorIsClaro()) return;
   const total = moneyValue(valorInternet) + (isMulti.checked ? moneyValue(valorMovel) : 0);
   valorTotal.value = total > 0 ? total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+  updateDiscountSummary();
+}
+
+function formatCurrency(value) {
+  return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function updateDiscountSummary() {
+  if (!promotionSummary) return;
+  const initialTotal = moneyValue(valorTotal);
+  const months = Number(promotionMonths.value || 0);
+  const afterValue = moneyValue(postPromoValue);
+  promotionSummary.textContent = initialTotal > 0 && months >= 3 && months <= 6 && afterValue > initialTotal
+    ? `O cliente pagará ${formatCurrency(initialTotal)} durante ${months} meses. A partir do ${months + 1}º mês, pagará ${formatCurrency(afterValue)}.`
+    : 'Preencha a duração e o novo valor para conferir a cobrança.';
 }
 
 function syncPromotionMode() {
@@ -84,6 +100,8 @@ function syncPromotionMode() {
     promotionMonths.value = '';
     postPromoValue.value = '';
   }
+
+  updateDiscountSummary();
 }
 
 function syncPricingMode() {
@@ -113,6 +131,7 @@ document.querySelectorAll('.phone').forEach((input) => input.addEventListener('i
 [valorInternet, valorMovel, valorTotal, valorPromo, postPromoValue].forEach((input) => input?.addEventListener('input', () => {
   formatMoneyInput(input);
   if (input === valorInternet || input === valorMovel) recalculateTotal();
+  if (input === postPromoValue) updateDiscountSummary();
 }));
 operatorSelect.addEventListener('change', syncPricingMode);
 isMulti.addEventListener('change', () => {
@@ -120,6 +139,7 @@ isMulti.addEventListener('change', () => {
   syncPricingMode();
 });
 hasPromotion.addEventListener('change', syncPromotionMode);
+promotionMonths.addEventListener('change', updateDiscountSummary);
 form.addEventListener('input', (event) => event.target.closest('.field')?.classList.remove('invalid'));
 
 form.addEventListener('submit', async (event) => {
@@ -155,10 +175,10 @@ form.addEventListener('submit', async (event) => {
     return;
   }
 
-  if (promotionActive && (promotionDuration < 1 || promotionDuration > 24 || afterPromotionValue <= totalValue)) {
-    if (promotionDuration < 1 || promotionDuration > 24) promotionMonthsField.classList.add('invalid');
+  if (promotionActive && (promotionDuration < 3 || promotionDuration > 6 || afterPromotionValue <= totalValue)) {
+    if (promotionDuration < 3 || promotionDuration > 6) promotionMonthsField.classList.add('invalid');
     if (afterPromotionValue <= totalValue) postPromoValueField.classList.add('invalid');
-    (promotionDuration < 1 || promotionDuration > 24 ? promotionMonths : postPromoValue).focus();
+    (promotionDuration < 3 || promotionDuration > 6 ? promotionMonths : postPromoValue).focus();
     submitButton.disabled = false;
     submitButton.querySelector('span').textContent = isPartner ? 'Enviar indicação' : 'Salvar venda';
     return;
