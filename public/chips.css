@@ -5,3 +5,12 @@
 .chip-responsible select{min-width:190px;padding:7px 30px 7px 10px;border:1px solid #e5e9ef;border-radius:8px;background:#f8fafc;color:#293448;font:inherit;font-size:11px;font-weight:700;outline:none;cursor:pointer}
 .chip-responsible select:focus{border-color:#ff8a4c;box-shadow:0 0 0 3px rgba(255,107,44,.12)}
 @media(max-width:640px){.chips-heading{flex-direction:column}.chip-responsible{width:100%;justify-content:stretch}.chip-responsible label{width:100%;justify-content:space-between}.chip-responsible select{min-width:0;flex:1}}
+
+.chip-heading-filters{display:flex;align-items:flex-start;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.chip-period,.chip-specific-date{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 11px;border:1px solid #e0e5ed;border-radius:11px;background:#fff;color:#67738a}
+.chip-period>span,.chip-specific-date>span{font-size:10px;font-weight:700;white-space:nowrap}
+.chip-period select,.chip-specific-date input{padding:7px 9px;border:1px solid #e5e9ef;border-radius:8px;background:#f8fafc;color:#293448;font:inherit;font-size:11px;font-weight:700;outline:none;cursor:pointer}
+.chip-period select:focus,.chip-specific-date input:focus{border-color:#ff8a4c;box-shadow:0 0 0 3px rgba(255,107,44,.12)}
+.chip-specific-date input{width:126px}
+@media(max-width:760px){.chip-heading-filters{width:100%;justify-content:stretch}.chip-period,.chip-specific-date{flex:1;justify-content:space-between}.chip-period select{min-width:0;flex:1}}
+@media(max-width:520px){.chip-heading-filters{flex-direction:column}.chip-period,.chip-specific-date{width:100%}}

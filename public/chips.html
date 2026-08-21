@@ -35,14 +35,28 @@
     <div class="content chips-content">
       <div class="chips-heading">
         <div><span class="eyebrow">ATIVAÇÃO MÓVEL</span><h1>Gestão de chips</h1><p>Priorize os chips que aguardam ativação após a instalação da Internet.</p></div>
-        <div class="chip-responsible">
-          <label id="chipResponsibleBox" hidden>
-            <span>Responsável</span>
-            <select id="chipResponsibleFilter" aria-label="Filtrar por responsável">
-              <option value="all">Todos os responsáveis</option>
+        <div class="chip-heading-filters">
+          <div class="chip-responsible">
+            <label id="chipResponsibleBox" hidden>
+              <span>Responsável</span>
+              <select id="chipResponsibleFilter" aria-label="Filtrar por responsável">
+                <option value="all">Todos os responsáveis</option>
+              </select>
+            </label>
+            <span class="chip-scope" id="chipScope">Minhas ativações</span>
+          </div>
+          <label class="chip-period">
+            <span>Período da instalação</span>
+            <select id="chipPeriodFilter" aria-label="Filtrar por período da instalação">
+              <option value="15">Últimos 15 dias</option>
+              <option value="30" selected>Últimos 30 dias</option>
+              <option value="specific">Data específica</option>
             </select>
           </label>
-          <span class="chip-scope" id="chipScope">Minhas ativações</span>
+          <label class="chip-specific-date" id="chipSpecificDateBox" hidden>
+            <span>Data</span>
+            <input type="date" id="chipSpecificDate" aria-label="Data específica da instalação">
+          </label>
         </div>
       </div>
       <section class="chip-overview" aria-label="Resumo geral dos chips">
