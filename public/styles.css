@@ -74,3 +74,6 @@
 .commercial-save{width:100%;margin-top:14px}
 .commercial-locked{padding:12px;border:1px solid #fecaca;border-radius:9px;background:#fef2f2;color:#991b1b;font-size:11px;line-height:1.5}
 @media(max-width:700px){.commercial-grid{grid-template-columns:1fr}.commercial-wide{grid-column:auto}}
+
+/* Etiqueta de origem na Gestão de chips */
+.chip-main .chip-bko-origin{margin:7px 0 2px;padding:5px 9px;font-size:9px;font-weight:800;line-height:1.2;letter-spacing:.045em}
