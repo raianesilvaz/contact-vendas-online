@@ -37,16 +37,35 @@
         <div><span class="eyebrow">ATIVAÇÃO MÓVEL</span><h1>Gestão de chips</h1><p>Priorize os chips que aguardam ativação após a instalação da Internet.</p></div>
         <span class="chip-scope" id="chipScope">Minhas ativações</span>
       </div>
-      <section class="chip-metrics" aria-label="Resumo da fila">
+      <section class="chip-overview" aria-label="Resumo geral dos chips">
+        <article><span class="overview-icon pending">⌛</span><div><strong id="countPending">0</strong><small>Aguardando ativação</small></div></article>
+        <article><span class="overview-icon activated">✓</span><div><strong id="countActivated">0</strong><small>Chips ativados</small></div></article>
+        <article><span class="overview-icon removed">−</span><div><strong id="countRemoved">0</strong><small>Removidos sem ativação</small></div></article>
+      </section>
+      <section class="chip-metrics" aria-label="Prioridade dos chips pendentes">
         <article><span class="metric-dot overdue"></span><div><strong id="countOverdue">0</strong><small>Atrasados</small></div></article>
         <article><span class="metric-dot risk"></span><div><strong id="countRisk">0</strong><small>Chance de atraso</small></div></article>
         <article><span class="metric-dot attention"></span><div><strong id="countAttention">0</strong><small>Atenção</small></div></article>
         <article><span class="metric-dot ontime"></span><div><strong id="countOnTime">0</strong><small>No prazo</small></div></article>
       </section>
       <div class="chips-info"><strong>Contagem em dias úteis</strong><span>Não considera sábados, domingos nem feriados nacionais. O dia da instalação não entra na contagem.</span></div>
+      <div class="chip-tabs" role="tablist" aria-label="Situação dos chips">
+        <button class="active" type="button" data-tab="pending">Pendentes <span id="tabPendingCount">0</span></button>
+        <button type="button" data-tab="activated">Ativados <span id="tabActivatedCount">0</span></button>
+        <button type="button" data-tab="removed">Removidos <span id="tabRemovedCount">0</span></button>
+      </div>
       <section class="chips-list" id="chipsList"><div class="chips-loading">Carregando chips pendentes...</div></section>
     </div>
   </main>
+  <dialog class="remove-dialog" id="removeDialog">
+    <form id="removeForm">
+      <div class="remove-dialog-head"><div><span>GESTÃO ADMINISTRATIVA</span><h2>Remover Móvel do plano</h2></div><button type="button" id="closeRemoveDialog" aria-label="Fechar">×</button></div>
+      <p>O histórico MULTI e os valores serão preservados. O chip sairá da fila de ativação.</p>
+      <strong id="removeCustomer">Cliente</strong>
+      <label>Motivo da remoção <textarea id="removeReason" rows="4" minlength="3" placeholder="Explique por que o chip não será ativado..." required></textarea></label>
+      <div class="remove-dialog-actions"><button type="button" class="cancel" id="cancelRemove">Cancelar</button><button type="submit" class="confirm" id="confirmRemove">Confirmar remoção</button></div>
+    </form>
+  </dialog>
   <div class="chip-toast" id="chipToast" role="status"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-config.js"></script>
