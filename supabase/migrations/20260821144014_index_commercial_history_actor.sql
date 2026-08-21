@@ -1,0 +1,1 @@
+create index if not exists sale_commercial_history_changed_by_idx on public.sale_commercial_history (changed_by);
