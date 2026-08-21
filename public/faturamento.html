@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#151921">
+  <title>Faturamento — CONTACT</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .billing-content{max-width:1180px;margin:0 auto}
+    .billing-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px}
+    .billing-heading .eyebrow{display:block;margin-bottom:8px;color:#f36b21;font-size:11px;font-weight:700;letter-spacing:.14em}
+    .billing-heading h1{margin:0 0 6px;color:#111827;font-size:30px}
+    .billing-heading p{margin:0;color:#74809a}
+    .beta-badge{display:inline-flex;align-items:center;padding:5px 10px;border-radius:999px;background:#fff0e8;color:#f36b21;font-size:10px;font-weight:700;letter-spacing:.08em}
+    .billing-placeholder{display:grid;place-items:center;min-height:360px;padding:48px;border:1px solid #e2e7ef;border-radius:14px;background:#fff;text-align:center;box-shadow:0 14px 32px rgba(24,34,52,.05)}
+    .billing-placeholder-icon{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 18px;border-radius:16px;background:#fff3ec;color:#f36b21;font-size:27px}
+    .billing-placeholder h2{margin:0 0 8px;color:#182133;font-size:20px}
+    .billing-placeholder p{max-width:520px;margin:0;color:#7a859b;line-height:1.6}
+    @media(max-width:700px){.billing-heading{flex-direction:column}.billing-heading h1{font-size:26px}.billing-placeholder{min-height:300px;padding:32px 20px}}
+  </style>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><span class="brand-mark">C</span><span class="brand-name">CONTACT</span></div>
+    <nav aria-label="Menu principal">
+      <a class="nav-item" href="index.html"><span>＋</span><span>Nova venda</span></a>
+      <a class="nav-item" href="vendas.html"><span>▤</span><span>Minhas vendas</span></a>
+      <a class="nav-item" href="bko.html" data-admin-only hidden><span>☷</span><span>Fila BKO</span></a>
+      <a class="nav-item" href="painel.html"><span>◫</span><span>Painel</span></a>
+      <a class="nav-item" href="financeiro.html" data-admin-only hidden><span>▦</span><span>Financeiro <small class="beta-badge">BETA</small></span></a>
+      <a class="nav-item active" href="faturamento.html" data-admin-only hidden><span>▥</span><span>Faturamento <small class="beta-badge">BETA</small></span></a>
+      <span class="nav-section-title" data-admin-only hidden>CONFIGURAÇÕES</span>
+      <a class="nav-item" href="usuarios.html" data-admin-only hidden><span>♙</span><span>Usuários</span></a>
+      <a class="nav-item" href="saude.html" data-admin-only hidden><span>♡</span><span>Saúde do sistema</span></a>
+    </nav>
+    <div class="user-mini"><div class="avatar" data-user-initials>--</div><div><strong data-user-name>Carregando...</strong><small data-user-role>Usuário</small></div><button class="logout-button" data-logout aria-label="Sair">↪</button></div>
+  </aside>
+  <main>
+    <header class="topbar">
+      <button class="menu-button" id="menuButton" aria-label="Abrir menu">☰</button>
+      <div class="topbar-title"><span>Operação</span><b>/</b><strong>Faturamento</strong></div>
+      <div class="profile"><div class="avatar" data-user-initials>--</div><span data-user-name>Carregando...</span></div>
+    </header>
+    <div class="content billing-content">
+      <div class="billing-heading">
+        <div><span class="eyebrow">GESTÃO ADMINISTRATIVA</span><h1>Faturamento</h1><p>Área reservada para análise e cálculo do faturamento.</p></div>
+        <span class="beta-badge">BETA</span>
+      </div>
+      <section class="billing-placeholder">
+        <div>
+          <div class="billing-placeholder-icon">▥</div>
+          <h2>Vamos construir esta análise</h2>
+          <p>A página já está criada e protegida para administradores. Agora podemos definir juntos os cálculos, filtros e indicadores do faturamento.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="auth.js"></script>
+  <script src="faturamento.js"></script>
+</body>
+</html>
