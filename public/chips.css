@@ -14,3 +14,9 @@
 .chip-specific-date input{width:126px}
 @media(max-width:760px){.chip-heading-filters{width:100%;justify-content:stretch}.chip-period,.chip-specific-date{flex:1;justify-content:space-between}.chip-period select{min-width:0;flex:1}}
 @media(max-width:520px){.chip-heading-filters{flex-direction:column}.chip-period,.chip-specific-date{width:100%}}
+
+.chip-custom-range{display:flex;align-items:center;gap:8px}
+@media(max-width:760px){.chip-custom-range{display:flex;gap:8px;flex:1}.chip-custom-range .chip-specific-date{min-width:155px}}
+@media(max-width:520px){.chip-custom-range{width:100%;flex-direction:column}.chip-custom-range .chip-specific-date{width:100%}}
+
+.chip-custom-range[hidden]{display:none}
