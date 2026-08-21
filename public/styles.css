@@ -77,3 +77,15 @@
 
 /* Etiqueta de origem na Gestão de chips */
 .chip-main .chip-bko-origin{margin:7px 0 2px;padding:5px 9px;font-size:9px;font-weight:800;line-height:1.2;letter-spacing:.045em}
+
+/* Confirmação administrativa do aceite */
+.card-badges,.detail-statuses{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.acceptance-badge{width:max-content;display:inline-flex;align-items:center;border:1px solid #9bd9bb;border-radius:999px;padding:4px 8px;background:#e9f8f1;color:#137653;font-size:9px;font-weight:800;line-height:1.1;letter-spacing:.045em;white-space:nowrap}
+.acceptance-toggle{display:flex;align-items:center;gap:11px;padding:12px 14px;border:1px solid #bfe5d2;border-radius:10px;background:#f2fbf7;cursor:pointer}
+.acceptance-toggle input{width:20px;height:20px;flex:0 0 20px;accent-color:#19875f;cursor:pointer}
+.acceptance-toggle span{display:flex;flex-direction:column;gap:2px}
+.acceptance-toggle b{color:#155f46;font-size:11px}
+.acceptance-toggle small{color:#568170;font-size:9px;line-height:1.35}
+.acceptance-toggle:has(input:checked){border-color:#73c7a0;background:#e7f8ef}
+.acceptance-toggle:has(input:disabled){opacity:.65;cursor:wait}
+@media(max-width:600px){.card-top{align-items:flex-start}.card-badges{gap:5px}.acceptance-badge{font-size:8px}}
