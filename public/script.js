@@ -71,24 +71,24 @@ function updateDiscountSummary() {
   const initialTotal = moneyValue(valorTotal);
   const months = Number(promotionMonths.value || 0);
   const afterValue = moneyValue(postPromoValue);
-  promotionSummary.textContent = initialTotal > 0 && months >= 3 && months <= 6 && afterValue > initialTotal
+  promotionSummary.textContent = initialTotal > 0 && months >= 1 && months <= 6 && afterValue > initialTotal
     ? `O cliente pagará ${formatCurrency(initialTotal)} durante ${months} meses. A partir do ${months + 1}º mês, pagará ${formatCurrency(afterValue)}.`
     : 'Preencha a duração e o novo valor para conferir a cobrança.';
 }
 
 function syncPromotionMode() {
-  const multi = selectedOperatorIsClaro() && isMulti.checked;
-  const active = multi && hasPromotion.checked;
+  const claro = selectedOperatorIsClaro();
+  const active = claro && hasPromotion.checked;
 
-  legacyPromoField.hidden = multi;
-  promotionToggleField.hidden = !multi;
+  legacyPromoField.hidden = claro;
+  promotionToggleField.hidden = !claro;
   promotionMonthsField.hidden = !active;
   postPromoValueField.hidden = !active;
   promotionNote.hidden = !active;
   promotionMonths.required = active;
   postPromoValue.required = active;
 
-  if (multi) {
+  if (claro) {
     valorPromo.value = '';
   } else {
     hasPromotion.checked = false;
@@ -162,8 +162,8 @@ form.addEventListener('submit', async (event) => {
   const mobileValue = multi ? moneyValue(valorMovel) : null;
   const totalValue = claro ? internetValue + (mobileValue || 0) : moneyValue(valorTotal);
   const promoRaw = data.get('valor_promo')?.trim() || '';
-  const promoValue = !multi && promoRaw ? parseMoney(promoRaw) : null;
-  const promotionActive = multi && hasPromotion.checked;
+  const promoValue = !claro && promoRaw ? parseMoney(promoRaw) : null;
+  const promotionActive = claro && hasPromotion.checked;
   const promotionDuration = promotionActive ? Number(promotionMonths.value) : null;
   const afterPromotionValue = promotionActive ? moneyValue(postPromoValue) : null;
 
@@ -175,10 +175,10 @@ form.addEventListener('submit', async (event) => {
     return;
   }
 
-  if (promotionActive && (promotionDuration < 3 || promotionDuration > 6 || afterPromotionValue <= totalValue)) {
-    if (promotionDuration < 3 || promotionDuration > 6) promotionMonthsField.classList.add('invalid');
+  if (promotionActive && (promotionDuration < 1 || promotionDuration > 6 || afterPromotionValue <= totalValue)) {
+    if (promotionDuration < 1 || promotionDuration > 6) promotionMonthsField.classList.add('invalid');
     if (afterPromotionValue <= totalValue) postPromoValueField.classList.add('invalid');
-    (promotionDuration < 3 || promotionDuration > 6 ? promotionMonths : postPromoValue).focus();
+    (promotionDuration < 1 || promotionDuration > 6 ? promotionMonths : postPromoValue).focus();
     submitButton.disabled = false;
     submitButton.querySelector('span').textContent = isPartner ? 'Enviar indicação' : 'Salvar venda';
     return;
