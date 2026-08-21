@@ -35,7 +35,15 @@
     <div class="content chips-content">
       <div class="chips-heading">
         <div><span class="eyebrow">ATIVAÇÃO MÓVEL</span><h1>Gestão de chips</h1><p>Priorize os chips que aguardam ativação após a instalação da Internet.</p></div>
-        <span class="chip-scope" id="chipScope">Minhas ativações</span>
+        <div class="chip-responsible">
+          <label id="chipResponsibleBox" hidden>
+            <span>Responsável</span>
+            <select id="chipResponsibleFilter" aria-label="Filtrar por responsável">
+              <option value="all">Todos os responsáveis</option>
+            </select>
+          </label>
+          <span class="chip-scope" id="chipScope">Minhas ativações</span>
+        </div>
       </div>
       <section class="chip-overview" aria-label="Resumo geral dos chips">
         <article><span class="overview-icon pending">⌛</span><div><strong id="countPending">0</strong><small>Aguardando ativação</small></div></article>
