@@ -11,10 +11,20 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
     <style>
-      .price-pair{grid-column:span 2;display:grid;grid-template-columns:1fr 1fr;gap:12px}
-      .price-pair .field{grid-column:auto}
-      @media(max-width:900px){.price-pair{grid-column:span 1}}
-      @media(max-width:600px){.price-pair{grid-column:1;grid-template-columns:1fr 1fr;gap:10px}}
+      .plan-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:20px}
+      .plan-title-row>label{font-size:12px;font-weight:600;color:#273349}
+      .multi-toggle{display:inline-flex;align-items:center;gap:7px;color:#f36b21;font-size:11px;font-weight:700;cursor:pointer}
+      .multi-toggle input{position:absolute;opacity:0;pointer-events:none}
+      .multi-toggle-track{width:34px;height:19px;border-radius:999px;background:#d9dee7;padding:2px;transition:.2s}
+      .multi-toggle-track::after{content:"";display:block;width:15px;height:15px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:.2s}
+      .multi-toggle input:checked+.multi-toggle-track{background:#f36b21}
+      .multi-toggle input:checked+.multi-toggle-track::after{transform:translateX(15px)}
+      .price-grid{grid-column:span 2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+      .price-grid .field{grid-column:auto}
+      .price-grid input[readonly]{background:#f4f6f9;color:#536078;cursor:not-allowed}
+      [hidden]{display:none!important}
+      @media(max-width:900px){.price-grid{grid-column:span 1;grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media(max-width:600px){.price-grid{grid-column:1;grid-template-columns:1fr 1fr;gap:10px}.plan-title-row{align-items:flex-start}}
     </style>
   </head>
   <body>
@@ -49,10 +59,23 @@
             <div class="section-heading"><span class="step">01</span><div><h2>Dados da venda</h2><p>Operadora, plano e informações de cobrança.</p></div></div>
             <div class="form-grid">
               <label class="field"><span>Operadora <em>*</em></span><select name="operadora" required disabled><option value="">Carregando operadoras...</option></select><small class="error">Selecione uma operadora.</small></label>
-              <label class="field"><span>Plano <em>*</em></span><input name="plano" placeholder="Ex.: 500 Mega + Wi-Fi" required /><small class="error">Informe o plano contratado.</small></label>
-              <div class="price-pair">
-                <label class="field"><span>Valor <em>*</em></span><div class="input-prefix"><b>R$</b><input id="valor" name="valor" inputmode="decimal" placeholder="0,00" required /></div><small class="error">Informe o valor do plano.</small></label>
-                <label class="field"><span>Valor promo <small>(opcional)</small></span><div class="input-prefix"><b>R$</b><input id="valorPromo" name="valor_promo" inputmode="decimal" placeholder="0,00" /></div></label>
+              <div class="field">
+                <div class="plan-title-row">
+                  <label for="plano">Plano <em>*</em></label>
+                  <label class="multi-toggle" id="multiToggleWrap" hidden>
+                    <input id="isMulti" name="is_multi" type="checkbox" />
+                    <span class="multi-toggle-track" aria-hidden="true"></span>
+                    <span>MULTI</span>
+                  </label>
+                </div>
+                <input id="plano" name="plano" placeholder="Ex.: 500 Mega + Wi-Fi" required />
+                <small class="error">Informe o plano contratado.</small>
+              </div>
+              <div class="price-grid">
+                <label class="field" id="internetValueField" hidden><span>Valor Internet <em>*</em></span><div class="input-prefix"><b>R$</b><input id="valorInternet" name="valor_internet" inputmode="decimal" placeholder="0,00" /></div><small class="error">Informe o valor da internet.</small></label>
+                <label class="field" id="mobileValueField" hidden><span>Valor Móvel <em>*</em></span><div class="input-prefix"><b>R$</b><input id="valorMovel" name="valor_movel" inputmode="decimal" placeholder="0,00" /></div><small class="error">Informe o valor móvel do MULTI.</small></label>
+                <label class="field" id="totalValueField"><span>Valor Total <em>*</em></span><div class="input-prefix"><b>R$</b><input id="valorTotal" name="valor_total" inputmode="decimal" placeholder="0,00" required /></div><small class="error">Informe o valor total do plano.</small></label>
+                <label class="field"><span>Valor Promo <small>(opcional)</small></span><div class="input-prefix"><b>R$</b><input id="valorPromo" name="valor_promo" inputmode="decimal" placeholder="0,00" /></div><small class="error">O valor promo deve ser menor ou igual ao total.</small></label>
               </div>
               <label class="field"><span>Vencimento <em>*</em></span><select name="vencimento" required><option value="">Selecione o dia</option><option>Dia 05</option><option>Dia 10</option><option>Dia 15</option><option>Dia 20</option><option>Dia 25</option></select><small class="error">Selecione o vencimento.</small></label>
             </div>
