@@ -8,6 +8,14 @@ const valorInternet = document.querySelector('#valorInternet');
 const valorMovel = document.querySelector('#valorMovel');
 const valorTotal = document.querySelector('#valorTotal');
 const valorPromo = document.querySelector('#valorPromo');
+const legacyPromoField = document.querySelector('#legacyPromoField');
+const hasPromotion = document.querySelector('#hasPromotion');
+const promotionToggleField = document.querySelector('#promotionToggleField');
+const promotionMonths = document.querySelector('#promotionMonths');
+const promotionMonthsField = document.querySelector('#promotionMonthsField');
+const postPromoValue = document.querySelector('#postPromoValue');
+const postPromoValueField = document.querySelector('#postPromoValueField');
+const promotionNote = document.querySelector('#promotionNote');
 const isMulti = document.querySelector('#isMulti');
 const multiToggleWrap = document.querySelector('#multiToggleWrap');
 const internetValueField = document.querySelector('#internetValueField');
@@ -52,6 +60,32 @@ function recalculateTotal() {
   valorTotal.value = total > 0 ? total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
 }
 
+function syncPromotionMode() {
+  const multi = selectedOperatorIsClaro() && isMulti.checked;
+  const active = multi && hasPromotion.checked;
+
+  legacyPromoField.hidden = multi;
+  promotionToggleField.hidden = !multi;
+  promotionMonthsField.hidden = !active;
+  postPromoValueField.hidden = !active;
+  promotionNote.hidden = !active;
+  promotionMonths.required = active;
+  postPromoValue.required = active;
+
+  if (multi) {
+    valorPromo.value = '';
+  } else {
+    hasPromotion.checked = false;
+    promotionMonths.value = '';
+    postPromoValue.value = '';
+  }
+
+  if (!active) {
+    promotionMonths.value = '';
+    postPromoValue.value = '';
+  }
+}
+
 function syncPricingMode() {
   const claro = selectedOperatorIsClaro();
   multiToggleWrap.hidden = !claro;
@@ -70,11 +104,13 @@ function syncPricingMode() {
     valorMovel.value = '';
     valorTotal.readOnly = false;
   }
+
+  syncPromotionMode();
 }
 
 cpf.addEventListener('input', () => { cpf.value = maskCpf(cpf.value); cpfError.textContent = defaultCpfError; });
 document.querySelectorAll('.phone').forEach((input) => input.addEventListener('input', () => { input.value = maskPhone(input.value); }));
-[valorInternet, valorMovel, valorTotal, valorPromo].forEach((input) => input?.addEventListener('input', () => {
+[valorInternet, valorMovel, valorTotal, valorPromo, postPromoValue].forEach((input) => input?.addEventListener('input', () => {
   formatMoneyInput(input);
   if (input === valorInternet || input === valorMovel) recalculateTotal();
 }));
@@ -83,6 +119,7 @@ isMulti.addEventListener('change', () => {
   if (!isMulti.checked) valorMovel.value = '';
   syncPricingMode();
 });
+hasPromotion.addEventListener('change', syncPromotionMode);
 form.addEventListener('input', (event) => event.target.closest('.field')?.classList.remove('invalid'));
 
 form.addEventListener('submit', async (event) => {
@@ -105,7 +142,10 @@ form.addEventListener('submit', async (event) => {
   const mobileValue = multi ? moneyValue(valorMovel) : null;
   const totalValue = claro ? internetValue + (mobileValue || 0) : moneyValue(valorTotal);
   const promoRaw = data.get('valor_promo')?.trim() || '';
-  const promoValue = promoRaw ? parseMoney(promoRaw) : null;
+  const promoValue = !multi && promoRaw ? parseMoney(promoRaw) : null;
+  const promotionActive = multi && hasPromotion.checked;
+  const promotionDuration = promotionActive ? Number(promotionMonths.value) : null;
+  const afterPromotionValue = promotionActive ? moneyValue(postPromoValue) : null;
 
   if (promoValue !== null && (promoValue <= 0 || promoValue > totalValue)) {
     valorPromo.closest('.field').classList.add('invalid');
@@ -115,7 +155,16 @@ form.addEventListener('submit', async (event) => {
     return;
   }
 
-  const sale = { seller_id: user.id, origin: isPartner ? 'parceiro' : 'interna', operator_id: data.get('operadora'), plan_name: data.get('plano').trim(), is_multi: multi, internet_value: internetValue, mobile_value: mobileValue, value: totalValue, promo_value: promoValue, due_day: Number(digits(data.get('vencimento'))), customer_name: data.get('nome').trim(), mother_name: data.get('mae').trim(), birth_date: data.get('nascimento'), cpf: digits(data.get('cpf')), full_address: data.get('endereco').trim(), address_complement: data.get('complemento').trim() || null, phone_1: digits(data.get('telefone1')), phone_2: digits(data.get('telefone2')) || null, email: data.get('email').trim().toLowerCase() };
+  if (promotionActive && (promotionDuration < 1 || promotionDuration > 24 || afterPromotionValue <= totalValue)) {
+    if (promotionDuration < 1 || promotionDuration > 24) promotionMonthsField.classList.add('invalid');
+    if (afterPromotionValue <= totalValue) postPromoValueField.classList.add('invalid');
+    (promotionDuration < 1 || promotionDuration > 24 ? promotionMonths : postPromoValue).focus();
+    submitButton.disabled = false;
+    submitButton.querySelector('span').textContent = isPartner ? 'Enviar indicação' : 'Salvar venda';
+    return;
+  }
+
+  const sale = { seller_id: user.id, origin: isPartner ? 'parceiro' : 'interna', operator_id: data.get('operadora'), plan_name: data.get('plano').trim(), is_multi: multi, internet_value: internetValue, mobile_value: mobileValue, value: totalValue, promo_value: promoValue, has_promotion: promotionActive, promotion_months: promotionDuration, post_promo_value: afterPromotionValue, due_day: Number(digits(data.get('vencimento'))), customer_name: data.get('nome').trim(), mother_name: data.get('mae').trim(), birth_date: data.get('nascimento'), cpf: digits(data.get('cpf')), full_address: data.get('endereco').trim(), address_complement: data.get('complemento').trim() || null, phone_1: digits(data.get('telefone1')), phone_2: digits(data.get('telefone2')) || null, email: data.get('email').trim().toLowerCase() };
   const { error } = await window.supabaseClient.from('sales').insert(sale);
 
   submitButton.disabled = false;

@@ -27,6 +27,11 @@
       .price-grid .field>span{white-space:nowrap}
       .price-grid .optional-inline{display:inline;font-size:10px;font-weight:400;color:#8993a6}
       .price-grid input[readonly]{background:#f4f6f9;color:#536078;cursor:not-allowed}
+      .promotion-toggle-field{display:flex;flex-direction:column;gap:7px}
+      .promotion-check{display:flex;align-items:center;justify-content:space-between;min-height:42px;padding:0 12px;border:1px solid #d9dee7;border-radius:9px;background:#fff;cursor:pointer}
+      .promotion-check span{font-size:12px;font-weight:700;color:#273349}
+      .promotion-check input{width:20px;height:20px;accent-color:#f36b21;cursor:pointer}
+      .promotion-note{grid-column:span 2;margin:-2px 0 0;padding:10px 12px;border-radius:8px;background:#fff7f2;color:#a44216;font-size:11px;line-height:1.4}
       [hidden]{display:none!important}
       @media(max-width:900px){.price-grid{grid-column:span 1;grid-template-columns:repeat(2,minmax(0,1fr))}}
       @media(max-width:600px){.price-grid{grid-column:1;grid-template-columns:1fr 1fr;gap:10px}.plan-input-row{grid-template-columns:minmax(0,1fr) 104px}.multi-toggle{padding:0 9px;gap:7px}.multi-toggle-track{width:38px;height:22px}.multi-toggle-track::after{width:16px;height:16px}.multi-toggle input:checked+.multi-toggle-track::after{transform:translateX(16px)}}
@@ -80,7 +85,14 @@
                 <label class="field" id="internetValueField" hidden><span>Valor Internet <em>*</em></span><div class="input-prefix"><b>R$</b><input id="valorInternet" name="valor_internet" inputmode="decimal" placeholder="0,00" /></div><small class="error">Informe o valor da internet.</small></label>
                 <label class="field" id="mobileValueField" hidden><span>Valor Móvel <em>*</em></span><div class="input-prefix"><b>R$</b><input id="valorMovel" name="valor_movel" inputmode="decimal" placeholder="0,00" /></div><small class="error">Informe o valor móvel do MULTI.</small></label>
                 <label class="field" id="totalValueField"><span>Valor Total <em>*</em></span><div class="input-prefix"><b>R$</b><input id="valorTotal" name="valor_total" inputmode="decimal" placeholder="0,00" required /></div><small class="error">Informe o valor total do plano.</small></label>
-                <label class="field"><span>Valor Promo <small class="optional-inline">(opcional)</small></span><div class="input-prefix"><b>R$</b><input id="valorPromo" name="valor_promo" inputmode="decimal" placeholder="0,00" /></div><small class="error">O valor promo deve ser menor ou igual ao total.</small></label>
+                <label class="field" id="legacyPromoField"><span>Valor Promo <small class="optional-inline">(opcional)</small></span><div class="input-prefix"><b>R$</b><input id="valorPromo" name="valor_promo" inputmode="decimal" placeholder="0,00" /></div><small class="error">O valor promo deve ser menor ou igual ao total.</small></label>
+                <div class="field promotion-toggle-field" id="promotionToggleField" hidden>
+                  <span>Desconto por período</span>
+                  <label class="promotion-check"><span>Possui promoção?</span><input id="hasPromotion" name="has_promotion" type="checkbox" /></label>
+                </div>
+                <label class="field" id="promotionMonthsField" hidden><span>Duração <small class="optional-inline">(meses)</small> <em>*</em></span><input id="promotionMonths" name="promotion_months" type="number" min="1" max="24" inputmode="numeric" placeholder="Ex.: 6" /><small class="error">Informe de 1 a 24 meses.</small></label>
+                <label class="field" id="postPromoValueField" hidden><span>Total após promoção <em>*</em></span><div class="input-prefix"><b>R$</b><input id="postPromoValue" name="post_promo_value" inputmode="decimal" placeholder="0,00" /></div><small class="error">Deve ser maior que o total inicial.</small></label>
+                <p class="promotion-note" id="promotionNote" hidden>O Total inicial será cobrado durante o período informado. Depois, será aplicado o Total após a promoção.</p>
               </div>
               <label class="field"><span>Vencimento <em>*</em></span><select name="vencimento" required><option value="">Selecione o dia</option><option>Dia 05</option><option>Dia 10</option><option>Dia 15</option><option>Dia 20</option><option>Dia 25</option></select><small class="error">Selecione o vencimento.</small></label>
             </div>
