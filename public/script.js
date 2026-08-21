@@ -4,9 +4,16 @@ const cpf = document.querySelector('#cpf');
 const cpfField = cpf.closest('.field');
 const cpfError = cpfField.querySelector('.error');
 const defaultCpfError = cpfError.textContent;
-const valor = document.querySelector('#valor');
+const valorInternet = document.querySelector('#valorInternet');
+const valorMovel = document.querySelector('#valorMovel');
+const valorTotal = document.querySelector('#valorTotal');
 const valorPromo = document.querySelector('#valorPromo');
+const isMulti = document.querySelector('#isMulti');
+const multiToggleWrap = document.querySelector('#multiToggleWrap');
+const internetValueField = document.querySelector('#internetValueField');
+const mobileValueField = document.querySelector('#mobileValueField');
 const operatorSelect = form.elements.operadora;
+let availableOperators = [];
 const submitButton = document.querySelector('#submitButton');
 
 function digits(value) { return value.replace(/\D/g, ''); }
@@ -23,16 +30,59 @@ async function loadOperators() {
   if (!user) return;
   const { data, error } = await window.supabaseClient.from('operators').select('id, name').eq('active', true).order('name');
   if (error) { operatorSelect.innerHTML = '<option value="">Não foi possível carregar</option>'; showToast('Falha na conexão', 'Atualize a página e tente novamente.', true); return; }
-  const operators = user.profile.role === 'parceiro' ? data.filter((item) => item.name.toLowerCase() === 'claro') : data;
-  operatorSelect.innerHTML = '<option value="">Selecione a operadora</option>' + operators.map((item) => `<option value="${item.id}">${item.name}</option>`).join('');
-  if (user.profile.role === 'parceiro' && operators.length === 1) operatorSelect.value = operators[0].id;
+  availableOperators = user.profile.role === 'parceiro' ? data.filter((item) => item.name.toLowerCase() === 'claro') : data;
+  operatorSelect.innerHTML = '<option value="">Selecione a operadora</option>' + availableOperators.map((item) => `<option value="${item.id}">${item.name}</option>`).join('');
+  if (user.profile.role === 'parceiro' && availableOperators.length === 1) operatorSelect.value = availableOperators[0].id;
   operatorSelect.disabled = false;
+  syncPricingMode();
+}
+
+function selectedOperatorIsClaro() {
+  const selected = availableOperators.find((item) => item.id === operatorSelect.value);
+  return selected?.name.trim().toLowerCase() === 'claro';
+}
+
+function moneyValue(input) {
+  return input.value.trim() ? parseMoney(input.value) : 0;
+}
+
+function recalculateTotal() {
+  if (!selectedOperatorIsClaro()) return;
+  const total = moneyValue(valorInternet) + (isMulti.checked ? moneyValue(valorMovel) : 0);
+  valorTotal.value = total > 0 ? total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+}
+
+function syncPricingMode() {
+  const claro = selectedOperatorIsClaro();
+  multiToggleWrap.hidden = !claro;
+  internetValueField.hidden = !claro;
+  mobileValueField.hidden = !claro || !isMulti.checked;
+  valorInternet.required = claro;
+  valorMovel.required = claro && isMulti.checked;
+  valorTotal.readOnly = claro;
+  valorTotal.required = true;
+
+  if (claro) {
+    recalculateTotal();
+  } else {
+    isMulti.checked = false;
+    valorInternet.value = '';
+    valorMovel.value = '';
+    valorTotal.readOnly = false;
+  }
 }
 
 cpf.addEventListener('input', () => { cpf.value = maskCpf(cpf.value); cpfError.textContent = defaultCpfError; });
 document.querySelectorAll('.phone').forEach((input) => input.addEventListener('input', () => { input.value = maskPhone(input.value); }));
-valor.addEventListener('input', () => formatMoneyInput(valor));
-valorPromo?.addEventListener('input', () => formatMoneyInput(valorPromo));
+[valorInternet, valorMovel, valorTotal, valorPromo].forEach((input) => input?.addEventListener('input', () => {
+  formatMoneyInput(input);
+  if (input === valorInternet || input === valorMovel) recalculateTotal();
+}));
+operatorSelect.addEventListener('change', syncPricingMode);
+isMulti.addEventListener('change', () => {
+  if (!isMulti.checked) valorMovel.value = '';
+  syncPricingMode();
+});
 form.addEventListener('input', (event) => event.target.closest('.field')?.classList.remove('invalid'));
 
 form.addEventListener('submit', async (event) => {
@@ -49,8 +99,23 @@ form.addEventListener('submit', async (event) => {
   submitButton.querySelector('span').textContent = 'Salvando...';
 
   const data = new FormData(form);
+  const claro = selectedOperatorIsClaro();
+  const multi = claro && isMulti.checked;
+  const internetValue = claro ? moneyValue(valorInternet) : null;
+  const mobileValue = multi ? moneyValue(valorMovel) : null;
+  const totalValue = claro ? internetValue + (mobileValue || 0) : moneyValue(valorTotal);
   const promoRaw = data.get('valor_promo')?.trim() || '';
-  const sale = { seller_id: user.id, origin: isPartner ? 'parceiro' : 'interna', operator_id: data.get('operadora'), plan_name: data.get('plano').trim(), value: parseMoney(data.get('valor')), promo_value: promoRaw ? parseMoney(promoRaw) : null, due_day: Number(digits(data.get('vencimento'))), customer_name: data.get('nome').trim(), mother_name: data.get('mae').trim(), birth_date: data.get('nascimento'), cpf: digits(data.get('cpf')), full_address: data.get('endereco').trim(), address_complement: data.get('complemento').trim() || null, phone_1: digits(data.get('telefone1')), phone_2: digits(data.get('telefone2')) || null, email: data.get('email').trim().toLowerCase() };
+  const promoValue = promoRaw ? parseMoney(promoRaw) : null;
+
+  if (promoValue !== null && (promoValue <= 0 || promoValue > totalValue)) {
+    valorPromo.closest('.field').classList.add('invalid');
+    valorPromo.focus();
+    submitButton.disabled = false;
+    submitButton.querySelector('span').textContent = isPartner ? 'Enviar indicação' : 'Salvar venda';
+    return;
+  }
+
+  const sale = { seller_id: user.id, origin: isPartner ? 'parceiro' : 'interna', operator_id: data.get('operadora'), plan_name: data.get('plano').trim(), is_multi: multi, internet_value: internetValue, mobile_value: mobileValue, value: totalValue, promo_value: promoValue, due_day: Number(digits(data.get('vencimento'))), customer_name: data.get('nome').trim(), mother_name: data.get('mae').trim(), birth_date: data.get('nascimento'), cpf: digits(data.get('cpf')), full_address: data.get('endereco').trim(), address_complement: data.get('complemento').trim() || null, phone_1: digits(data.get('telefone1')), phone_2: digits(data.get('telefone2')) || null, email: data.get('email').trim().toLowerCase() };
   const { error } = await window.supabaseClient.from('sales').insert(sale);
 
   submitButton.disabled = false;
@@ -63,9 +128,10 @@ form.addEventListener('submit', async (event) => {
 
   showToast(isPartner ? 'Indicação enviada!' : 'Venda cadastrada!', isPartner ? 'Os dados foram gravados e já estão em Minhas indicações.' : 'Os dados foram gravados e já estão em Minhas vendas.');
   form.reset();
+  syncPricingMode();
   setTimeout(() => { window.location.href = 'vendas.html'; }, 1400);
 });
 
-document.querySelector('#clearButton').addEventListener('click', () => { if (confirm('Deseja limpar todos os campos preenchidos?')) { form.reset(); cpfError.textContent = defaultCpfError; form.querySelectorAll('.invalid').forEach((element) => element.classList.remove('invalid')); } });
+document.querySelector('#clearButton').addEventListener('click', () => { if (confirm('Deseja limpar todos os campos preenchidos?')) { form.reset(); syncPricingMode(); cpfError.textContent = defaultCpfError; form.querySelectorAll('.invalid').forEach((element) => element.classList.remove('invalid')); } });
 document.querySelector('#menuButton').addEventListener('click', () => document.querySelector('#sidebar').classList.toggle('open'));
 loadOperators();
