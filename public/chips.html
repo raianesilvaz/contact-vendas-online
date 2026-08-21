@@ -50,13 +50,19 @@
             <select id="chipPeriodFilter" aria-label="Filtrar por período da instalação">
               <option value="15">Últimos 15 dias</option>
               <option value="30" selected>Últimos 30 dias</option>
-              <option value="specific">Data específica</option>
+              <option value="custom">Período personalizado</option>
             </select>
           </label>
-          <label class="chip-specific-date" id="chipSpecificDateBox" hidden>
-            <span>Data</span>
-            <input type="date" id="chipSpecificDate" aria-label="Data específica da instalação">
-          </label>
+          <div class="chip-custom-range" id="chipCustomRange" hidden>
+            <label class="chip-specific-date">
+              <span>De</span>
+              <input type="date" id="chipStartDate" aria-label="Data inicial da instalação">
+            </label>
+            <label class="chip-specific-date">
+              <span>Até</span>
+              <input type="date" id="chipEndDate" aria-label="Data final da instalação">
+            </label>
+          </div>
         </div>
       </div>
       <section class="chip-overview" aria-label="Resumo geral dos chips">
