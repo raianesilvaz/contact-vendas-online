@@ -36,9 +36,14 @@
         </section>
         <section class="sales-period-bar" aria-label="Filtrar vendas por período">
           <strong>Período do lançamento</strong>
+          <label class="sales-responsible-filter" id="salesResponsibleBox" hidden>
+            <span>Responsável</span>
+            <select id="salesResponsibleFilter" aria-label="Filtrar por vendedor ou parceiro">
+              <option value="all">Todos os responsáveis</option>
+            </select>
+          </label>
           <label><span>De</span><input id="salesStartDate" type="date" aria-label="Data inicial do lançamento"></label>
           <label><span>Até</span><input id="salesEndDate" type="date" aria-label="Data final do lançamento"></label>
-          <button type="button" class="sales-period-apply" id="salesPeriodApply">Aplicar</button>
           <button type="button" class="sales-period-clear" id="salesPeriodClear">Limpar</button>
         </section>
         <section class="queue-toolbar">
