@@ -9,7 +9,7 @@ const createCard = document.querySelector('#userCreateCard');
 const userForm = document.querySelector('#userForm');
 const toast = document.querySelector('#toast');
 
-const roleLabels = { vendedora: 'Vendedor', parceiro: 'Parceiro', admin: 'Administrador' };
+const roleLabels = { vendedora: 'Vendedor', parceiro: 'Parceiro', financeiro: 'Financeiro', admin: 'Administrador' };
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
 const initials = name => String(name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase();
 const formatDate = value => value ? new Date(value).toLocaleString('pt-BR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : 'Nunca acessou';
@@ -175,11 +175,11 @@ async function changeRole(user) {
     return;
   }
   const currentLabel = roleLabels[user.role] || user.role;
-  const nextRole = window.prompt(`Perfil atual de ${user.full_name}: ${currentLabel}\n\nDigite 1 para Vendedor, 2 para Parceiro ou 3 para Administrador:`);
+  const nextRole = window.prompt(`Perfil atual de ${user.full_name}: ${currentLabel}\n\nDigite 1 para Vendedor, 2 para Parceiro, 3 para Financeiro ou 4 para Administrador:`);
   if (nextRole === null) return;
-  const role = nextRole.trim() === '1' ? 'vendedora' : nextRole.trim() === '2' ? 'parceiro' : nextRole.trim() === '3' ? 'admin' : null;
+  const role = nextRole.trim() === '1' ? 'vendedora' : nextRole.trim() === '2' ? 'parceiro' : nextRole.trim() === '3' ? 'financeiro' : nextRole.trim() === '4' ? 'admin' : null;
   if (!role) {
-    showToast('Perfil inválido', 'Digite 1 para Vendedor, 2 para Parceiro ou 3 para Administrador.', true);
+    showToast('Perfil inválido', 'Digite 1 para Vendedor, 2 para Parceiro, 3 para Financeiro ou 4 para Administrador.', true);
     return;
   }
   if (role === user.role) {
