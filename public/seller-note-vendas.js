@@ -1,11 +1,10 @@
 (()=>{
-  if(!window.supabaseClient)return;
   const escapeHtml=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
-  let requestId=0;
 
-  async function sync(){
+  function sync(){
     const panel=document.querySelector('#detailPanel');
     if(!panel?.classList.contains('open'))return;
+
     const headerText=panel.querySelector('.detail-header p')?.textContent||'';
     const match=headerText.match(/Venda\s*#(\d+)/i);
     if(!match)return;
@@ -19,14 +18,15 @@
     });
 
     panel.querySelector('.seller-note-sale')?.remove();
-    const current=++requestId;
+
     const protocol=Number(match[1]);
-    const {data,error}=await window.supabaseClient.from('sales').select('seller_note').eq('protocol',protocol).maybeSingle();
-    if(current!==requestId||error||!data?.seller_note?.trim())return;
+    const sale=typeof sales!=='undefined'&&Array.isArray(sales)?sales.find(item=>Number(item.protocol)===protocol):null;
+    const note=sale?.seller_note?.trim();
+    if(!note)return;
 
     const box=document.createElement('div');
     box.className='seller-note-sale detail-item wide';
-    box.innerHTML=`<span>Observação da venda</span><strong>${escapeHtml(data.seller_note.trim())}</strong>`;
+    box.innerHTML=`<span>Observação da venda</span><strong>${escapeHtml(note)}</strong>`;
     grid.appendChild(box);
   }
 
