@@ -34,6 +34,13 @@
           <article><span class="summary-icon approved">✓</span><div><strong id="connectedCount">0</strong><small>Conectadas</small></div></article>
           <article><span class="summary-icon rejected">×</span><div><strong id="rejectedCount">0</strong><small>Reprovadas</small></div></article>
         </section>
+        <section class="sales-period-bar" aria-label="Filtrar vendas por período">
+          <strong>Período do lançamento</strong>
+          <label><span>De</span><input id="salesStartDate" type="date" aria-label="Data inicial do lançamento"></label>
+          <label><span>Até</span><input id="salesEndDate" type="date" aria-label="Data final do lançamento"></label>
+          <button type="button" class="sales-period-apply" id="salesPeriodApply">Aplicar</button>
+          <button type="button" class="sales-period-clear" id="salesPeriodClear">Limpar</button>
+        </section>
         <section class="queue-toolbar">
           <label class="search-box"><span>⌕</span><input id="saleSearch" type="search" placeholder="Buscar por cliente, CPF ou plano" aria-label="Buscar vendas" /></label>
           <div class="filter-tabs" id="filterTabs" aria-label="Filtrar por status"><button class="active" data-filter="todos">Todos</button><button data-filter="pendente">Aguardando análise</button><button data-filter="em_analise">Em análise</button><button data-filter="pendente_aceite">Aceite pendente</button><button data-filter="conectado">Conectados</button><button data-filter="reprovada">Reprovados</button><button data-filter="cancelada">Cancelados</button></div>
