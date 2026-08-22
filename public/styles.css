@@ -89,3 +89,14 @@
 .acceptance-toggle:has(input:checked){border-color:#73c7a0;background:#e7f8ef}
 .acceptance-toggle:has(input:disabled){opacity:.65;cursor:wait}
 @media(max-width:600px){.card-top{align-items:flex-start}.card-badges{gap:5px}.acceptance-badge{font-size:8px}}
+
+/* Filtro por período em Minhas vendas / Minhas indicações */
+.sales-period-bar{display:flex;align-items:center;justify-content:flex-end;gap:9px;margin:-3px 0 13px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.sales-period-bar>strong{margin-right:auto;color:#536174;font-size:11px}
+.sales-period-bar label{display:flex;align-items:center;gap:7px;color:#758196;font-size:10px;font-weight:700}
+.sales-period-bar input{height:36px;padding:0 9px;border:1px solid #dce2e9;border-radius:8px;background:#f9fafb;color:#263244;font:inherit;font-size:11px;outline:none}
+.sales-period-bar input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(243,108,33,.1)}
+.sales-period-bar button{height:36px;padding:0 13px;border-radius:8px;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.sales-period-apply{border:1px solid var(--orange);background:var(--orange);color:#fff}
+.sales-period-clear{border:1px solid #dce2e9;background:#fff;color:#667386}
+@media(max-width:720px){.sales-period-bar{align-items:stretch;flex-wrap:wrap}.sales-period-bar>strong{width:100%;margin:0}.sales-period-bar label{flex:1}.sales-period-bar input{width:100%;min-width:0}.sales-period-bar button{flex:1}}
