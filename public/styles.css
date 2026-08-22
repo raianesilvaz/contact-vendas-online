@@ -100,3 +100,8 @@
 .sales-period-apply{border:1px solid var(--orange);background:var(--orange);color:#fff}
 .sales-period-clear{border:1px solid #dce2e9;background:#fff;color:#667386}
 @media(max-width:720px){.sales-period-bar{align-items:stretch;flex-wrap:wrap}.sales-period-bar>strong{width:100%;margin:0}.sales-period-bar label{flex:1}.sales-period-bar input{width:100%;min-width:0}.sales-period-bar button{flex:1}}
+
+.sales-period-bar select{height:36px;min-width:185px;padding:0 30px 0 9px;border:1px solid #dce2e9;border-radius:8px;background:#f9fafb;color:#263244;font:inherit;font-size:11px;font-weight:600;outline:none;cursor:pointer}
+.sales-period-bar select:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(243,108,33,.1)}
+.sales-responsible-filter[hidden]{display:none}
+@media(max-width:900px){.sales-period-bar>strong{width:100%;margin:0}.sales-responsible-filter{flex:1 1 100%}.sales-responsible-filter select{flex:1;min-width:0}}
