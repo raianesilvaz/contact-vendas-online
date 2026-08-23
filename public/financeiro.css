@@ -23,3 +23,6 @@
 
 /* Percentuais dos gráficos: mantém 100,0% dentro do círculo */
 .risk-donut strong{font-size:16px;line-height:1;white-space:nowrap;letter-spacing:-.04em}
+
+/* Percentual compacto e centralizado */
+.risk-donut strong{font-size:15px;letter-spacing:-.03em;text-align:center;width:100%}
