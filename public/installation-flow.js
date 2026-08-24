@@ -1,6 +1,6 @@
 (() => {
   const path = location.pathname.split('/').pop() || '';
-  if (!['bko.html','vendas.html'].includes(path)) return;
+  if (path !== 'bko.html') return;
 
   const style = document.createElement('style');
   style.textContent = `
