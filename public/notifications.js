@@ -2,6 +2,9 @@
   let notificationChannel = null;
   let notifications = [];
   let toastTimer = null;
+  const notificationAudio = new Audio('notification-crystal.mp3?v=20260824');
+  notificationAudio.preload = 'auto';
+  notificationAudio.volume = 0.28;
 
   const iconByType = { new_sale: '🛒', status_changed: '🔄', sale_cancelled: '⚠️' };
   const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
@@ -14,6 +17,28 @@
     if (hours < 24) return `${hours} h`;
     return `${Math.floor(hours / 24)} d`;
   };
+
+  function unlockNotificationAudio() {
+    notificationAudio.muted = true;
+    const attempt = notificationAudio.play();
+    if (attempt?.then) {
+      attempt.then(() => {
+        notificationAudio.pause();
+        notificationAudio.currentTime = 0;
+        notificationAudio.muted = false;
+      }).catch(() => { notificationAudio.muted = false; });
+    } else {
+      notificationAudio.muted = false;
+    }
+    document.removeEventListener('pointerdown', unlockNotificationAudio);
+    document.removeEventListener('keydown', unlockNotificationAudio);
+  }
+
+  function playNotificationSound() {
+    notificationAudio.muted = false;
+    notificationAudio.currentTime = 0;
+    notificationAudio.play().catch(() => {});
+  }
 
   function buildUi() {
     if (document.querySelector('#notificationBell')) return;
@@ -149,7 +174,7 @@
       .on('postgres_changes', { event:'INSERT', schema:'public', table:'notifications', filter:`user_id=eq.${user.id}` }, payload => {
         const item = payload.new;
         notifications = [item, ...notifications.filter(row => row.id !== item.id)].slice(0,100);
-        render(); showToast(item);
+        render(); showToast(item); playNotificationSound();
       })
       .on('postgres_changes', { event:'UPDATE', schema:'public', table:'notifications', filter:`user_id=eq.${user.id}` }, payload => {
         notifications = notifications.map(row => row.id === payload.new.id ? payload.new : row); render();
@@ -157,6 +182,8 @@
   }
 
   window.initNotifications = async () => {
+    document.addEventListener('pointerdown', unlockNotificationAudio, { once:true });
+    document.addEventListener('keydown', unlockNotificationAudio, { once:true });
     buildUi();
     await loadNotifications();
     setupRealtime();
