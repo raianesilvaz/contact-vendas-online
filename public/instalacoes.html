@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="instalacoes.css?v=20260824-compact-dates">
+  <link rel="stylesheet" href="instalacoes.css?v=20260824-history-button">
 </head>
 <body>
   <aside class="sidebar" id="sidebar">
@@ -38,7 +38,7 @@
     <div class="content installations-content">
       <div class="installations-heading">
         <div><span class="eyebrow">INSTALAÇÕES</span><h1>Gestão de instalações</h1><p>Acompanhe as vendas que aguardam a instalação da Internet.</p></div>
-        <div class="installation-heading-actions"><label class="installation-filter"><span>Previsão</span><select id="installationFilter" aria-label="Filtrar pela previsão da instalação"><option value="all">Todas</option><option value="overdue">Atrasadas</option><option value="today">Hoje</option><option value="upcoming">Próximas</option><option value="unscheduled">Sem previsão</option></select></label><span class="installation-scope"><strong id="pendingCount">0</strong> aguardando instalação</span></div>
+        <div class="installation-heading-actions"><a class="installation-history-link" href="historico-instalacoes.html">Histórico de instalações</a><label class="installation-filter"><span>Previsão</span><select id="installationFilter" aria-label="Filtrar pela previsão da instalação"><option value="all">Todas</option><option value="overdue">Atrasadas</option><option value="today">Hoje</option><option value="upcoming">Próximas</option><option value="unscheduled">Sem previsão</option></select></label><span class="installation-scope"><strong id="pendingCount">0</strong> aguardando instalação</span></div>
       </div>
       <div class="installation-date-filter" aria-label="Filtrar por período da previsão"><strong>Período da previsão</strong><label><span>De</span><input id="installationDateFrom" type="date"></label><label><span>Até</span><input id="installationDateTo" type="date"></label><button id="clearInstallationDates" type="button">Limpar</button></div><section class="installations-list" id="installationsList"><div class="installations-loading">Carregando instalações pendentes...</div></section>
     </div>
