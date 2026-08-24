@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#151921">
+  <title>GERAL — CONTACT</title><link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="geral.css?v=20260824-1">
+</head>
+<body>
+<aside class="sidebar" id="sidebar"><div class="brand"><span class="brand-mark">C</span><span class="brand-name">CONTACT</span></div>
+<nav aria-label="Menu principal">
+<a class="nav-item" href="painel.html"><span>◫</span><span>Painel</span></a>
+<a class="nav-item" href="vendas.html"><span>▤</span><span>Minhas vendas</span></a>
+<a class="nav-item" href="chips.html"><span>▣</span><span>Gestão de chips <small class="beta">BETA</small></span></a>
+<a class="nav-item" href="instalacoes.html" data-admin-only hidden><span>▦</span><span>Gestão de instalações</span></a>
+<a class="nav-item" href="bko.html" data-admin-only hidden><span>☷</span><span>Fila BKO</span></a>
+<a class="nav-item" href="financeiro.html" data-admin-only hidden><span>▦</span><span>Financeiro <small class="beta">BETA</small></span></a>
+<a class="nav-item" href="faturamento.html" data-admin-only hidden><span>▥</span><span>Faturamento <small class="beta">BETA</small></span></a>
+<a class="nav-item active" href="geral.html" data-admin-only hidden><span>▦</span><span>GERAL</span></a>
+<span class="nav-section-title" data-admin-only hidden>CONFIGURAÇÕES</span>
+<a class="nav-item" href="usuarios.html" data-admin-only hidden><span>♙</span><span>Usuários</span></a>
+<a class="nav-item" href="saude.html" data-admin-only hidden><span>♡</span><span>Saúde do sistema</span></a>
+</nav><div class="user-mini"><div class="avatar" data-user-initials>--</div><div><strong data-user-name>Carregando...</strong><small data-user-role>Usuário</small></div><button class="logout-button" data-logout aria-label="Sair">↪</button></div></aside>
+<main><header class="topbar"><button class="menu-button" id="menuButton" aria-label="Abrir menu">☰</button><div class="topbar-title"><span>Operação</span><b>/</b><strong>GERAL</strong></div><div class="profile"><div class="avatar" data-user-initials>--</div><span data-user-name>Carregando...</span></div></header>
+<div class="content geral-content">
+<div class="geral-heading"><div><span class="eyebrow">CONTROLE DE VENDAS</span><h1>GERAL</h1><p>Visão completa e somente leitura das vendas do sistema.</p></div><span class="readonly-badge">Somente leitura</span></div>
+<section class="summary-grid">
+<div><span>Total de registros</span><strong id="sumTotal">0</strong></div><div><span>Conectadas</span><strong id="sumConnected">0</strong></div><div><span>Pendentes</span><strong id="sumPending">0</strong></div><div><span>Reprovadas</span><strong id="sumRejected">0</strong></div><div><span>Canceladas</span><strong id="sumCanceled">0</strong></div><div><span>Valor total</span><strong id="sumValue">R$ 0,00</strong></div>
+</section>
+<section class="general-filters"><label><span>Mês do lançamento</span><input id="monthFilter" type="month"></label><label class="search"><span>Buscar</span><input id="searchFilter" type="search" placeholder="Cliente, CPF ou contrato"></label><label><span>Status</span><select id="statusFilter"><option value="">Todos</option></select></label><label><span>Operadora</span><select id="operatorFilter"><option value="">Todas</option></select></label><label><span>Responsável</span><select id="sellerFilter"><option value="">Todos</option></select></label><button id="clearFilters" type="button">Limpar</button></section>
+<section class="table-card"><div class="table-meta"><strong>Vendas do período</strong><span id="recordCount">0 registros exibidos</span></div><div class="table-scroll"><table><thead><tr><th>Data</th><th>Cliente</th><th>CPF</th><th>Status</th><th>Contrato</th><th>Operadora</th><th>Previsão</th><th>Instalação real</th><th>Responsável</th><th>Plano</th><th>Valor</th><th>Venc.</th><th>MULTI</th><th>Chip ativo</th><th>Aceite</th><th>OBS BKO</th></tr></thead><tbody id="generalTableBody"><tr><td colspan="16" class="empty">Carregando vendas...</td></tr></tbody></table></div></section>
+</div></main>
+<div class="general-toast" id="generalToast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script><script src="supabase-config.js"></script><script src="auth-access-v2.js?v=20260824-geral"></script><script src="geral.js?v=20260824-1"></script>
+</body></html>
