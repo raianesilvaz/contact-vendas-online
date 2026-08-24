@@ -1,5 +1,5 @@
+.contract-schedule-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:end}
+.contract-schedule-row:not(.has-schedule) .contract-field{grid-column:1/-1}
 .installation-schedule-field[hidden],.installation-window-field[hidden]{display:none}
-.installation-window-field{align-items:flex-start}
-.installation-window-field select{width:min(100%,360px)}
-.installation-window-field small{display:block;margin-top:6px;color:#817694;font-size:10px;line-height:1.35}
-@media(max-width:700px){.installation-window-field select{width:100%}}
+.installation-window-field select{width:100%}
+@media(max-width:760px){.contract-schedule-row{grid-template-columns:1fr}.contract-schedule-row .contract-field,.contract-schedule-row:not(.has-schedule) .contract-field{grid-column:1}}
