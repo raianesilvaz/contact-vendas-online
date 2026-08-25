@@ -1,5 +1,5 @@
 const tbody=document.querySelector('#generalTableBody');
-let sales=[],reloadTimer=null,currentPeriod='month';
+let sales=[],reloadTimer=null,currentPeriod='week';
 
 const statusNames={aguardando_analise:'Aguardando análise',em_analise:'Em análise',aguardando_hp:'Aguardando HP',aguardando_aceite:'Aceite pendente',pendente_instalacao:'Pendente de instalação',conectado:'Conectado',reprovada:'Reprovado',cancelada:'Cancelado'};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
@@ -16,8 +16,6 @@ function periodBounds(){
   let start,end;
   if(currentPeriod==='today'){start=today;end=addDays(today,1)}
   else if(currentPeriod==='week'){const mondayOffset=(today.getDay()+6)%7;start=addDays(today,-mondayOffset);end=addDays(today,1)}
-  else if(currentPeriod==='last7'){start=addDays(today,-6);end=addDays(today,1)}
-  else if(currentPeriod==='month'){start=new Date(today.getFullYear(),today.getMonth(),1);end=new Date(today.getFullYear(),today.getMonth()+1,1)}
   else{
     const startValue=document.querySelector('#startDateFilter').value;
     const endValue=document.querySelector('#endDateFilter').value;
@@ -81,7 +79,7 @@ function selectPeriod(period){
     document.querySelector('#operatorFilter').value='';
     document.querySelector('#sellerFilter').value='';
     startInput.value='';endInput.value='';startInput.max='';endInput.min='';
-    selectPeriod('month');
+    selectPeriod('week');
   });
   await load();
   window.supabaseClient.channel('geral-readonly').on('postgres_changes',{event:'*',schema:'public',table:'sales'},()=>{clearTimeout(reloadTimer);reloadTimer=setTimeout(load,600)}).subscribe();
