@@ -33,9 +33,7 @@
   <span>Período do lançamento</span>
   <div class="period-controls" role="group" aria-label="Filtrar vendas por período">
     <button class="period-option" type="button" data-period="today">Hoje</button>
-    <button class="period-option" type="button" data-period="week">Esta semana</button>
-    <button class="period-option" type="button" data-period="last7">Últimos 7 dias</button>
-    <button class="period-option active" type="button" data-period="month">Este mês</button>
+    <button class="period-option active" type="button" data-period="week">Esta semana</button>
     <button class="period-option" type="button" data-period="custom">Personalizado</button>
     <div class="custom-range" id="customRange" hidden>
       <label><span>De</span><input id="startDateFilter" type="date"></label>
@@ -49,6 +47,6 @@
 <section class="table-card"><div class="table-meta"><strong>Vendas do período</strong><span id="recordCount">0 registros exibidos</span></div><div class="table-scroll"><table><thead><tr><th>Data</th><th>Cliente</th><th>CPF</th><th>Status</th><th>Contrato</th><th>Operadora</th><th>Previsão</th><th>Instalação real</th><th>Responsável</th><th>Plano</th><th>Valor</th><th>Venc.</th><th>MULTI</th><th>Chip ativo</th><th>Aceite</th><th>OBS BKO</th></tr></thead><tbody id="generalTableBody"><tr><td colspan="16" class="empty">Carregando vendas...</td></tr></tbody></table></div></section>
 </div></main>
 <div class="general-toast" id="generalToast"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script><script src="supabase-config.js"></script><script src="auth-access-v2.js?v=20260824-geral"></script><script src="geral.js?v=20260825-periodo"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script><script src="supabase-config.js"></script><script src="auth-access-v2.js?v=20260824-geral"></script><script src="geral.js?v=20260825-periodo-simples"></script>
 <!-- deploy-period-filter -->
 </body></html>
