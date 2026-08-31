@@ -39,9 +39,8 @@ async function loadOperators() {
   if (!user) return;
   const { data, error } = await window.supabaseClient.from('operators').select('id, name').eq('active', true).order('name');
   if (error) { operatorSelect.innerHTML = '<option value="">Não foi possível carregar</option>'; showToast('Falha na conexão', 'Atualize a página e tente novamente.', true); return; }
-  availableOperators = user.profile.role === 'parceiro' ? data.filter((item) => item.name.toLowerCase() === 'claro') : data;
+  availableOperators = data;
   operatorSelect.innerHTML = '<option value="">Selecione a operadora</option>' + availableOperators.map((item) => `<option value="${item.id}">${item.name}</option>`).join('');
-  if (user.profile.role === 'parceiro' && availableOperators.length === 1) operatorSelect.value = availableOperators[0].id;
   operatorSelect.disabled = false;
   syncPricingMode();
 }
