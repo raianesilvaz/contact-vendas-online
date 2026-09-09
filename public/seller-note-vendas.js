@@ -2,6 +2,25 @@
   const escapeHtml=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
   let scheduled=false;
 
+  // Corrige a busca de Minhas Vendas / Minhas Indicações para considerar o contrato.
+  // Mantém exatamente os mesmos filtros de responsável, período e status da tela original.
+  if(typeof render==='function'){
+    render=function(){
+      const term=normalize(search.value.trim());
+      const responsibleSales=responsibleFilter==='all'?sales:sales.filter(s=>s.seller_id===responsibleFilter);
+      const periodSales=responsibleSales.filter(matchesSalesPeriod);
+      const visible=periodSales.filter(s=>(filter==='todos'||s.status===filter)&&normalize(`${s.customer_name} ${s.cpf} ${s.plan_name} ${s.protocol} ${s.contract_number||''}`).includes(term));
+      list.innerHTML=visible.map(card).join('');
+      list.hidden=!visible.length;
+      emptyList.hidden=!!visible.length;
+      document.querySelector('#totalCount').textContent=periodSales.length;
+      document.querySelector('#pendingCount').textContent=periodSales.filter(s=>['pendente','em_analise','aguardando_hp','pendente_aceite','pendente_instalacao'].includes(s.status)).length;
+      document.querySelector('#connectedCount').textContent=periodSales.filter(s=>s.status==='conectado').length;
+      document.querySelector('#rejectedCount').textContent=periodSales.filter(s=>['reprovada','cancelada'].includes(s.status)).length;
+      document.querySelector('#emptyListMessage').textContent=periodSales.length?'Tente alterar a busca ou o filtro selecionado.':sales.length?'Nenhuma venda foi lançada no período selecionado.':'Cadastre a primeira venda para começar o acompanhamento.';
+    };
+  }
+
   function sync(){
     scheduled=false;
     const panel=document.querySelector('#detailPanel');
