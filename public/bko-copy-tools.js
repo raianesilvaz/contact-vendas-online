@@ -1,4 +1,24 @@
 (()=>{
+  // Corrige a busca da Fila BKO para localizar contratos com ou sem prefixos,
+  // hífens e espaços, além de manter nome e CPF funcionando normalmente.
+  if(typeof applySearchFilter==='function'){
+    applySearchFilter=function(query){
+      if(!appliedSearch)return query;
+      const raw=String(appliedSearch||'').trim();
+      const clean=raw.replace(/[,%()]/g,' ').trim();
+      const compact=raw.replace(/[^a-zA-Z0-9]/g,'');
+      const digits=raw.replace(/\D/g,'');
+      const conditions=[`customer_name.ilike.%${clean}%`,`contract_number.ilike.%${clean}%`];
+      if(compact&&compact!==clean)conditions.push(`contract_number.ilike.%${compact}%`);
+      if(digits){
+        conditions.push(`contract_number.ilike.%${digits}%`,`cpf.ilike.%${digits}%`);
+        const protocol=Number(digits);
+        if(Number.isSafeInteger(protocol))conditions.push(`protocol.eq.${protocol}`);
+      }
+      return query.or([...new Set(conditions)].join(','));
+    };
+  }
+
   const panel=document.querySelector('#detailPanel');
   if(!panel)return;
   const clean=value=>String(value||'').trim();
