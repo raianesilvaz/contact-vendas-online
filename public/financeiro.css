@@ -26,3 +26,7 @@
 
 /* Percentual compacto e centralizado */
 .risk-donut strong{font-size:15px;letter-spacing:-.03em;text-align:center;width:100%}
+
+/* Permite selecionar/copiar dados exibidos no tratamento financeiro */
+.finance-drawer,.finance-drawer .drawer-head,.finance-drawer .drawer-body,.finance-drawer h2,.finance-drawer p,.finance-drawer strong,.finance-drawer span,.finance-drawer small{user-select:text;-webkit-user-select:text}
+.finance-drawer button,.finance-drawer input,.finance-drawer select,.finance-drawer textarea{user-select:auto;-webkit-user-select:auto}
