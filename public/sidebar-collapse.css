@@ -1,0 +1,14 @@
+/* Menu lateral recolhível — desktop */
+.sidebar,main{transition:width .22s ease,margin-left .22s ease}
+.sidebar-collapse-button{position:absolute;top:76px;right:-14px;width:28px;height:28px;border:1px solid #3a424d;border-radius:50%;background:#202630;color:#dce3ec;display:grid;place-items:center;padding:0;font:700 20px/1 "DM Sans",Arial,sans-serif;cursor:pointer;box-shadow:0 5px 16px rgba(0,0,0,.2);z-index:12;transition:background .18s,color .18s,transform .22s}
+.sidebar-collapse-button:hover{background:var(--orange);border-color:var(--orange);color:#fff}
+body.sidebar-collapsed .sidebar{width:82px;padding-left:12px;padding-right:12px}
+body.sidebar-collapsed main{margin-left:82px}
+body.sidebar-collapsed .brand{justify-content:center;padding-left:0;padding-right:0}
+body.sidebar-collapsed .brand-name,body.sidebar-collapsed .nav-section-title,body.sidebar-collapsed .nav-item>span:nth-child(2),body.sidebar-collapsed .user-mini>div:nth-child(2){display:none!important}
+body.sidebar-collapsed .nav-item{justify-content:center;padding-left:10px;padding-right:10px}
+body.sidebar-collapsed .nav-item>span:first-child{width:auto}
+body.sidebar-collapsed .user-mini{padding-left:0;padding-right:0;flex-direction:column}
+body.sidebar-collapsed .logout-button{margin-left:0}
+body.sidebar-collapsed .sidebar-collapse-button{transform:rotate(180deg)}
+@media(max-width:900px){.sidebar-collapse-button{display:none!important}.sidebar,main{transition:.25s}body.sidebar-collapsed main{margin-left:0}body.sidebar-collapsed .sidebar{width:244px;padding:26px 18px 20px}body.sidebar-collapsed .brand{justify-content:flex-start;padding:0 10px 30px}body.sidebar-collapsed .brand-name,body.sidebar-collapsed .nav-section-title,body.sidebar-collapsed .nav-item>span:nth-child(2),body.sidebar-collapsed .user-mini>div:nth-child(2){display:initial!important}body.sidebar-collapsed .nav-item{justify-content:flex-start;padding:13px 14px}body.sidebar-collapsed .nav-item>span:first-child{width:22px}body.sidebar-collapsed .user-mini{padding:16px 8px 0;flex-direction:row}body.sidebar-collapsed .logout-button{margin-left:auto}}
