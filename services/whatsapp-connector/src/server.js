@@ -1,7 +1,6 @@
 import express from 'express';
 import QRCode from 'qrcode';
 import pkg from 'whatsapp-web.js';
-import { createClient } from '@supabase/supabase-js';
 import path from 'node:path';
 
 const { Client, LocalAuth } = pkg;
@@ -54,18 +53,20 @@ async function requireFinanceAccess(request, response, next) {
   const token = String(request.headers.authorization || '').replace(/^Bearer\s+/i, '');
   if (!token) return response.status(401).json({ error: 'Sessão não informada.' });
 
-  const requestSupabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { Authorization: `Bearer ${token}` } }
-  });
-  const { data: authData, error: authError } = await requestSupabase.auth.getUser(token);
-  if (authError || !authData.user) return response.status(401).json({ error: 'Sessão inválida.' });
-  const { data: profile, error: profileError } = await requestSupabase
-    .from('profiles').select('role, active').eq('id', authData.user.id).single();
-  if (profileError || !profile?.active || !['admin', 'financeiro'].includes(profile.role)) {
+  const headers = { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` };
+  const authResponse = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers });
+  if (!authResponse.ok) return response.status(401).json({ error: 'Sessão inválida.' });
+  const user = await authResponse.json();
+  const profileUrl = new URL(`${SUPABASE_URL}/rest/v1/profiles`);
+  profileUrl.searchParams.set('id', `eq.${user.id}`);
+  profileUrl.searchParams.set('select', 'role,active');
+  profileUrl.searchParams.set('limit', '1');
+  const profileResponse = await fetch(profileUrl, { headers });
+  const [profile] = profileResponse.ok ? await profileResponse.json() : [];
+  if (!profile?.active || !['admin', 'financeiro'].includes(profile.role)) {
     return response.status(403).json({ error: 'Acesso não autorizado.' });
   }
-  request.contactUser = { id: authData.user.id, role: profile.role };
+  request.contactUser = { id: user.id, role: profile.role };
   next();
 }
 
