@@ -69,7 +69,7 @@ async function requireFinanceAccess(request, response, next) {
   profileUrl.searchParams.set('limit', '1');
   const profileResponse = await fetch(profileUrl, { headers });
   const [profile] = profileResponse.ok ? await profileResponse.json() : [];
-  if (!profile?.active || !['admin', 'financeiro'].includes(profile.role)) {
+  if (!profile?.active || profile.role !== 'admin') {
     return response.status(403).json({ error: 'Acesso não autorizado.' });
   }
   request.contactUser = { id: user.id, role: profile.role };

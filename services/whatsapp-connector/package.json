@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "npx --yes node@20 --env-file=.env src/server.js",
+    "start:production": "node src/server.js",
     "check": "node --check src/server.js"
   },
   "engines": { "node": ">=20" },
