@@ -157,3 +157,12 @@ Também existe atualização manual no topo como alternativa operacional quando 
 - Definir se haverá comissão por indicação.
 - Definir métricas e relatórios específicos para Parceiros.
 - Avaliar futuramente um dashboard próprio para Parceiros, apenas se houver necessidade operacional.
+
+## Conector WhatsApp — protótipo de teste
+
+- A branch de teste inclui uma interface de conexão por QR Code na tela **Envio de Cobranças**.
+- O navegador envia a sessão autenticada do Supabase e o conector aceita apenas perfis ativos `admin` e `financeiro`.
+- O serviço Node fica separado do Cloudflare Worker porque precisa manter Chromium e a sessão do WhatsApp Web ativos.
+- A primeira versão permite somente conectar, desconectar e enviar uma mensagem manual para um número informado.
+- Disparos em lote e automações permanecem fora do escopo até validação do teste.
+- A integração usa `whatsapp-web.js`, portanto é não oficial e está sujeita a bloqueios ou mudanças do WhatsApp.
