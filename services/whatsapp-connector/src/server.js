@@ -16,9 +16,6 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
   throw new Error('SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY são obrigatórios.');
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: false, autoRefreshToken: false }
-});
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '32kb' }));
@@ -57,9 +54,13 @@ async function requireFinanceAccess(request, response, next) {
   const token = String(request.headers.authorization || '').replace(/^Bearer\s+/i, '');
   if (!token) return response.status(401).json({ error: 'Sessão não informada.' });
 
-  const { data: authData, error: authError } = await supabase.auth.getUser(token);
+  const requestSupabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${token}` } }
+  });
+  const { data: authData, error: authError } = await requestSupabase.auth.getUser(token);
   if (authError || !authData.user) return response.status(401).json({ error: 'Sessão inválida.' });
-  const { data: profile, error: profileError } = await supabase
+  const { data: profile, error: profileError } = await requestSupabase
     .from('profiles').select('role, active').eq('id', authData.user.id).single();
   if (profileError || !profile?.active || !['admin', 'financeiro'].includes(profile.role)) {
     return response.status(403).json({ error: 'Acesso não autorizado.' });
