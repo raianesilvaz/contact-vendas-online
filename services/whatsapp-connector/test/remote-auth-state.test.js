@@ -4,26 +4,25 @@ import { useRemoteAuthState } from '../src/remote-auth-state.js';
 
 const config = {
   supabaseUrl: 'https://example.supabase.co',
-  secretKey: 'server-secret',
+  publishableKey: 'publishable-key',
+  accessToken: 'connector-token',
   encryptionSecret: '7f'.repeat(32)
 };
 
 function memoryStorage() {
   let object = null;
-  return async (_url, options = {}) => {
-    const method = options.method || 'GET';
-    if (method === 'GET') {
-      return object
-        ? new Response(object, { status: 200 })
-        : new Response(null, { status: 404 });
+  return async (url, options = {}) => {
+    const body = JSON.parse(options.body);
+    if (url.endsWith('contact_get_whatsapp_connector_session')) {
+      return Response.json(object?.toString('base64') || null);
     }
-    if (method === 'POST') {
-      object = Buffer.from(options.body);
-      return new Response(null, { status: 200 });
+    if (url.endsWith('contact_put_whatsapp_connector_session')) {
+      object = Buffer.from(body.p_payload, 'base64');
+      return Response.json(null);
     }
-    if (method === 'DELETE') {
+    if (url.endsWith('contact_delete_whatsapp_connector_session')) {
       object = null;
-      return new Response(null, { status: 200 });
+      return Response.json(null);
     }
     return new Response(null, { status: 405 });
   };

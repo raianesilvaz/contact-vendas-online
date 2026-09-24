@@ -34,33 +34,37 @@ export function decryptSession(value, secret) {
   return JSON.parse(plaintext.toString('utf8'), BufferJSON.reviver);
 }
 
-function storageUrl(baseUrl, bucket, objectPath) {
-  const encodedPath = String(objectPath).split('/').map(encodeURIComponent).join('/');
-  return `${String(baseUrl).replace(/\/+$/, '')}/storage/v1/object/${encodeURIComponent(bucket)}/${encodedPath}`;
+function rpcUrl(baseUrl, name) {
+  return `${String(baseUrl).replace(/\/+$/, '')}/rest/v1/rpc/${name}`;
 }
 
 export async function useRemoteAuthState({
   supabaseUrl,
-  secretKey,
+  publishableKey,
+  accessToken,
   encryptionSecret,
-  bucket = 'whatsapp-connector-private',
-  objectPath = 'primary/auth-state.bin',
+  sessionId = 'primary',
   fetchImpl = fetch
 }) {
-  if (!supabaseUrl || !secretKey || !encryptionSecret) {
+  if (!supabaseUrl || !publishableKey || !accessToken || !encryptionSecret) {
     throw new Error('Configuração da sessão remota incompleta.');
   }
 
-  const url = storageUrl(supabaseUrl, bucket, objectPath);
-  const headers = { apikey: secretKey, Authorization: `Bearer ${secretKey}` };
+  const headers = { apikey: publishableKey, 'Content-Type': 'application/json' };
+  const call = async (name, body) => fetchImpl(rpcUrl(supabaseUrl, name), {
+    method: 'POST', headers, body: JSON.stringify(body)
+  });
   let document = { creds: initAuthCreds(), keys: {} };
   let writesEnabled = true;
   let writeQueue = Promise.resolve();
 
-  const downloaded = await fetchImpl(url, { headers });
+  const downloaded = await call('contact_get_whatsapp_connector_session', {
+    p_token: accessToken, p_session_id: sessionId
+  });
   if (downloaded.ok) {
-    document = decryptSession(await downloaded.arrayBuffer(), encryptionSecret);
-  } else if (downloaded.status !== 404) {
+    const payload = await downloaded.json();
+    if (payload) document = decryptSession(Buffer.from(payload, 'base64'), encryptionSecret);
+  } else {
     throw new Error(`Falha ao recuperar a sessão remota (${downloaded.status}).`);
   }
 
@@ -69,10 +73,10 @@ export async function useRemoteAuthState({
     const snapshot = encryptSession(document, encryptionSecret);
     writeQueue = writeQueue.then(async () => {
       if (!writesEnabled) return;
-      const response = await fetchImpl(url, {
-        method: 'POST',
-        headers: { ...headers, 'Content-Type': 'application/octet-stream', 'x-upsert': 'true' },
-        body: snapshot
+      const response = await call('contact_put_whatsapp_connector_session', {
+        p_token: accessToken,
+        p_session_id: sessionId,
+        p_payload: snapshot.toString('base64')
       });
       if (!response.ok) {
         throw new Error(`Falha ao salvar a sessão remota (${response.status}).`);
@@ -109,8 +113,10 @@ export async function useRemoteAuthState({
     clear: async () => {
       writesEnabled = false;
       await writeQueue.catch(() => {});
-      const response = await fetchImpl(url, { method: 'DELETE', headers });
-      if (!response.ok && response.status !== 404) {
+      const response = await call('contact_delete_whatsapp_connector_session', {
+        p_token: accessToken, p_session_id: sessionId
+      });
+      if (!response.ok) {
         throw new Error(`Falha ao remover a sessão remota (${response.status}).`);
       }
       document = { creds: initAuthCreds(), keys: {} };
