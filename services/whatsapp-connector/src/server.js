@@ -10,6 +10,8 @@ const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
 const ALLOWED_ORIGINS = String(process.env.ALLOWED_ORIGIN || 'http://localhost:8787')
   .split(',').map(value => value.trim()).filter(Boolean);
 const SESSION_PATH = path.resolve(process.env.SESSION_PATH || '.wwebjs_auth');
+const HEADLESS = String(process.env.WHATSAPP_HEADLESS || 'false').toLowerCase() === 'true';
+const MAX_INITIALIZE_ATTEMPTS = 3;
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
   throw new Error('SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY são obrigatórios.');
@@ -92,19 +94,71 @@ function attachEvents(instance) {
   });
 }
 
+function isRecoverableBrowserError(error) {
+  const message = String(error?.message || error || '');
+  return message.includes('Execution context was destroyed') ||
+    message.includes('Target closed') ||
+    message.includes('Session closed');
+}
+
+async function closeClient(instance) {
+  if (!instance) return;
+  try { await instance.destroy(); } catch {}
+  try { await instance.pupBrowser?.close(); } catch {}
+}
+
+function wait(milliseconds) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
+async function startClientWithRecovery() {
+  let lastError;
+  for (let attempt = 1; attempt <= MAX_INITIALIZE_ATTEMPTS; attempt += 1) {
+    const instance = new Client({
+      authStrategy: new LocalAuth({ clientId: 'contact-financeiro', dataPath: SESSION_PATH }),
+      authTimeoutMs: 120_000,
+      puppeteer: {
+        headless: HEADLESS,
+        protocolTimeout: 120_000,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+          '--no-first-run',
+          '--no-default-browser-check'
+        ]
+      }
+    });
+    client = instance;
+    attachEvents(instance);
+    console.log(`Iniciando WhatsApp (tentativa ${attempt}/${MAX_INITIALIZE_ATTEMPTS})...`);
+    try {
+      await instance.initialize();
+      return instance;
+    } catch (error) {
+      lastError = error;
+      console.error(`Falha na tentativa ${attempt}:`, error?.message || error);
+      await closeClient(instance);
+      if (client === instance) client = null;
+      if (!isRecoverableBrowserError(error) || attempt === MAX_INITIALIZE_ATTEMPTS) break;
+      updateState({ status: 'initializing', qr: null, error: null });
+      await wait(3_000);
+    }
+  }
+  throw lastError;
+}
+
 async function initializeClient() {
   if (initializePromise) return initializePromise;
   if (client && ['initializing', 'qr_ready', 'authenticated', 'connected'].includes(state.status)) return client;
   updateState({ status: 'initializing', qr: null, error: null });
-  client = new Client({
-    authStrategy: new LocalAuth({ clientId: 'contact-financeiro', dataPath: SESSION_PATH }),
-    puppeteer: { headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] }
-  });
-  attachEvents(client);
-  initializePromise = client.initialize()
-    .then(() => client)
+  initializePromise = startClientWithRecovery()
     .catch(error => {
-      updateState({ status: 'error', qr: null, error: error.message });
+      const friendlyError = isRecoverableBrowserError(error)
+        ? 'O navegador do WhatsApp reiniciou durante a conexão. Feche o conector, abra novamente e tente gerar o QR Code.'
+        : error.message;
+      updateState({ status: 'error', qr: null, error: friendlyError });
       client = null;
       throw error;
     })
