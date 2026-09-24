@@ -1,0 +1,20 @@
+{
+  "name": "contact-whatsapp-connector",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "npx --yes node@20 --env-file=.env src/server.js",
+    "start:production": "node src/server.js",
+    "check": "node --check src/server.js && node --check src/remote-auth-state.js",
+    "test": "node --test"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@whiskeysockets/baileys": "6.7.22",
+    "express": "^5.1.0",
+    "pino": "^9.6.0",
+    "qrcode": "^1.5.4",
+    "ws": "^8.18.0"
+  }
+}
