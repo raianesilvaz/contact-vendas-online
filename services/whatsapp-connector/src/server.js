@@ -1,17 +1,20 @@
 import express from 'express';
 import QRCode from 'qrcode';
-import pkg from 'whatsapp-web.js';
+import makeWASocket, {
+  DisconnectReason,
+  fetchLatestBaileysVersion,
+  useMultiFileAuthState
+} from '@whiskeysockets/baileys';
+import pino from 'pino';
 import path from 'node:path';
 
-const { Client, LocalAuth } = pkg;
 const PORT = Number(process.env.PORT || 3100);
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
 const ALLOWED_ORIGINS = String(process.env.ALLOWED_ORIGIN || 'http://localhost:8787')
   .split(',').map(value => value.trim()).filter(Boolean);
 const SESSION_PATH = path.resolve(process.env.SESSION_PATH || '.wwebjs_auth');
-const HEADLESS = String(process.env.WHATSAPP_HEADLESS || 'false').toLowerCase() === 'true';
-const MAX_INITIALIZE_ATTEMPTS = 3;
+const logger = pino({ level: process.env.WHATSAPP_LOG_LEVEL || 'silent' });
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
   throw new Error('SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY são obrigatórios.');
@@ -34,6 +37,7 @@ app.use((request, response, next) => {
 
 let client = null;
 let initializePromise = null;
+let manualDisconnect = false;
 let lastSendAt = 0;
 const state = {
   status: 'disconnected', qr: null, phone: null, name: null, error: null,
@@ -72,93 +76,75 @@ async function requireFinanceAccess(request, response, next) {
   next();
 }
 
-function attachEvents(instance) {
-  instance.on('qr', async qr => {
-    try {
-      const dataUrl = await QRCode.toDataURL(qr, { width: 320, margin: 2 });
-      updateState({ status: 'qr_ready', qr: dataUrl, phone: null, name: null, error: null });
-    } catch (error) {
-      updateState({ status: 'error', qr: null, error: error.message });
-    }
+function disconnectCode(lastDisconnect) {
+  return lastDisconnect?.error?.output?.statusCode ||
+    lastDisconnect?.error?.data?.statusCode ||
+    lastDisconnect?.error?.statusCode || null;
+}
+
+async function createSocket() {
+  const { state: authState, saveCreds } = await useMultiFileAuthState(SESSION_PATH);
+  const { version } = await fetchLatestBaileysVersion();
+  const socket = makeWASocket({
+    version,
+    auth: authState,
+    logger,
+    printQRInTerminal: false,
+    browser: ['CONTACT', 'Chrome', '1.0.0'],
+    markOnlineOnConnect: false,
+    syncFullHistory: false,
+    generateHighQualityLinkPreview: false
   });
-  instance.on('authenticated', () => updateState({ status: 'authenticated', qr: null, error: null }));
-  instance.on('ready', () => {
-    const info = instance.info || {};
-    updateState({ status: 'connected', qr: null, phone: info.wid?.user || null, name: info.pushname || null, error: null });
-  });
-  instance.on('auth_failure', message => updateState({ status: 'error', qr: null, error: message || 'Falha de autenticação.' }));
-  instance.on('disconnected', reason => {
-    updateState({ status: 'disconnected', qr: null, phone: null, name: null, error: reason || null });
-    client = null;
-    initializePromise = null;
-  });
-}
-
-function isRecoverableBrowserError(error) {
-  const message = String(error?.message || error || '');
-  return message.includes('Execution context was destroyed') ||
-    message.includes('Target closed') ||
-    message.includes('Session closed');
-}
-
-async function closeClient(instance) {
-  if (!instance) return;
-  try { await instance.destroy(); } catch {}
-  try { await instance.pupBrowser?.close(); } catch {}
-}
-
-function wait(milliseconds) {
-  return new Promise(resolve => setTimeout(resolve, milliseconds));
-}
-
-async function startClientWithRecovery() {
-  let lastError;
-  for (let attempt = 1; attempt <= MAX_INITIALIZE_ATTEMPTS; attempt += 1) {
-    const instance = new Client({
-      authStrategy: new LocalAuth({ clientId: 'contact-financeiro', dataPath: SESSION_PATH }),
-      authTimeoutMs: 120_000,
-      puppeteer: {
-        headless: HEADLESS,
-        protocolTimeout: 120_000,
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-gpu',
-          '--no-first-run',
-          '--no-default-browser-check'
-        ]
+  client = socket;
+  socket.ev.on('creds.update', saveCreds);
+  socket.ev.on('connection.update', async update => {
+    if (client !== socket) return;
+    const { connection, qr, lastDisconnect } = update;
+    if (qr) {
+      try {
+        const dataUrl = await QRCode.toDataURL(qr, { width: 320, margin: 2 });
+        updateState({ status: 'qr_ready', qr: dataUrl, phone: null, name: null, error: null });
+        console.log('QR Code pronto para leitura.');
+      } catch (error) {
+        updateState({ status: 'error', qr: null, error: error.message });
       }
-    });
-    client = instance;
-    attachEvents(instance);
-    console.log(`Iniciando WhatsApp (tentativa ${attempt}/${MAX_INITIALIZE_ATTEMPTS})...`);
-    try {
-      await instance.initialize();
-      return instance;
-    } catch (error) {
-      lastError = error;
-      console.error(`Falha na tentativa ${attempt}:`, error?.message || error);
-      await closeClient(instance);
-      if (client === instance) client = null;
-      if (!isRecoverableBrowserError(error) || attempt === MAX_INITIALIZE_ATTEMPTS) break;
-      updateState({ status: 'initializing', qr: null, error: null });
-      await wait(3_000);
     }
-  }
-  throw lastError;
+    if (connection === 'open') {
+      const rawPhone = String(socket.user?.id || '').split('@')[0].split(':')[0];
+      updateState({
+        status: 'connected', qr: null, phone: rawPhone || null,
+        name: socket.user?.name || null, error: null
+      });
+      console.log(`WhatsApp conectado${rawPhone ? `: ${rawPhone}` : '.'}`);
+    }
+    if (connection === 'close') {
+      const code = disconnectCode(lastDisconnect);
+      const loggedOut = code === DisconnectReason.loggedOut;
+      client = null;
+      initializePromise = null;
+      if (manualDisconnect || loggedOut) {
+        updateState({ status: 'disconnected', qr: null, phone: null, name: null, error: null });
+        manualDisconnect = false;
+        return;
+      }
+      updateState({ status: 'initializing', qr: null, error: null });
+      console.log(`Conexão reiniciada pelo WhatsApp${code ? ` (código ${code})` : ''}. Reconectando...`);
+      setTimeout(() => initializeClient().catch(console.error), 1_500);
+    }
+  });
+  return socket;
 }
 
 async function initializeClient() {
   if (initializePromise) return initializePromise;
   if (client && ['initializing', 'qr_ready', 'authenticated', 'connected'].includes(state.status)) return client;
+  manualDisconnect = false;
   updateState({ status: 'initializing', qr: null, error: null });
-  initializePromise = startClientWithRecovery()
+  console.log('Iniciando conexão direta com o WhatsApp...');
+  initializePromise = createSocket()
     .catch(error => {
-      const friendlyError = isRecoverableBrowserError(error)
-        ? 'O navegador do WhatsApp reiniciou durante a conexão. Feche o conector, abra novamente e tente gerar o QR Code.'
-        : error.message;
-      updateState({ status: 'error', qr: null, error: friendlyError });
+      console.error('Falha ao iniciar WhatsApp:', error?.message || error);
+      updateState({ status: 'error', qr: null, error: error.message || 'Não foi possível iniciar o WhatsApp.' });
       client = null;
       throw error;
     })
@@ -188,20 +174,22 @@ app.post('/api/whatsapp/send-test', requireFinanceAccess, async (request, respon
   if (phone.length < 12 || phone.length > 13) return response.status(400).json({ error: 'Informe um telefone brasileiro válido com DDD.' });
   if (!message || message.length > 2000) return response.status(400).json({ error: 'A mensagem deve ter entre 1 e 2.000 caracteres.' });
   try {
-    const chatId = `${phone}@c.us`;
-    if (!await client.isRegisteredUser(chatId)) return response.status(400).json({ error: 'Este número não possui WhatsApp.' });
-    const sent = await client.sendMessage(chatId, message);
+    const [registration] = await client.onWhatsApp(phone);
+    if (!registration?.exists) return response.status(400).json({ error: 'Este número não possui WhatsApp.' });
+    const sent = await client.sendMessage(registration.jid, { text: message });
     lastSendAt = Date.now();
-    response.json({ ok: true, messageId: sent.id?._serialized || null });
+    response.json({ ok: true, messageId: sent?.key?.id || null });
   } catch (error) {
     response.status(500).json({ error: error.message || 'Não foi possível enviar a mensagem.' });
   }
 });
 app.post('/api/whatsapp/disconnect', requireFinanceAccess, async (_request, response) => {
-  try { if (client) await client.logout(); } catch {}
-  try { if (client) await client.destroy(); } catch {}
+  manualDisconnect = true;
+  const socket = client;
   client = null;
   initializePromise = null;
+  try { await socket?.logout(); } catch {}
+  try { socket?.end(undefined); } catch {}
   updateState({ status: 'disconnected', qr: null, phone: null, name: null, error: null });
   response.json(publicState());
 });
