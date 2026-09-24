@@ -2,22 +2,24 @@ import express from 'express';
 import QRCode from 'qrcode';
 import makeWASocket, {
   DisconnectReason,
-  fetchLatestBaileysVersion,
-  useMultiFileAuthState
+  fetchLatestBaileysVersion
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
-import path from 'node:path';
+import { useRemoteAuthState } from './remote-auth-state.js';
 
 const PORT = Number(process.env.PORT || 3100);
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
+const SESSION_ENCRYPTION_KEY = process.env.SESSION_ENCRYPTION_KEY;
+const SESSION_BUCKET = process.env.SESSION_BUCKET || 'whatsapp-connector-private';
+const SESSION_OBJECT = process.env.SESSION_OBJECT || 'primary/auth-state.bin';
 const ALLOWED_ORIGINS = String(process.env.ALLOWED_ORIGIN || 'http://localhost:8787')
   .split(',').map(value => value.trim()).filter(Boolean);
-const SESSION_PATH = path.resolve(process.env.SESSION_PATH || '.wwebjs_auth');
 const logger = pino({ level: process.env.WHATSAPP_LOG_LEVEL || 'silent' });
 
-if (!SUPABASE_URL || !SUPABASE_KEY) {
-  throw new Error('SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY são obrigatórios.');
+if (!SUPABASE_URL || !SUPABASE_KEY || !SUPABASE_SECRET_KEY || !SESSION_ENCRYPTION_KEY) {
+  throw new Error('SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY e SESSION_ENCRYPTION_KEY são obrigatórios.');
 }
 
 const app = express();
@@ -37,6 +39,7 @@ app.use((request, response, next) => {
 
 let client = null;
 let initializePromise = null;
+let authStore = null;
 let manualDisconnect = false;
 let lastSendAt = 0;
 const state = {
@@ -83,7 +86,14 @@ function disconnectCode(lastDisconnect) {
 }
 
 async function createSocket() {
-  const { state: authState, saveCreds } = await useMultiFileAuthState(SESSION_PATH);
+  authStore = await useRemoteAuthState({
+    supabaseUrl: SUPABASE_URL,
+    secretKey: SUPABASE_SECRET_KEY,
+    encryptionSecret: SESSION_ENCRYPTION_KEY,
+    bucket: SESSION_BUCKET,
+    objectPath: SESSION_OBJECT
+  });
+  const { state: authState, saveCreds } = authStore;
   const { version } = await fetchLatestBaileysVersion();
   const socket = makeWASocket({
     version,
@@ -188,6 +198,11 @@ app.post('/api/whatsapp/disconnect', requireFinanceAccess, async (_request, resp
   const socket = client;
   client = null;
   initializePromise = null;
+  const store = authStore;
+  authStore = null;
+  try { await store?.clear(); } catch (error) {
+    console.error('Falha ao remover sessão remota:', error?.message || error);
+  }
   try { await socket?.logout(); } catch {}
   try { socket?.end(undefined); } catch {}
   updateState({ status: 'disconnected', qr: null, phone: null, name: null, error: null });

@@ -6,7 +6,8 @@
   "scripts": {
     "start": "npx --yes node@20 --env-file=.env src/server.js",
     "start:production": "node src/server.js",
-    "check": "node --check src/server.js"
+    "check": "node --check src/server.js && node --check src/remote-auth-state.js",
+    "test": "node --test"
   },
   "engines": { "node": ">=20" },
   "dependencies": {
