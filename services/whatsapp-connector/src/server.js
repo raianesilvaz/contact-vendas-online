@@ -10,16 +10,15 @@ import { useRemoteAuthState } from './remote-auth-state.js';
 const PORT = Number(process.env.PORT || 3100);
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
-const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 const SESSION_ENCRYPTION_KEY = process.env.SESSION_ENCRYPTION_KEY;
-const SESSION_BUCKET = process.env.SESSION_BUCKET || 'whatsapp-connector-private';
-const SESSION_OBJECT = process.env.SESSION_OBJECT || 'primary/auth-state.bin';
+const SESSION_ACCESS_TOKEN = process.env.SESSION_ACCESS_TOKEN;
+const SESSION_ID = process.env.SESSION_ID || 'primary';
 const ALLOWED_ORIGINS = String(process.env.ALLOWED_ORIGIN || 'http://localhost:8787')
   .split(',').map(value => value.trim()).filter(Boolean);
 const logger = pino({ level: process.env.WHATSAPP_LOG_LEVEL || 'silent' });
 
-if (!SUPABASE_URL || !SUPABASE_KEY || !SUPABASE_SECRET_KEY || !SESSION_ENCRYPTION_KEY) {
-  throw new Error('SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY e SESSION_ENCRYPTION_KEY são obrigatórios.');
+if (!SUPABASE_URL || !SUPABASE_KEY || !SESSION_ACCESS_TOKEN || !SESSION_ENCRYPTION_KEY) {
+  throw new Error('SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, SESSION_ACCESS_TOKEN e SESSION_ENCRYPTION_KEY são obrigatórios.');
 }
 
 const app = express();
@@ -88,10 +87,10 @@ function disconnectCode(lastDisconnect) {
 async function createSocket() {
   authStore = await useRemoteAuthState({
     supabaseUrl: SUPABASE_URL,
-    secretKey: SUPABASE_SECRET_KEY,
+    publishableKey: SUPABASE_KEY,
+    accessToken: SESSION_ACCESS_TOKEN,
     encryptionSecret: SESSION_ENCRYPTION_KEY,
-    bucket: SESSION_BUCKET,
-    objectPath: SESSION_OBJECT
+    sessionId: SESSION_ID
   });
   const { state: authState, saveCreds } = authStore;
   const { version } = await fetchLatestBaileysVersion();
