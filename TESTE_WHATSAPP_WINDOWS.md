@@ -11,3 +11,5 @@
 9. Clique em **Gerar QR Code** e leia o código pelo WhatsApp do celular.
 
 Mantenha as duas janelas pretas abertas durante todo o teste. Para encerrar, feche as duas janelas.
+
+O conector usa Node 20 isoladamente por compatibilidade com o navegador interno do `whatsapp-web.js`. O Node instalado no Windows não é substituído.
