@@ -192,6 +192,23 @@ app.post('/api/whatsapp/send-test', requireFinanceAccess, async (request, respon
     response.status(500).json({ error: error.message || 'Não foi possível enviar a mensagem.' });
   }
 });
+
+app.post('/api/whatsapp/send-campaign-message', requireFinanceAccess, async (request, response) => {
+  if (!client || state.status !== 'connected') return response.status(409).json({ error: 'WhatsApp não está conectado.' });
+  let phone = String(request.body?.phone || '').replace(/\D/g, '');
+  const message = String(request.body?.message || '').trim();
+  if (phone.length === 10 || phone.length === 11) phone = '55' + phone;
+  if (phone.length < 12 || phone.length > 13) return response.status(400).json({ error: 'Telefone inválido.' });
+  if (!message || message.length > 4000) return response.status(400).json({ error: 'Mensagem inválida.' });
+  try {
+    const [registration] = await client.onWhatsApp(phone);
+    if (!registration?.exists) return response.status(400).json({ error: 'Este número não possui WhatsApp.' });
+    const sent = await client.sendMessage(registration.jid, { text: message });
+    response.json({ ok: true, messageId: sent?.key?.id || null });
+  } catch (error) {
+    response.status(500).json({ error: error.message || 'Não foi possível enviar.' });
+  }
+});
 app.post('/api/whatsapp/disconnect', requireFinanceAccess, async (_request, response) => {
   manualDisconnect = true;
   const socket = client;
