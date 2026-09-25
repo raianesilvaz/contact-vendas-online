@@ -11,3 +11,14 @@ body.sidebar-collapsed .nav-item>span:first-child{width:auto}
 body.sidebar-collapsed .user-mini{padding-left:0;padding-right:0;flex-direction:column}
 body.sidebar-collapsed .logout-button{margin-left:0}
 @media(max-width:900px){.menu-button.sidebar-collapse-button{display:block;width:auto;height:auto;flex:0 0 auto;margin-right:15px;padding:0;border:0;border-radius:0;background:none;box-shadow:none;color:inherit;font-size:23px}.sidebar,main{transition:.25s}body.sidebar-collapsed main{margin-left:0}body.sidebar-collapsed .sidebar{width:244px;padding:26px 18px 20px}body.sidebar-collapsed .brand{justify-content:flex-start;padding:0 10px 30px}body.sidebar-collapsed .brand-name,body.sidebar-collapsed .nav-section-title,body.sidebar-collapsed .nav-item>span:nth-child(2),body.sidebar-collapsed .user-mini>div:nth-child(2){display:initial!important}body.sidebar-collapsed .nav-item{justify-content:flex-start;padding:13px 14px}body.sidebar-collapsed .nav-item>span:first-child{width:22px}body.sidebar-collapsed .user-mini{padding:16px 8px 0;flex-direction:row}body.sidebar-collapsed .logout-button{margin-left:auto}}
+/* Sidebar responsiva: mantém usuário acessível e permite rolagem do menu */
+.sidebar{overflow:hidden;min-height:0}
+.sidebar .brand{flex:0 0 auto}
+.sidebar nav{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:4px;scrollbar-width:thin;scrollbar-color:#4a515d transparent}
+.sidebar nav::-webkit-scrollbar{width:6px}
+.sidebar nav::-webkit-scrollbar-track{background:transparent}
+.sidebar nav::-webkit-scrollbar-thumb{background:#4a515d;border-radius:999px}
+.sidebar nav::-webkit-scrollbar-thumb:hover{background:#626b78}
+.sidebar .user-mini{flex:0 0 auto;margin-top:12px;background:var(--nav)}
+body.sidebar-collapsed .sidebar nav{padding-right:0}
+@media(max-width:900px){.sidebar{height:100dvh;max-height:100dvh}.sidebar nav{-webkit-overflow-scrolling:touch}}
