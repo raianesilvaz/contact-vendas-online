@@ -10,6 +10,7 @@ import { useRemoteAuthState } from './remote-auth-state.js';
 const PORT = Number(process.env.PORT || 3100);
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SESSION_ENCRYPTION_KEY = process.env.SESSION_ENCRYPTION_KEY;
 const SESSION_ACCESS_TOKEN = process.env.SESSION_ACCESS_TOKEN;
 const SESSION_ID = process.env.SESSION_ID || 'primary';
@@ -87,6 +88,22 @@ async function requireFinanceAccess(request, response, next) {
   next();
 }
 
+function messageText(message={}) { return message.conversation || message.extendedTextMessage?.text || message.imageMessage?.caption || message.videoMessage?.caption || ''; }
+function messageDate(value) { const seconds=typeof value==='number'?value:Number(value?.low ?? value ?? 0); return new Date((seconds||Math.floor(Date.now()/1000))*1000).toISOString(); }
+async function persistAttendanceMessage(item) {
+  if (!SUPABASE_SECRET_KEY || !item?.key?.id) return;
+  const jid=String(item.key.remoteJid||''); if(!jid.endsWith('@s.whatsapp.net')) return;
+  const headers={apikey:SUPABASE_SECRET_KEY,Authorization:'Bearer '+SUPABASE_SECRET_KEY,'Content-Type':'application/json',Prefer:'return=representation'};
+  const phone=jid.split('@')[0].split(':')[0], body=messageText(item.message), at=messageDate(item.messageTimestamp), outbound=Boolean(item.key.fromMe);
+  let url=new URL(SUPABASE_URL+'/rest/v1/whatsapp_conversations');url.searchParams.set('jid','eq.'+jid);url.searchParams.set('select','id,status,assigned_to');url.searchParams.set('limit','1');
+  let r=await fetch(url,{headers});let [conv]=r.ok?await r.json():[];
+  if(!conv){r=await fetch(SUPABASE_URL+'/rest/v1/whatsapp_conversations',{method:'POST',headers,body:JSON.stringify({jid,phone,status:'queue',last_message_at:at,last_message_preview:body.slice(0,240),unread_count:outbound?0:1})});[conv]=r.ok?await r.json():[];}
+  else {const patch={last_message_at:at,last_message_preview:body.slice(0,240)};if(!outbound)patch.unread_count=1;if(conv.status==='archived'&&!outbound){patch.status='queue';patch.assigned_to=null;patch.archived_at=null;}await fetch(SUPABASE_URL+'/rest/v1/whatsapp_conversations?id=eq.'+conv.id,{method:'PATCH',headers,body:JSON.stringify(patch)});}
+  if(!conv?.id)return;
+  const mh={...headers,Prefer:'resolution=ignore-duplicates,return=minimal'};
+  await fetch(SUPABASE_URL+'/rest/v1/whatsapp_messages?on_conflict=whatsapp_message_id',{method:'POST',headers:mh,body:JSON.stringify({conversation_id:conv.id,whatsapp_message_id:item.key.id,direction:outbound?'outbound':'inbound',sender_jid:item.key.participant||jid,body,message_type:Object.keys(item.message||{})[0]||'unknown',whatsapp_timestamp:at})});
+}
+
 function disconnectCode(lastDisconnect) {
   return lastDisconnect?.error?.output?.statusCode ||
     lastDisconnect?.error?.data?.statusCode ||
@@ -115,6 +132,8 @@ async function createSocket() {
   });
   client = socket;
   socket.ev.on('creds.update', saveCreds);
+  socket.ev.on('messaging-history.set', async ({ messages=[] }) => { for (const item of messages) await persistAttendanceMessage(item).catch(error=>console.error('Falha ao sincronizar histórico:',error?.message||error)); });
+  socket.ev.on('messages.upsert', async ({ messages=[] }) => { for (const item of messages) await persistAttendanceMessage(item).catch(error=>console.error('Falha ao salvar mensagem:',error?.message||error)); });
   socket.ev.on('connection.update', async update => {
     if (client !== socket) return;
     const { connection, qr, lastDisconnect } = update;
