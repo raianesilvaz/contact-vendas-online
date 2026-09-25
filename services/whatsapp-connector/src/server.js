@@ -132,8 +132,6 @@ async function createSocket() {
   });
   client = socket;
   socket.ev.on('creds.update', saveCreds);
-  socket.ev.on('messaging-history.set', async ({ messages=[] }) => { for (const item of messages) await persistAttendanceMessage(item).catch(error=>console.error('Falha ao sincronizar histórico:',error?.message||error)); });
-  socket.ev.on('messages.upsert', async ({ messages=[] }) => { for (const item of messages) await persistAttendanceMessage(item).catch(error=>console.error('Falha ao salvar mensagem:',error?.message||error)); });
   socket.ev.on('connection.update', async update => {
     if (client !== socket) return;
     const { connection, qr, lastDisconnect } = update;
@@ -176,9 +174,16 @@ async function createAttendanceSocket() {
   attendanceAuthStore = await useRemoteAuthState({ supabaseUrl: SUPABASE_URL, publishableKey: SUPABASE_KEY, accessToken: SESSION_ACCESS_TOKEN, encryptionSecret: SESSION_ENCRYPTION_KEY, sessionId: ATTENDANCE_SESSION_ID });
   const { state: authState, saveCreds } = attendanceAuthStore;
   const { version } = await fetchLatestBaileysVersion();
-  const socket = makeWASocket({ version, auth: authState, logger, printQRInTerminal: false, browser: ['CONTACT Atendimento','Chrome','1.0.0'], markOnlineOnConnect: false, syncFullHistory: false, generateHighQualityLinkPreview: false });
+  const socket = makeWASocket({ version, auth: authState, logger, printQRInTerminal: false, browser: ['CONTACT Atendimento','Chrome','1.0.0'], markOnlineOnConnect: false, syncFullHistory: true, generateHighQualityLinkPreview: false });
   attendanceClient = socket;
   socket.ev.on('creds.update', saveCreds);
+  socket.ev.on('messaging-history.set', async ({ messages=[] }) => {
+    console.log(\`Sincronizando histórico do Atendimento: \${messages.length} mensagens recebidas.\`);
+    for (const item of messages) await persistAttendanceMessage(item).catch(error=>console.error('Falha ao sincronizar histórico do Atendimento:',error?.message||error));
+  });
+  socket.ev.on('messages.upsert', async ({ messages=[] }) => {
+    for (const item of messages) await persistAttendanceMessage(item).catch(error=>console.error('Falha ao salvar mensagem do Atendimento:',error?.message||error));
+  });
   socket.ev.on('connection.update', async update => {
     if (attendanceClient !== socket) return;
     const { connection, qr, lastDisconnect } = update;
