@@ -13,6 +13,7 @@ const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
 const SESSION_ENCRYPTION_KEY = process.env.SESSION_ENCRYPTION_KEY;
 const SESSION_ACCESS_TOKEN = process.env.SESSION_ACCESS_TOKEN;
 const SESSION_ID = process.env.SESSION_ID || 'primary';
+const ATTENDANCE_SESSION_ID = process.env.ATTENDANCE_SESSION_ID || 'atendimento';
 const ALLOWED_ORIGINS = String(process.env.ALLOWED_ORIGIN || 'http://localhost:8787')
   .split(',').map(value => value.trim()).filter(Boolean);
 const logger = pino({ level: process.env.WHATSAPP_LOG_LEVEL || 'silent' });
@@ -37,6 +38,11 @@ app.use((request, response, next) => {
 });
 
 let client = null;
+let attendanceClient = null;
+let attendanceInitializePromise = null;
+let attendanceAuthStore = null;
+let attendanceManualDisconnect = false;
+const attendanceState = { status: 'disconnected', qr: null, phone: null, name: null, error: null, updatedAt: new Date().toISOString() };
 let initializePromise = null;
 let authStore = null;
 let manualDisconnect = false;
@@ -45,6 +51,9 @@ const state = {
   status: 'disconnected', qr: null, phone: null, name: null, error: null,
   updatedAt: new Date().toISOString()
 };
+
+function updateAttendanceState(next) { Object.assign(attendanceState, next, { updatedAt: new Date().toISOString() }); }
+function publicAttendanceState() { return { status: attendanceState.status, hasQr: Boolean(attendanceState.qr), phone: attendanceState.phone, name: attendanceState.name, error: attendanceState.error, updatedAt: attendanceState.updatedAt }; }
 
 function updateState(next) {
   Object.assign(state, next, { updatedAt: new Date().toISOString() });
@@ -144,6 +153,24 @@ async function createSocket() {
   return socket;
 }
 
+async function createAttendanceSocket() {
+  attendanceAuthStore = await useRemoteAuthState({ supabaseUrl: SUPABASE_URL, publishableKey: SUPABASE_KEY, accessToken: SESSION_ACCESS_TOKEN, encryptionSecret: SESSION_ENCRYPTION_KEY, sessionId: ATTENDANCE_SESSION_ID });
+  const { state: authState, saveCreds } = attendanceAuthStore;
+  const { version } = await fetchLatestBaileysVersion();
+  const socket = makeWASocket({ version, auth: authState, logger, printQRInTerminal: false, browser: ['CONTACT Atendimento','Chrome','1.0.0'], markOnlineOnConnect: false, syncFullHistory: false, generateHighQualityLinkPreview: false });
+  attendanceClient = socket;
+  socket.ev.on('creds.update', saveCreds);
+  socket.ev.on('connection.update', async update => {
+    if (attendanceClient !== socket) return;
+    const { connection, qr, lastDisconnect } = update;
+    if (qr) { try { updateAttendanceState({ status:'qr_ready', qr:await QRCode.toDataURL(qr,{width:320,margin:2}), phone:null, name:null, error:null }); } catch(error) { updateAttendanceState({status:'error',qr:null,error:error.message}); } }
+    if (connection === 'open') { const rawPhone=String(socket.user?.id||'').split('@')[0].split(':')[0]; updateAttendanceState({status:'connected',qr:null,phone:rawPhone||null,name:socket.user?.name||null,error:null}); console.log('WhatsApp Atendimento conectado.'); }
+    if (connection === 'close') { const code=disconnectCode(lastDisconnect), loggedOut=code===DisconnectReason.loggedOut; attendanceClient=null; attendanceInitializePromise=null; if(attendanceManualDisconnect||loggedOut){updateAttendanceState({status:'disconnected',qr:null,phone:null,name:null,error:null});attendanceManualDisconnect=false;return;} updateAttendanceState({status:'initializing',qr:null,error:null}); setTimeout(()=>initializeAttendanceClient().catch(console.error),1500); }
+  });
+  return socket;
+}
+async function initializeAttendanceClient(){ if(attendanceInitializePromise)return attendanceInitializePromise;if(attendanceClient&&['initializing','qr_ready','authenticated','connected'].includes(attendanceState.status))return attendanceClient;attendanceManualDisconnect=false;updateAttendanceState({status:'initializing',qr:null,error:null});attendanceInitializePromise=createAttendanceSocket().catch(error=>{updateAttendanceState({status:'error',qr:null,error:error.message||'Não foi possível iniciar o WhatsApp Atendimento.'});attendanceClient=null;throw error}).finally(()=>{attendanceInitializePromise=null});return attendanceInitializePromise;}
+
 async function initializeClient() {
   if (initializePromise) return initializePromise;
   if (client && ['initializing', 'qr_ready', 'authenticated', 'connected'].includes(state.status)) return client;
@@ -162,6 +189,10 @@ async function initializeClient() {
 }
 
 app.get('/health', (_request, response) => response.json({ ok: true, whatsapp: state.status }));
+app.get('/api/whatsapp/attendance/status', requireFinanceAccess, (_request,response)=>{response.setHeader('Cache-Control','no-store');response.json(publicAttendanceState());});
+app.get('/api/whatsapp/attendance/qr', requireFinanceAccess, (_request,response)=>{response.setHeader('Cache-Control','no-store');response.json({qr:attendanceState.qr,status:attendanceState.status});});
+app.post('/api/whatsapp/attendance/connect', requireFinanceAccess, (_request,response)=>{initializeAttendanceClient().catch(()=>{});response.status(202).json(publicAttendanceState());});
+app.post('/api/whatsapp/attendance/disconnect', requireFinanceAccess, async (_request,response)=>{attendanceManualDisconnect=true;const socket=attendanceClient;attendanceClient=null;attendanceInitializePromise=null;const store=attendanceAuthStore;attendanceAuthStore=null;try{await store?.clear()}catch(error){console.error('Falha ao remover sessão de Atendimento:',error?.message||error)}try{await socket?.logout()}catch{}try{socket?.end(undefined)}catch{}updateAttendanceState({status:'disconnected',qr:null,phone:null,name:null,error:null});response.json(publicAttendanceState());});
 app.get('/api/whatsapp/status', requireFinanceAccess, (_request, response) => {
   response.setHeader('Cache-Control', 'no-store');
   response.json(publicState());
