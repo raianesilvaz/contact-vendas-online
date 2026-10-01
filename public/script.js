@@ -32,6 +32,29 @@ function validCpf(value) { const d = digits(value); if (d.length !== 11 || /^(\d
 function parseMoney(value) { return Number(value.replace(/\./g, '').replace(',', '.')); }
 function formatMoneyInput(input) { const number = Number(digits(input.value)) / 100; input.value = number ? number.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''; }
 function showToast(title, message, error = false) { document.querySelector('#toastTitle').textContent = title; document.querySelector('#toastMessage').textContent = message; toast.classList.toggle('toast-error', error); toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 5000); }
+window.showSaleAttachmentError = message => showToast('Anexo inválido', message, true);
+let pendingAttachmentSaleId = null;
+async function finishAttachments(saleId, isPartner) {
+  submitButton.disabled = true;
+  submitButton.querySelector('span').textContent = 'Enviando anexos...';
+  let failed;
+  try { ({ failed } = await window.saleAttachments.upload(saleId)); }
+  catch { failed = window.saleAttachments.count(); }
+  submitButton.disabled = false;
+  if (failed) {
+    pendingAttachmentSaleId = saleId;
+    submitButton.querySelector('span').textContent = 'Tentar anexos novamente';
+    showToast('Venda salva, anexos pendentes', `${failed} arquivo(s) não foram enviados. Tente novamente antes de sair desta página.`, true);
+    return;
+  }
+  pendingAttachmentSaleId = null;
+  submitButton.querySelector('span').textContent = isPartner ? 'Enviar indicação' : 'Salvar venda';
+  showToast(isPartner ? 'Indicação enviada!' : 'Venda cadastrada!', 'Os dados e anexos foram enviados com sucesso.');
+  form.reset();
+  window.saleAttachments.reset();
+  syncPricingMode();
+  setTimeout(() => { window.location.href = 'vendas.html'; }, 1400);
+}
 function showDuplicateCpfError() { cpfError.textContent = 'Este CPF já possui uma venda cadastrada.'; cpfField.classList.add('invalid'); cpf.focus(); showToast('CPF já cadastrado', 'Não é possível criar outra venda para este CPF.', true); }
 
 async function loadOperators() {
@@ -143,6 +166,10 @@ form.addEventListener('input', (event) => event.target.closest('.field')?.classL
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
+  if (pendingAttachmentSaleId) {
+    await finishAttachments(pendingAttachmentSaleId, (await window.authReady)?.profile.role === 'parceiro');
+    return;
+  }
   cpfError.textContent = defaultCpfError;
   let valid = true;
   form.querySelectorAll('[required]').forEach((input) => { const ok = input.checkValidity() && (input !== cpf || validCpf(input.value)); input.closest('.field').classList.toggle('invalid', !ok); if (!ok) valid = false; });
@@ -184,7 +211,7 @@ form.addEventListener('submit', async (event) => {
   }
 
   const sale = { seller_id: user.id, origin: isPartner ? 'parceiro' : 'interna', operator_id: data.get('operadora'), plan_name: data.get('plano').trim(), is_multi: multi, internet_value: internetValue, mobile_value: mobileValue, value: totalValue, promo_value: promoValue, has_promotion: promotionActive, promotion_months: promotionDuration, post_promo_value: afterPromotionValue, due_day: Number(digits(data.get('vencimento'))), customer_name: data.get('nome').trim(), mother_name: data.get('mae').trim(), birth_date: data.get('nascimento'), cpf: digits(data.get('cpf')), full_address: data.get('endereco').trim(), address_complement: data.get('complemento').trim() || null, phone_1: digits(data.get('telefone1')), phone_2: digits(data.get('telefone2')) || null, email: data.get('email').trim().toLowerCase() };
-  const { error } = await window.supabaseClient.from('sales').insert(sale);
+  const { data: savedSale, error } = await window.supabaseClient.from('sales').insert(sale).select('id').single();
 
   submitButton.disabled = false;
   submitButton.querySelector('span').textContent = isPartner ? 'Enviar indicação' : 'Salvar venda';
@@ -194,12 +221,17 @@ form.addEventListener('submit', async (event) => {
     return;
   }
 
+  if (window.saleAttachments?.hasFiles()) {
+    await finishAttachments(savedSale.id, isPartner);
+    return;
+  }
+
   showToast(isPartner ? 'Indicação enviada!' : 'Venda cadastrada!', isPartner ? 'Os dados foram gravados e já estão em Minhas indicações.' : 'Os dados foram gravados e já estão em Minhas vendas.');
   form.reset();
   syncPricingMode();
   setTimeout(() => { window.location.href = 'vendas.html'; }, 1400);
 });
 
-document.querySelector('#clearButton').addEventListener('click', () => { if (confirm('Deseja limpar todos os campos preenchidos?')) { form.reset(); syncPricingMode(); cpfError.textContent = defaultCpfError; form.querySelectorAll('.invalid').forEach((element) => element.classList.remove('invalid')); } });
+document.querySelector('#clearButton').addEventListener('click', () => { if (pendingAttachmentSaleId) { window.location.href = 'vendas.html'; return; } if (confirm('Deseja limpar todos os campos preenchidos?')) { form.reset(); window.saleAttachments?.reset(); syncPricingMode(); cpfError.textContent = defaultCpfError; form.querySelectorAll('.invalid').forEach((element) => element.classList.remove('invalid')); } });
 document.querySelector('#menuButton').addEventListener('click', () => document.querySelector('#sidebar').classList.toggle('open'));
 loadOperators();

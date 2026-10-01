@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="sale-attachments.css?v=20261001" />
     <style>
       .plan-field>label{font-size:12px;font-weight:600;color:#273349}
       .plan-input-row{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:10px;align-items:stretch}
@@ -111,6 +112,12 @@
               <label class="field"><span>Data de nascimento <em>*</em></span><input name="nascimento" type="date" required /><small class="error">Informe a data de nascimento.</small></label>
               <label class="field"><span>CPF <em>*</em></span><input id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" required /><small class="error">Informe um CPF válido.</small></label>
             </div>
+            <div class="sale-attachments-field">
+              <label for="saleAttachments">📎 Anexar arquivos <small>(opcional)</small></label>
+              <input id="saleAttachments" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" multiple>
+              <small>Até 5 arquivos de 10 MB. O BKO poderá baixar por até 48 horas.</small>
+              <ul id="saleAttachmentSelection" aria-live="polite"></ul>
+            </div>
           </section>
 
           <section class="form-card">
@@ -136,6 +143,6 @@
 
     <div class="toast" id="toast" role="status"><span>✓</span><div><strong id="toastTitle">Venda cadastrada!</strong><small id="toastMessage">Os dados foram gravados com segurança.</small></div></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
-    <script src="supabase-config.js?v=2"></script><script src="auth-access-v2.js?v=20260914-sidebar"></script><script src="script.js"></script><script src="seller-note-form.js?v=2"></script>
+    <script src="supabase-config.js?v=2"></script><script src="auth-access-v2.js?v=20260914-sidebar"></script><script src="script.js"></script><script src="sale-attachments-form.js?v=20261001"></script><script src="seller-note-form.js?v=2"></script>
   </body>
 </html>
