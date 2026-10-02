@@ -22,6 +22,7 @@
   const panel=document.querySelector('#detailPanel');
   if(!panel)return;
   const clean=value=>String(value||'').trim();
+  const copyValue=(label,value)=>/^Telefone\s*[12]$/i.test(label)?clean(value).replace(/\D/g,''):clean(value);
   async function copy(text,label='Dado'){
     try{
       await navigator.clipboard.writeText(text);
@@ -33,7 +34,7 @@
     const label=item.querySelector(':scope > span')?.textContent.trim();
     const strong=item.querySelector('strong');
     if(!label||!strong)return;
-    const value=clean(strong.textContent);
+    const value=copyValue(label,strong.textContent);
     if(!value||/^não informad/i.test(value)||/^aguardando/i.test(value))return;
     if(strong.parentElement?.classList.contains('phone-detail-value')){
       const wrap=strong.parentElement;
@@ -58,7 +59,7 @@
       const all=document.createElement('button');all.type='button';all.className='copy-all-client-btn';all.innerHTML='<span>⧉</span> Copiar dados';
       all.addEventListener('click',()=>{
         const lines=[];
-        [...items,...installItems].forEach(item=>{const label=item.querySelector(':scope > span')?.textContent.trim(),strong=item.querySelector('strong'),value=clean(strong?.textContent);if(label&&value&&!/^não informad/i.test(value)&&!/^aguardando/i.test(value))lines.push(`${label}: ${value}`)});
+        [...items,...installItems].forEach(item=>{const label=item.querySelector(':scope > span')?.textContent.trim(),strong=item.querySelector('strong'),value=copyValue(label,strong?.textContent);if(label&&value&&!/^não informad/i.test(value)&&!/^aguardando/i.test(value))lines.push(`${label}: ${value}`)});
         copy(lines.join('\n'),'Dados do cliente');
       });
       heading.insertAdjacentElement('afterend',all);
