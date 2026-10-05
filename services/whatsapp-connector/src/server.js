@@ -157,9 +157,23 @@ async function createSocket() {
       const loggedOut = code === DisconnectReason.loggedOut;
       client = null;
       initializePromise = null;
-      if (manualDisconnect || loggedOut) {
+      if (manualDisconnect) {
         updateState({ status: 'disconnected', qr: null, phone: null, name: null, error: null });
         manualDisconnect = false;
+        return;
+      }
+      if (loggedOut) {
+        const store = authStore;
+        authStore = null;
+        try {
+          await store?.clear();
+        } catch (error) {
+          console.error('Falha ao remover sessão expirada:', error?.message || error);
+          updateState({ status: 'error', qr: null, error: 'Não foi possível remover a sessão expirada do WhatsApp.' });
+          return;
+        }
+        updateState({ status: 'initializing', qr: null, error: null });
+        setTimeout(() => initializeClient().catch(console.error), 1_500);
         return;
       }
       updateState({ status: 'initializing', qr: null, error: null });
@@ -178,7 +192,7 @@ async function createAttendanceSocket() {
   attendanceClient = socket;
   socket.ev.on('creds.update', saveCreds);
   socket.ev.on('messaging-history.set', async ({ messages=[] }) => {
-    console.log(\`Sincronizando histórico do Atendimento: \${messages.length} mensagens recebidas.\`);
+    console.log(`Sincronizando histórico do Atendimento: ${messages.length} mensagens recebidas.`);
     for (const item of messages) await persistAttendanceMessage(item).catch(error=>console.error('Falha ao sincronizar histórico do Atendimento:',error?.message||error));
   });
   socket.ev.on('messages.upsert', async ({ messages=[] }) => {
