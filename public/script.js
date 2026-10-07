@@ -55,7 +55,31 @@ async function finishAttachments(saleId, isPartner) {
   syncPricingMode();
   setTimeout(() => { window.location.href = 'vendas.html'; }, 1400);
 }
-function showDuplicateCpfError() { cpfError.textContent = 'Este CPF já possui uma venda cadastrada.'; cpfField.classList.add('invalid'); cpf.focus(); showToast('CPF já cadastrado', 'Não é possível criar outra venda para este CPF.', true); }
+const cpfExistingHint = document.createElement('small');
+cpfExistingHint.id = 'cpfExistingHint';
+cpfExistingHint.style.cssText = 'color:#8a5a12;margin-top:5px;font-size:12px;line-height:1.4';
+cpfExistingHint.hidden = true;
+cpfField.append(cpfExistingHint);
+let cpfLookupSequence = 0;
+function normalizeAddress(value) { return String(value || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('pt-BR'); }
+async function existingSalesForCpf(value) {
+  if (!validCpf(value)) return [];
+  const { data, error } = await window.supabaseClient.from('sales').select('full_address,address_complement,contract_number').eq('cpf', digits(value)).limit(20);
+  if (error) { console.error('Falha ao verificar vendas do CPF:', error); return []; }
+  return data || [];
+}
+async function showExistingCpfHint() {
+  const sequence = ++cpfLookupSequence, value = cpf.value;
+  cpfExistingHint.hidden = true;
+  if (!validCpf(value)) return;
+  await window.authReady;
+  const sales = await existingSalesForCpf(value);
+  if (sequence !== cpfLookupSequence || digits(cpf.value) !== digits(value)) return;
+  if (!sales.length) return;
+  const addresses = [...new Set(sales.map(sale => sale.full_address).filter(Boolean))];
+  cpfExistingHint.textContent = `Este CPF já tem ${sales.length} venda(s) visível(is): ${addresses.slice(0, 3).join(' | ')}${addresses.length > 3 ? '…' : ''}. Você pode cadastrar outro plano em outro endereço.`;
+  cpfExistingHint.hidden = false;
+}
 
 async function loadOperators() {
   const user = await window.authReady;
@@ -148,7 +172,8 @@ function syncPricingMode() {
   syncPromotionMode();
 }
 
-cpf.addEventListener('input', () => { cpf.value = maskCpf(cpf.value); cpfError.textContent = defaultCpfError; });
+cpf.addEventListener('input', () => { cpf.value = maskCpf(cpf.value); cpfError.textContent = defaultCpfError; cpfExistingHint.hidden = true; ++cpfLookupSequence; });
+cpf.addEventListener('blur', showExistingCpfHint);
 document.querySelectorAll('.phone').forEach((input) => input.addEventListener('input', () => { input.value = maskPhone(input.value); }));
 [valorInternet, valorMovel, valorTotal, valorPromo, postPromoValue].forEach((input) => input?.addEventListener('input', () => {
   formatMoneyInput(input);
@@ -177,6 +202,12 @@ form.addEventListener('submit', async (event) => {
 
   const user = await window.authReady;
   if (!user) return;
+  const existingSales = await existingSalesForCpf(cpf.value);
+  const address = normalizeAddress(form.elements.endereco.value);
+  const complement = normalizeAddress(form.elements.complemento.value);
+  if (existingSales.some(sale => normalizeAddress(sale.full_address) === address && normalizeAddress(sale.address_complement) === complement)) {
+    if (!window.confirm('Este CPF já tem uma venda neste endereço. Confirme se este é mesmo um segundo plano antes de continuar.')) return;
+  }
   const isPartner = user.profile.role === 'parceiro';
   submitButton.disabled = true;
   submitButton.querySelector('span').textContent = 'Salvando...';
@@ -216,7 +247,7 @@ form.addEventListener('submit', async (event) => {
   submitButton.disabled = false;
   submitButton.querySelector('span').textContent = isPartner ? 'Enviar indicação' : 'Salvar venda';
   if (error) {
-    if (error.code === '23505') { showDuplicateCpfError(); return; }
+    if (error.code === '23505') { showToast('Venda duplicada', 'Um identificador desta venda já está em uso. Confira os dados e tente novamente.', true); return; }
     showToast('Não foi possível salvar', error.code === '42501' ? 'Seu usuário não tem permissão para cadastrar vendas.' : 'Confira os dados e tente novamente.', true);
     return;
   }
@@ -232,6 +263,6 @@ form.addEventListener('submit', async (event) => {
   setTimeout(() => { window.location.href = 'vendas.html'; }, 1400);
 });
 
-document.querySelector('#clearButton').addEventListener('click', () => { if (pendingAttachmentSaleId) { window.location.href = 'vendas.html'; return; } if (confirm('Deseja limpar todos os campos preenchidos?')) { form.reset(); window.saleAttachments?.reset(); syncPricingMode(); cpfError.textContent = defaultCpfError; form.querySelectorAll('.invalid').forEach((element) => element.classList.remove('invalid')); } });
+document.querySelector('#clearButton').addEventListener('click', () => { if (pendingAttachmentSaleId) { window.location.href = 'vendas.html'; return; } if (confirm('Deseja limpar todos os campos preenchidos?')) { form.reset(); window.saleAttachments?.reset(); syncPricingMode(); cpfError.textContent = defaultCpfError; cpfExistingHint.hidden = true; ++cpfLookupSequence; form.querySelectorAll('.invalid').forEach((element) => element.classList.remove('invalid')); } });
 document.querySelector('#menuButton').addEventListener('click', () => document.querySelector('#sidebar').classList.toggle('open'));
 loadOperators();
