@@ -49,6 +49,33 @@
     wrap.className = 'topbar-notification-wrap';
     profile.parentNode.insertBefore(wrap, profile);
     wrap.innerHTML = `<div class="topbar-notifications"><button class="notification-bell" id="notificationBell" type="button" aria-label="Abrir notificações">🔔<span class="notification-count" id="notificationCount" hidden>0</span></button></div>`;
+    const colorToggle = document.createElement('button');
+    colorToggle.type = 'button';
+    colorToggle.className = 'notification-bell operator-color-toggle';
+    colorToggle.textContent = '🎨';
+    const preferenceKey = `contact:operator-colors:${window.currentUser.id}`;
+    let colorsEnabled = false;
+    try { colorsEnabled = localStorage.getItem(preferenceKey) === 'true'; } catch (_) {}
+    const applyColors = () => {
+      document.documentElement.classList.toggle('operator-colors-enabled', colorsEnabled);
+      colorToggle.setAttribute('aria-pressed', String(colorsEnabled));
+      const label = `${colorsEnabled ? 'Desativar' : 'Ativar'} cores dos cards por operadora`;
+      colorToggle.setAttribute('aria-label', label);
+      colorToggle.title = label;
+    };
+    colorToggle.addEventListener('click', () => {
+      colorsEnabled = !colorsEnabled;
+      try { localStorage.setItem(preferenceKey, String(colorsEnabled)); } catch (_) {}
+      applyColors();
+    });
+    window.addEventListener('storage', event => {
+      if (event.key === preferenceKey || event.key === null) {
+        colorsEnabled = event.key !== null && event.newValue === 'true';
+        applyColors();
+      }
+    });
+    wrap.insertBefore(colorToggle, wrap.firstChild);
+    applyColors();
     wrap.appendChild(profile);
 
     wrap.insertAdjacentHTML('beforeend', `
