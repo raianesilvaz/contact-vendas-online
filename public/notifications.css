@@ -7,6 +7,9 @@
 .operator-colors-enabled [data-operator*="tim" i] { --operator-tint:#eff6ff; --operator-accent:#004691; }
 .operator-colors-enabled [data-operator="oi" i] { --operator-tint:#fffbeb; --operator-accent:#b77900; }
 .operator-colors-enabled [data-operator*="algar" i] { --operator-tint:#f0fdf4; --operator-accent:#147d3f; }
+.operator-colors-enabled [data-operator*="alares" i] { --operator-tint:#f5f0ff; --operator-accent:#753bbd; }
+.operator-colors-enabled [data-operator*="desktop" i] { --operator-tint:#fff7ed; --operator-accent:#ea580c; }
+.operator-colors-enabled [data-operator*="vero" i] { --operator-tint:#fff1f2; --operator-accent:#e11d48; }
 .operator-colors-enabled :is(.sale-card,.bko-card,.installation-card)[data-operator] {
   background:var(--operator-tint, #fff);
   border-left:4px solid var(--operator-accent, #e2e8f0);
