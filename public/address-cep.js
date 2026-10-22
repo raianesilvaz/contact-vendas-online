@@ -31,7 +31,7 @@
         if (el(name).value === previous) el(name).value = values[index] || '';
       });
       lastCep = digits;
-      status.textContent = 'Endereço consultado. Confira os dados e informe número e complemento. Campos ausentes podem ser preenchidos manualmente.';
+      status.textContent = '';
       syncAddress();
     } catch (_) {
       if (token === sequence) status.textContent = 'Não foi possível consultar. Preencha manualmente ou clique em Buscar CEP para tentar novamente.';
@@ -44,7 +44,7 @@
     ++sequence; controller?.abort(); button.disabled = false; lastCep = '';
     const digits = cep.value.replace(/\D/g, '').slice(0, 8);
     cep.value = digits.replace(/^(\d{5})(\d)/, '$1-$2');
-    status.textContent = 'Confira o endereço ao trocar o CEP.';
+    status.textContent = '';
     syncAddress();
     if (digits.length === 8) lookup();
   });
@@ -56,7 +56,7 @@
   form.addEventListener('submit', syncAddress, true);
   form.addEventListener('reset', () => {
     ++sequence; controller?.abort(); lastCep = ''; button.disabled = false;
-    status.textContent = 'Digite o CEP para buscar. Você também pode preencher manualmente.';
+    status.textContent = '';
     setTimeout(syncAddress, 0);
   });
   syncAddress();
