@@ -57,9 +57,18 @@ async function editSalePhone(event) {
   }
 }
 
+function compactSaleAddress(value) {
+  const address = String(value || '').trim();
+  const match = address.match(/^RUA\s+(.+?),\s*N[ÚU]MERO\s+(.+?),\s*BAIRRO\s+(.+?),\s*CIDADE\s+(.+?),\s*ESTADO\s+([A-Z]{2}),\s*CEP\s+(\d{5}-?\d{3})$/i);
+  if (!match) return address;
+  const [, street, number, district, city, state, postal] = match;
+  const cep = postal.replace(/^(\d{5})(\d{3})$/, '$1-$2');
+  return cep + ' - ' + street + ', ' + number + ' - ' + district + ' - ' + city + '/' + state.toUpperCase();
+}
+
 function addressRow(value) {
   const edit = window.currentUser?.profile?.role === 'admin' ? '<button type="button" class="whatsapp-contact-link" style="border:0;cursor:pointer;background:#eef2ff;color:#475569;flex-shrink:0" data-edit-address aria-label="Editar endereço" title="Editar endereço"><svg viewBox="0 0 24 24" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2"><path d="m16 3 5 5M4 16 17 3a2 2 0 0 1 3 3L7 19l-4 1z"/></svg></button>' : '';
-  return `<div class="detail-item wide"><span>Endereço</span><div class="phone-detail-value"><strong style="min-width:0;overflow-wrap:anywhere">${escapeHtml(value || 'Não informado')}</strong>${edit}</div></div>`;
+  return `<div class="detail-item wide"><span>Endereço</span><div class="phone-detail-value"><strong style="min-width:0;overflow-wrap:anywhere">${escapeHtml(compactSaleAddress(value) || 'Não informado')}</strong>${edit}</div></div>`;
 }
 async function editSaleAddress(event) {
   if (window.currentUser?.profile?.role !== 'admin') return;
