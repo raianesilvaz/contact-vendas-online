@@ -7,7 +7,7 @@
   function syncAddress() {
     el('address_number').required = !noNumber.checked;
     el('address_number').disabled = noNumber.checked;
-    el('endereco').value = 'RUA ' + clean(el('address_street').value) + ', NÚMERO ' + (noNumber.checked ? 'S/N' : clean(el('address_number').value)) + ', BAIRRO ' + clean(el('address_district').value) + ', CIDADE ' + clean(el('address_city').value) + ', ESTADO ' + el('address_state').value + ', CEP ' + cep.value;
+    el('endereco').value = cep.value + ' - ' + clean(el('address_street').value) + ', ' + (noNumber.checked ? 'S/N' : clean(el('address_number').value)) + ' - ' + clean(el('address_district').value) + ' - ' + clean(el('address_city').value) + '/' + el('address_state').value;
   }
   async function lookup(force = false) {
     const digits = cep.value.replace(/\D/g, '');
