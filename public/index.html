@@ -124,7 +124,7 @@
             <div class="section-heading"><span class="step">03</span><div><h2>Endereço e contato</h2><p>Local de instalação e canais de contato.</p></div></div>
             <div class="form-grid">
               <label class="field"><span>CEP <em>*</em></span><input name="address_cep" id="addressCep" autocomplete="postal-code" inputmode="numeric" maxlength="9" pattern="[0-9]{5}-?[0-9]{3}" placeholder="00000-000" required /><small class="error">Informe um CEP com 8 dígitos.</small></label>
-              <div class="field"><span>Consulta de endereço</span><button class="button secondary" id="lookupCep" type="button">Buscar CEP</button><small id="cepStatus" role="status" aria-live="polite">Digite o CEP para buscar. Você também pode preencher manualmente.</small></div>
+              <div class="field"><span>Consulta de endereço</span><button class="button secondary" id="lookupCep" type="button">Buscar CEP</button><small id="cepStatus" role="status" aria-live="polite"></small></div>
               <label class="field field-full"><span>Rua / logradouro <em>*</em></span><input name="address_street" autocomplete="address-line1" required /><small class="error">Informe a rua.</small></label>
               <label class="field"><span>Número <em>*</em></span><input name="address_number" placeholder="Ex.: 123" required /><small class="error">Informe o número ou marque Sem número.</small></label>
               <label class="field" style="justify-content:center"><span><input id="addressNoNumber" type="checkbox" style="width:18px;height:18px;vertical-align:middle" /> Sem número</span></label>
@@ -151,6 +151,6 @@
 
     <div class="toast" id="toast" role="status"><span>✓</span><div><strong id="toastTitle">Venda cadastrada!</strong><small id="toastMessage">Os dados foram gravados com segurança.</small></div></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
-    <script src="supabase-config.js?v=2"></script><script src="auth-access-v2.js?v=20260914-sidebar"></script><script src="address-cep.js?v=20261022"></script><script src="script.js?v=20261007-multi-cpf"></script><script src="sale-attachments-form.js?v=20261001"></script><script src="seller-note-form.js?v=2"></script>
+    <script src="supabase-config.js?v=2"></script><script src="auth-access-v2.js?v=20260914-sidebar"></script><script src="address-cep.js?v=20261022-clean"></script><script src="script.js?v=20261007-multi-cpf"></script><script src="sale-attachments-form.js?v=20261001"></script><script src="seller-note-form.js?v=2"></script>
   </body>
 </html>
