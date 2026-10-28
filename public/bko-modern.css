@@ -69,3 +69,15 @@ html.modern-visual-enabled .bko-card .queue-return>span{display:none}
 html.modern-visual-enabled .bko-card .queue-return strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px;line-height:20px}
 @media(max-width:700px){html.modern-visual-enabled .bko-queue{grid-template-columns:repeat(2,minmax(0,1fr))}html.modern-visual-enabled .bko-card[data-operator]{padding:14px}}
 @media(max-width:520px){html.modern-visual-enabled .bko-queue{grid-template-columns:1fr}}
+
+/* Wider, lower fixed cards. */
+html.modern-visual-enabled .bko-queue{grid-template-columns:repeat(auto-fill,minmax(310px,1fr));grid-auto-rows:220px}
+html.modern-visual-enabled .bko-card[data-operator]{height:220px;min-height:220px;max-height:220px;padding:13px 15px}
+html.modern-visual-enabled .bko-card .bko-card-body{grid-template-rows:36px 36px 30px 14px 20px 28px;gap:3px}
+html.modern-visual-enabled .bko-card h2{font-size:14px;line-height:18px;max-height:36px}
+html.modern-visual-enabled .bko-card-body>p{font-size:11px;line-height:15px;max-height:30px}
+html.modern-visual-enabled .bko-card .contract-preview{max-height:14px;line-height:14px}
+html.modern-visual-enabled .bko-card .modern-operator-brand{max-height:20px}
+html.modern-visual-enabled .bko-card .queue-return{height:28px;padding:4px 8px}
+@media(max-width:700px){html.modern-visual-enabled .bko-queue{grid-template-columns:repeat(2,minmax(0,1fr))}html.modern-visual-enabled .bko-card[data-operator]{padding:13px 12px}}
+@media(max-width:520px){html.modern-visual-enabled .bko-queue{grid-template-columns:1fr}}
