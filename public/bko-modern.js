@@ -45,6 +45,5 @@
   });
   // O botão de visualização já existe no cabeçalho global. Não criar duplicatas.
   // Novo layout oficial como padrão a cada carregamento.
-  root.classList.add('modern-visual-enabled');
   syncDrawer();
 })();
