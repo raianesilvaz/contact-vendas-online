@@ -109,3 +109,9 @@ html.modern-visual-enabled .detail-drawer .detail-danger strong,html.modern-visu
 html.modern-visual-enabled .detail-drawer .detail-danger span,html.modern-visual-enabled .sale-detail-drawer .detail-danger span{color:#64817f}
 html.modern-visual-enabled .detail-drawer .delete-sale,html.modern-visual-enabled .sale-detail-drawer .delete-sale{border-color:#b9e5e1;background:#fff;color:#008b8b}
 html.modern-visual-enabled .detail-drawer .delete-sale:hover,html.modern-visual-enabled .sale-detail-drawer .delete-sale:hover{background:#e5faf6;color:#006e73;box-shadow:0 7px 18px #008b8b20}
+
+/* Rodapé de exclusão no drawer BKO — seletor real da estrutura */
+html.modern-visual-enabled .detail-danger,.detail-danger{background:#eefaf8!important;border-top:1px solid #cce8e5!important}
+html.modern-visual-enabled .detail-danger strong,.detail-danger strong{color:#006e73!important}
+html.modern-visual-enabled .detail-danger span,.detail-danger span{color:#557d7b!important}
+/* Exclusão permanece vermelha por segurança */
