@@ -100,3 +100,5 @@ html.modern-visual-enabled .bko-card .modern-operator-brand{grid-column:2;grid-r
 html.modern-visual-enabled .bko-card .bko-card-body{grid-template-columns:auto minmax(0,1fr)}
 html.modern-visual-enabled .bko-card .modern-operator-brand{grid-column:1;justify-self:start}
 html.modern-visual-enabled .bko-card .queue-return{grid-column:2}
+
+html.modern-visual-enabled .bko-card .modern-operator-brand:has(img){padding:0;max-height:30px;height:30px;background:transparent;overflow:hidden}
