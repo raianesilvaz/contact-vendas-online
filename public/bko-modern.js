@@ -10,7 +10,11 @@
       const key = Object.keys(brands).find(key => name.toLowerCase().includes(key));
       const brand = key ? brands[key] : [name,'#edf1f7','#344152'];
       const badge = '<span class="modern-operator-brand" style="--brand-bg:' + brand[1] + ';--brand-fg:' + brand[2] + '" aria-label="Operadora ' + escapeHtml(name) + '">' + (['claro','vero','desktop','alares'].includes(key) ? '<img src="operator-logos/' + key + '.svg" alt="' + escapeHtml(name) + '" width="76" height="30" style="display:block;width:76px;height:30px;object-fit:cover;border-radius:4px">' : escapeHtml(brand[0])) + '</span>';
-      return original(s,index).replace('<div class="queue-return">',badge + '<div class="queue-return">');
+      const originalHtml = original(s,index);
+      const operatorText = ' · ' + escapeHtml(s.operators?.name || 'Operadora') + ' · ';
+      const compactHtml = originalHtml.replace(operatorText, ' · ');
+      const bodyHtml = root.classList.contains('modern-visual-enabled') ? compactHtml : originalHtml;
+      return bodyHtml.replace('<div class="queue-return">',badge + '<div class="queue-return">');
     };
     window.render?.();
   }
@@ -29,7 +33,8 @@
     }
   }
   new MutationObserver(syncDrawer).observe(panel,{attributes:true,attributeFilter:['class']});
-  new MutationObserver(syncDrawer).observe(root,{attributes:true,attributeFilter:['class']});
+  let previousModern = root.classList.contains('modern-visual-enabled');
+  new MutationObserver(() => { syncDrawer(); const modern = root.classList.contains('modern-visual-enabled'); if (modern !== previousModern) { previousModern = modern; window.render?.(); } }).observe(root,{attributes:true,attributeFilter:['class']});
   document.addEventListener('keydown',event => {
     if (!locked || event.key !== 'Tab') return;
     const nodes = [...panel.querySelectorAll('button,input,select,textarea,a[href],[tabindex="0"]')].filter(el=>!el.disabled && el.getClientRects().length);
