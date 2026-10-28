@@ -5,7 +5,9 @@ let salesPage = 1, salesTotal = 0, salesRequest = 0, salesSearchTimer;
 const salesPager = document.createElement('nav');
 salesPager.className = 'pagination'; salesPager.setAttribute('aria-label','Páginas de vendas');
 const salesRange = document.createElement('p'); salesRange.className = 'result-range';
-list.after(salesPager, salesRange);
+const salesListColumn = document.createElement('div');
+salesListColumn.className = 'sales-list-column';
+list.before(salesListColumn); salesListColumn.append(list, salesPager, salesRange);
 function salesBaseQuery(columns, options, includeSearch = true) {
   let query = window.supabaseClient.from('sales').select(columns, options);
   if (responsibleFilter !== 'all') query = query.eq('seller_id', responsibleFilter);
