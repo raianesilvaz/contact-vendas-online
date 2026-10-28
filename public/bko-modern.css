@@ -81,3 +81,17 @@ html.modern-visual-enabled .bko-card .modern-operator-brand{max-height:20px}
 html.modern-visual-enabled .bko-card .queue-return{height:28px;padding:4px 8px}
 @media(max-width:700px){html.modern-visual-enabled .bko-queue{grid-template-columns:repeat(2,minmax(0,1fr))}html.modern-visual-enabled .bko-card[data-operator]{padding:13px 12px}}
 @media(max-width:520px){html.modern-visual-enabled .bko-queue{grid-template-columns:1fr}}
+
+/* Larger type and a shared observation/operator footer. */
+html.modern-visual-enabled .bko-card .bko-card-body{grid-template-columns:minmax(0,1fr) auto;grid-template-rows:38px 44px 38px 18px 34px;column-gap:8px;row-gap:4px}
+html.modern-visual-enabled .bko-card .card-top{grid-column:1/-1;grid-row:1}
+html.modern-visual-enabled .bko-card .status-badge{font-size:9px;line-height:12px;padding:3px 6px}
+html.modern-visual-enabled .bko-card .card-top small{font-size:11px;line-height:15px}
+html.modern-visual-enabled .bko-card h2{grid-column:1/-1;grid-row:2;font-size:16px;line-height:22px;max-height:44px;font-weight:700}
+html.modern-visual-enabled .bko-card-body>p{grid-column:1/-1;grid-row:3;font-size:13px;line-height:19px;max-height:38px}
+html.modern-visual-enabled .bko-card .contract-preview{grid-column:1/-1;grid-row:4;max-height:18px;line-height:18px}
+html.modern-visual-enabled .bko-card .contract-preview span{font-size:9px}
+html.modern-visual-enabled .bko-card .contract-preview strong{font-size:12px}
+html.modern-visual-enabled .bko-card .queue-return{grid-column:1;grid-row:5;height:34px;padding:7px 9px;align-self:center}
+html.modern-visual-enabled .bko-card .queue-return strong{font-size:12px;line-height:20px}
+html.modern-visual-enabled .bko-card .modern-operator-brand{grid-column:2;grid-row:5;margin:0;align-self:center;justify-self:end;font-size:12px;line-height:18px;max-height:28px;padding:4px 7px}
