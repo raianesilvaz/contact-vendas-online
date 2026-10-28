@@ -115,3 +115,8 @@ html.modern-visual-enabled .detail-danger,.detail-danger{background:#eefaf8!impo
 html.modern-visual-enabled .detail-danger strong,.detail-danger strong{color:#006e73!important}
 html.modern-visual-enabled .detail-danger span,.detail-danger span{color:#557d7b!important}
 /* Exclusão permanece vermelha por segurança */
+
+/* Alternância entre novo layout oficial e modo antigo */
+.bko-layout-toggle{margin-left:auto;white-space:nowrap;padding:8px 12px;border:1px solid #9cdbd6;border-radius:9px;background:#e8faf7;color:#007d7b;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.bko-layout-toggle:hover{background:#d4f5f0;border-color:#00a99f}
+.bko-layout-toggle:focus-visible{outline:2px solid #00a99f;outline-offset:2px}
