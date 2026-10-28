@@ -1,0 +1,23 @@
+/* CONTACT primary identity: blue. Operator and status palettes stay independent. */
+:root{--orange:#2563eb;--orange-dark:#1d4ed8;--blue:#2563eb}
+.brand-mark,.button.primary,.search-submit,.installation-action,.chip-activation-form button,.commercial-save,.notification-count{background:#2563eb!important;border-color:#2563eb!important}
+.button.primary:hover,.search-submit:hover,.installation-action:hover,.chip-activation-form button:hover{background:#1d4ed8!important}
+.button.primary{box-shadow:0 8px 20px #2563eb25!important}
+.sidebar .nav-item.active{box-shadow:inset 3px 0 #2563eb!important}
+.sidebar .nav-item.active>span.contact-nav-icon,.sidebar .nav-item:hover>span.contact-nav-icon{color:#60a5fa!important}
+.eyebrow,.chips-heading .eyebrow,.installations-heading .eyebrow,.notification-panel-head span,.notification-panel-tools button,.open-detail,.sales-period-clear{color:#2563eb!important}
+.filter-tabs button.active,.chip-tabs button.active,.sales-period-presets button.active,.bko-period-presets button.active{background:#eff6ff!important;color:#1d4ed8!important}
+.chip-tabs button.active span{background:#dbeafe!important;color:#1d4ed8!important}
+.notification-item.unread{background:#eff6ff!important}
+.notification-bell.operator-color-toggle[aria-pressed="true"],.notification-bell.modern-visual-toggle[aria-pressed="true"]{background:#eff6ff!important;border-color:#2563eb!important;color:#2563eb!important}
+input:focus,select:focus,textarea:focus{border-color:#2563eb!important;box-shadow:0 0 0 3px #2563eb18!important}
+input[type="checkbox"]{accent-color:#2563eb}
+.multi-toggle{border-color:#bfdbfe!important;background:#eff6ff!important;color:#1d4ed8!important}
+.multi-toggle input:checked+.multi-toggle-track{background:#2563eb!important}
+.promotion-note{background:#eff6ff!important;color:#1e40af!important}
+.notification-panel-tools button{color:#2563eb!important}
+html.modern-visual-enabled .bko-card.selected,.bko-card.selected,.sale-card.selected{border-color:#2563eb!important;box-shadow:0 0 0 2px #2563eb20!important}
+html.modern-visual-enabled .bko-card.selected{border-left-color:#2563eb!important}
+html.modern-visual-enabled .bko-content button:focus-visible{outline-color:#93c5fd!important}
+.bko-card.selected .queue-position{background:#eff6ff!important;color:#2563eb!important}
+.status-pill i{background:#2563eb!important}
