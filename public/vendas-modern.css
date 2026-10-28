@@ -1,0 +1,25 @@
+
+html.modern-visual-enabled .queue-content .queue-layout{display:block}
+html.modern-visual-enabled .queue-content .sales-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));grid-auto-rows:240px;gap:14px}
+html.modern-visual-enabled .modern-sale-card[data-operator]{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:36px 44px 36px 18px 22px 34px;gap:3px;height:240px;min-height:240px;max-height:240px;overflow:hidden;padding:14px;border:1px solid #e2e7ef;border-left:3px solid var(--operator-accent,#e2e7ef);background:#fff;border-radius:14px;text-align:left}
+html.modern-visual-enabled .modern-sale-top{overflow:hidden}
+html.modern-visual-enabled .modern-sale-top .card-badges{display:flex;align-items:center;gap:4px;white-space:nowrap}
+html.modern-visual-enabled .modern-sale-top .status-badge{font-size:9px;padding:3px 6px;line-height:12px}
+html.modern-visual-enabled .modern-sale-top small{display:block;color:#8a96a7;font-size:11px;line-height:15px;margin-top:3px}
+html.modern-visual-enabled .modern-sale-card h2{margin:0;font-size:16px;line-height:22px;max-height:44px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+html.modern-visual-enabled .modern-sale-plan{margin:0;font-size:13px;line-height:18px;color:#778398;max-height:36px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+html.modern-visual-enabled .modern-sale-contract{font-size:10px;line-height:18px;color:#778398;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+html.modern-visual-enabled .modern-sale-contract b{font-size:12px;color:#344152}
+html.modern-visual-enabled .modern-sale-installation{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+html.modern-visual-enabled .modern-sale-installation .sale-installation-preview{padding:0!important;overflow:hidden;text-overflow:ellipsis;font-size:11px!important}
+html.modern-visual-enabled .modern-sale-bottom{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:center}
+html.modern-visual-enabled .modern-sale-logo img{display:block;width:76px;height:30px;object-fit:cover;border-radius:4px}
+html.modern-visual-enabled .modern-sale-logo>span{font-size:12px;font-weight:700}
+html.modern-visual-enabled .modern-sale-obs{display:block;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;background:#f6f8fb;border-radius:8px;padding:7px 9px;font-size:12px;line-height:20px}
+html.modern-visual-enabled .queue-content .detail-panel:not(.open){display:none}
+html.modern-visual-enabled .queue-content .detail-panel.open{position:fixed;inset:0 0 0 auto;width:min(560px,100vw);height:100dvh;max-height:100dvh;z-index:1201;background:#fff;border-radius:0;box-shadow:-18px 0 70px #13203926;overflow:auto}
+html.modern-visual-enabled body:has(.queue-content .detail-panel.open){overflow:hidden}
+html.modern-visual-enabled body:has(.queue-content) #mobileOverlay.show{display:block;position:fixed;inset:0;z-index:1200;background:#17233780;backdrop-filter:blur(2px)}
+html.modern-visual-enabled .queue-content .detail-header{position:sticky;top:0;z-index:2;background:#fff}
+@media(max-width:700px){html.modern-visual-enabled .queue-content .sales-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
+@media(max-width:520px){html.modern-visual-enabled .queue-content .sales-list{grid-template-columns:1fr}}
