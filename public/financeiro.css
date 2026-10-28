@@ -30,3 +30,10 @@
 /* Permite selecionar/copiar dados exibidos no tratamento financeiro */
 .finance-drawer,.finance-drawer .drawer-head,.finance-drawer .drawer-body,.finance-drawer h2,.finance-drawer p,.finance-drawer strong,.finance-drawer span,.finance-drawer small{user-select:text;-webkit-user-select:text}
 .finance-drawer button,.finance-drawer input,.finance-drawer select,.finance-drawer textarea{user-select:auto;-webkit-user-select:auto}
+
+/* CONTACT identity for financial navigation and actions. */
+.month-row button.active:not(.reneg-tab),.treat-button,.finance-pagination button.active,.primary-action{background:#008b8b!important;border-color:#008b8b!important;color:#fff!important}
+.treat-button:hover,.primary-action:hover{background:#006e73!important;border-color:#006e73!important}
+.finance-status.follow{background:#e5faf6;color:#006e73}
+.finance-content a[href*="cobrancas"],.finance-content a[href*="campanhas"]{background:#008b8b!important;border-color:#008b8b!important;color:#fff!important;box-shadow:0 7px 18px #008b8b24!important}
+.finance-tools input:focus,.finance-tools select:focus{border-color:#008b8b;box-shadow:0 0 0 3px #008b8b18}
