@@ -95,3 +95,8 @@ html.modern-visual-enabled .bko-card .contract-preview strong{font-size:12px}
 html.modern-visual-enabled .bko-card .queue-return{grid-column:1;grid-row:5;height:34px;padding:7px 9px;align-self:center}
 html.modern-visual-enabled .bko-card .queue-return strong{font-size:12px;line-height:20px}
 html.modern-visual-enabled .bko-card .modern-operator-brand{grid-column:2;grid-row:5;margin:0;align-self:center;justify-self:end;font-size:12px;line-height:18px;max-height:28px;padding:4px 7px}
+
+/* Operator on the left, observation on the right. */
+html.modern-visual-enabled .bko-card .bko-card-body{grid-template-columns:auto minmax(0,1fr)}
+html.modern-visual-enabled .bko-card .modern-operator-brand{grid-column:1;justify-self:start}
+html.modern-visual-enabled .bko-card .queue-return{grid-column:2}
