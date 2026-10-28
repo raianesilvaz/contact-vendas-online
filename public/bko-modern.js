@@ -43,31 +43,8 @@
     if(event.shiftKey && document.activeElement===first){event.preventDefault();last.focus()}
     else if(!event.shiftKey && document.activeElement===last){event.preventDefault();first.focus()}
   });
-  // Novo layout é o padrão; o usuário pode voltar ao clássico quando desejar.
-  const key = 'contact-bko-layout-v3';
-  const saved = sessionStorage.getItem(key);
-  root.classList.toggle('modern-visual-enabled', saved !== 'classic');
-  const topbar = document.querySelector('.topbar');
-  if (topbar && !document.getElementById('bkoLayoutToggle')) {
-    const btn = document.createElement('button');
-    btn.id = 'bkoLayoutToggle'; btn.type = 'button'; btn.className = 'bko-layout-toggle';
-    btn.setAttribute('aria-label', 'Alternar layout da Fila BKO');
-    btn.title = 'Alternar layout da Fila BKO';
-    const update = () => {
-      const modern = root.classList.contains('modern-visual-enabled');
-      btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M10 3v18"/></svg>';
-      btn.title = modern ? 'Ativar modo antigo da BKO' : 'Ativar novo layout da BKO';
-      btn.setAttribute('aria-label', btn.title);
-      btn.setAttribute('aria-pressed', String(!modern));
-    };
-    btn.addEventListener('click', () => {
-      const modern = !root.classList.contains('modern-visual-enabled');
-      root.classList.toggle('modern-visual-enabled', modern);
-      sessionStorage.setItem(key, modern ? 'modern' : 'classic');
-      update();
-    });
-    topbar.insertBefore(btn, topbar.querySelector('.profile'));
-    update();
-  }
+  // O botão de visualização já existe no cabeçalho global. Não criar duplicatas.
+  // Novo layout oficial como padrão a cada carregamento.
+  root.classList.add('modern-visual-enabled');
   syncDrawer();
 })();
