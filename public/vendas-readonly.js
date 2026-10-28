@@ -107,6 +107,20 @@ async function loadSales(silent=false){
   sales=result.data||[];
   for(const [id,res] of [['totalCount',total],['pendingCount',pending],['connectedCount',connected],['rejectedCount',rejected]])if(!res.error)document.querySelector('#'+id).textContent=res.count||0;
   render();
+  // Links diretos do sininho abrem a venda mesmo fora da página atual da listagem.
+  const directSaleId = new URLSearchParams(window.location.search).get('sale');
+  if (directSaleId && /^[0-9a-f-]{36}$/i.test(directSaleId)) {
+    const match = sales.find(row => row.id === directSaleId);
+    if (match) openSale(directSaleId);
+    else {
+      const { data: directSale, error: directError } = await window.supabaseClient.from('sales').select('*, operators(name), seller:profiles!sales_seller_id_fkey(full_name)').eq('id', directSaleId).maybeSingle();
+      if (!directError && directSale) {
+        sales = [directSale, ...sales.filter(row => row.id !== directSaleId)];
+        render(); openSale(directSaleId);
+      }
+    }
+    history.replaceState(null, '', window.location.pathname + window.location.hash);
+  }
   updateSalesPriorities();
   if(openId&&sales.some(item=>item.id===openId))openSale(openId);else if(openId)closeDetail();
   setupRealtime(user);
