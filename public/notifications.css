@@ -14,3 +14,16 @@
   background:var(--operator-tint, #fff);
   border-left:4px solid var(--operator-accent, #e2e8f0);
 }
+
+/* Ações explícitas para notificações de instalação */
+.notification-item{cursor:default;grid-template-columns:24px minmax(0,1fr);gap:9px;padding:13px 14px}
+.notification-item-body{min-width:0}
+.notification-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.notification-actions button{border-radius:8px;padding:8px 10px;font-size:11px;font-weight:700;line-height:1.2;cursor:pointer;transition:background .15s,border-color .15s}
+.notification-action-sale{background:#eef7f7;border:1px solid #b9dedd;color:#006d70}
+.notification-action-sale:hover{background:#d9f0ef}
+.notification-action-whatsapp{background:#008f89;border:1px solid #008f89;color:#fff}
+.notification-action-whatsapp:hover{background:#00746f}
+.notification-actions button:focus-visible{outline:3px solid #7ddbd4;outline-offset:2px}
+.notification-panel-head span,.notification-panel-tools button{color:#008f89}
+.notification-item.unread{background:#effaf8}
