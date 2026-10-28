@@ -146,8 +146,10 @@
     document.addEventListener('keydown', event => { if (event.key === 'Escape') closePanel(); });
     document.querySelector('#notificationMarkAll').addEventListener('click', markAllRead);
     document.querySelector('#notificationList').addEventListener('click', event => {
+      const action = event.target.closest('[data-notification-action]');
+      if (action) { openNotification(action.dataset.notificationId, action.dataset.notificationAction); return; }
       const item = event.target.closest('[data-notification-id]');
-      if (item) openNotification(item.dataset.notificationId);
+      if (item) openNotification(item.dataset.notificationId, 'sale');
     });
   }
 
@@ -163,10 +165,15 @@
       return;
     }
     list.innerHTML = notifications.map(item => `
-      <button class="notification-item ${item.read_at ? '' : 'unread'}" type="button" data-notification-id="${item.id}">
+      <div class="notification-item ${item.read_at ? '' : 'unread'}" data-notification-id="${item.id}">
         <span class="notification-item-icon">${iconByType[item.type] || '🔔'}</span>
-        <span><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.message)}</p><small>${formatRelative(item.created_at)} · ${item.type === 'installation_reminder' ? 'Ver venda / avisar cliente →' : 'Ver venda →'}</small></span>
-      </button>`).join('');
+        <div class="notification-item-body"><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.message)}</p><small>${formatRelative(item.created_at)}</small>
+          <div class="notification-actions">
+            <button type="button" class="notification-action-sale" data-notification-action="sale" data-notification-id="${item.id}">👁 Ver venda</button>
+            ${item.type === 'installation_reminder' ? `<button type="button" class="notification-action-whatsapp" data-notification-action="whatsapp" data-notification-id="${item.id}">💬 Avisar cliente</button>` : ''}
+          </div>
+        </div>
+      </div>`).join(''););
   }
 
   async function loadNotifications() {
@@ -214,7 +221,7 @@
     }
   }
 
-  async function openNotification(id) {
+  async function openNotification(id, action = 'sale') {
     const item = notifications.find(row => row.id === id);
     if (!item) return;
     if (!item.read_at) {
@@ -223,7 +230,7 @@
       if (!error) { item.read_at = now; render(); }
     }
     if (!item.sale_id) return;
-    if (item.type === 'installation_reminder') {
+    if (item.type === 'installation_reminder' && action === 'whatsapp') {
       const {data:sale} = await window.supabaseClient.from('sales').select('customer_name,phone_1,phone_2').eq('id',item.sale_id).maybeSingle();
       const phone=String(sale?.phone_1||sale?.phone_2||'').replace(/\\D/g,'');
       if(phone){
@@ -232,6 +239,7 @@
         window.open('https://wa.me/'+number+'?text='+encodeURIComponent(message),'_blank','noopener,noreferrer');
       }
     }
+    if (action === 'whatsapp') return;
     const target = window.currentUser?.profile?.role === 'admin' ? 'bko.html' : 'vendas.html';
     window.location.href = `${target}?sale=${encodeURIComponent(item.sale_id)}`;
   }
