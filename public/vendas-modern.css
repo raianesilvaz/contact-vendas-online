@@ -23,3 +23,7 @@ html.modern-visual-enabled body:has(.queue-content) #mobileOverlay.show{display:
 html.modern-visual-enabled .queue-content .detail-header{position:sticky;top:0;z-index:2;background:#fff}
 @media(max-width:700px){html.modern-visual-enabled .queue-content .sales-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
 @media(max-width:520px){html.modern-visual-enabled .queue-content .sales-list{grid-template-columns:1fr}}
+
+/* Company badges share the BKO appearance and never shrink into plain letters. */
+html.modern-visual-enabled .modern-sale-top .rampin-badge{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:22px;width:22px;height:22px;padding:0;border-radius:999px;background:#ffd21f;color:#b51616;border:2px solid #ef3434;font-size:12px;font-weight:800;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+html.modern-visual-enabled .modern-sale-top .card-badges{min-height:22px;flex-wrap:nowrap}
