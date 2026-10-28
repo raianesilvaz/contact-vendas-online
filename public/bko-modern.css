@@ -102,3 +102,10 @@ html.modern-visual-enabled .bko-card .modern-operator-brand{grid-column:1;justif
 html.modern-visual-enabled .bko-card .queue-return{grid-column:2}
 
 html.modern-visual-enabled .bko-card .modern-operator-brand:has(img){padding:0;max-height:30px;height:30px;background:transparent;overflow:hidden}
+
+/* CONTACT: acabamento visual do painel lateral de detalhes */
+html.modern-visual-enabled .detail-drawer .detail-danger,html.modern-visual-enabled .sale-detail-drawer .detail-danger{background:#f3fbfa;border-top:1px solid #d7eae8}
+html.modern-visual-enabled .detail-drawer .detail-danger strong,html.modern-visual-enabled .sale-detail-drawer .detail-danger strong{color:#006e73}
+html.modern-visual-enabled .detail-drawer .detail-danger span,html.modern-visual-enabled .sale-detail-drawer .detail-danger span{color:#64817f}
+html.modern-visual-enabled .detail-drawer .delete-sale,html.modern-visual-enabled .sale-detail-drawer .delete-sale{border-color:#b9e5e1;background:#fff;color:#008b8b}
+html.modern-visual-enabled .detail-drawer .delete-sale:hover,html.modern-visual-enabled .sale-detail-drawer .delete-sale:hover{background:#e5faf6;color:#006e73;box-shadow:0 7px 18px #008b8b20}
