@@ -173,7 +173,7 @@
             ${item.type === 'installation_reminder' ? `<button type="button" class="notification-action-whatsapp" data-notification-action="whatsapp" data-notification-id="${item.id}">💬 Avisar cliente</button>` : ''}
           </div>
         </div>
-      </div>`).join(''););
+      </div>`).join('');
   }
 
   async function loadNotifications() {
