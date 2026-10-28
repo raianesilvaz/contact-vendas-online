@@ -35,3 +35,19 @@ html.modern-visual-enabled .bko-content .summary-grid article{border-radius:13px
 html.modern-visual-enabled .bko-content button:focus-visible{outline:3px solid #fdba74;outline-offset:2px}
 @media(max-width:700px){html.modern-visual-enabled .bko-content{padding:20px 14px}html.modern-visual-enabled .bko-queue{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}html.modern-visual-enabled .bko-card[data-operator]{padding:14px 11px}}
 @media(max-width:440px){html.modern-visual-enabled .bko-queue{grid-template-columns:1fr}}
+
+/* Compact cards: remove inherited inner padding and browser button centering. */
+html.modern-visual-enabled .bko-queue{grid-template-columns:repeat(auto-fill,minmax(280px,1fr));align-items:start;gap:14px}
+html.modern-visual-enabled .bko-card[data-operator]{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;min-height:0;height:auto;padding:16px;align-self:start}
+html.modern-visual-enabled .bko-card .bko-card-body{display:flex;flex-direction:column;align-items:stretch;width:100%;padding:0;min-width:0}
+html.modern-visual-enabled .bko-card .card-top{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:6px}
+html.modern-visual-enabled .bko-card .card-badges{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+html.modern-visual-enabled .bko-card .card-top small{margin:0;font-size:10px;line-height:1.4}
+html.modern-visual-enabled .bko-card h2{margin:10px 0 5px;font-size:15px;line-height:1.4;letter-spacing:-.2px}
+html.modern-visual-enabled .bko-card p{font-size:12px;line-height:1.5}
+html.modern-visual-enabled .bko-card .contract-preview{margin-top:8px}
+html.modern-visual-enabled .bko-card .modern-operator-brand{align-self:flex-start;margin-top:9px;font-size:11px;padding:4px 7px}
+html.modern-visual-enabled .bko-card .queue-return{margin-top:10px;padding:8px 10px}
+html.modern-visual-enabled .bko-card .queue-return strong{font-size:12px}
+@media(max-width:700px){html.modern-visual-enabled .bko-queue{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}html.modern-visual-enabled .bko-card[data-operator]{padding:13px}}
+@media(max-width:520px){html.modern-visual-enabled .bko-queue{grid-template-columns:1fr}}
