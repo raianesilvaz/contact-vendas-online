@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css?v=20261028-beta-contact-1" />
     <link rel="stylesheet" href="bko-whatsapp-shortcut.css?v=20260903-1" />
-  <link rel="stylesheet" href="sidebar-collapse.css?v=20260914-1"><link rel="stylesheet" href="vendas-modern.css?v=20261028-company-badge"></head>
+  <link rel="stylesheet" href="sidebar-collapse.css?v=20260914-1"><link rel="stylesheet" href="vendas-modern.css?v=20261028-priorities-1"></head>
   <body>
     <aside class="sidebar" id="sidebar">
       <div class="brand"><span class="brand-mark">C</span><span class="brand-name">CONTACT</span></div>
@@ -39,6 +39,7 @@
           <article><span class="summary-icon approved">✓</span><div><strong id="connectedCount">0</strong><small>Conectadas</small></div></article>
           <article><span class="summary-icon rejected">×</span><div><strong id="rejectedCount">0</strong><small>Reprovadas</small></div></article>
         </section>
+        <section class="sales-priorities" id="salesPriorities" aria-label="Minhas prioridades"><div class="sales-priorities-head"><div><span class="eyebrow">FOCO DO DIA</span><h2>Minhas prioridades</h2></div><button id="priorityCollapse" type="button">Ocultar prioridades</button></div><div class="sales-priorities-grid"><button type="button" data-priority="atencao" aria-pressed="false"><span class="priority-symbol attention">!</span><span><strong id="priorityAttention">—</strong><small>Vendas que precisam de atenção</small></span><span class="priority-arrow">→</span></button><button type="button" data-priority="aceites" aria-pressed="false"><span class="priority-symbol acceptance">✓</span><span><strong id="priorityAcceptances">—</strong><small>Clientes aguardando aceite</small></span><span class="priority-arrow">→</span></button><button type="button" data-priority="instalacoes" aria-pressed="false"><span class="priority-symbol installation">⌁</span><span><strong id="priorityInstallations">—</strong><small>Instalações previstas para hoje</small></span><span class="priority-arrow">→</span></button></div></section>
         <section class="sales-period-bar" aria-label="Filtrar vendas por período">
           <strong>Período do lançamento</strong>
           <label class="sales-responsible-filter" id="salesResponsibleBox" hidden>
@@ -61,6 +62,6 @@
     </main>
     <div class="mobile-overlay" id="mobileOverlay"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
-    <script src="supabase-config.js"></script><script src="auth-access-v2.js?v=20261028-global-layout-1"></script><script src="vendas-readonly.js?v=20261028-pagination"></script><script src="financeiro-acceptance.js?v=202608220455"></script><script src="seller-note-vendas.js?v=1"></script><script src="vendas-whatsapp-shortcut.js?v=20260903-1"></script><script src="seller-installation-layout.js?v=1"></script><script src="seller-hp-status.js"></script>
+    <script src="supabase-config.js"></script><script src="auth-access-v2.js?v=20261028-global-layout-1"></script><script src="vendas-readonly.js?v=20261028-priorities-1"></script><script src="financeiro-acceptance.js?v=202608220455"></script><script src="seller-note-vendas.js?v=1"></script><script src="vendas-whatsapp-shortcut.js?v=20260903-1"></script><script src="seller-installation-layout.js?v=1"></script><script src="seller-hp-status.js"></script>
   <script src="vendas-modern.js?v=20261028"></script></body>
 </html>
