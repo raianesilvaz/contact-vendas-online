@@ -1,7 +1,7 @@
 let sales=[],filter='todos',selectedId=null,realtimeChannel=null,realtimeRefreshTimer=null,periodStart='',periodEnd='',responsibleFilter='all',currentSalesUser=null;const list=document.querySelector('#salesList'),detail=document.querySelector('#detailPanel'),search=document.querySelector('#saleSearch'),tabs=document.querySelector('#filterTabs'),emptyList=document.querySelector('#emptyList'),overlay=document.querySelector('#mobileOverlay');const labels={reprovada:'Reprovado',conectado:'Conectado',pendente_aceite:'Aceite pendente',pendente_instalacao:'Pendente de instalação',aguardando_hp:'Aguardando HP',cancelada:'Cancelado',pendente:'Aguardando análise',em_analise:'Em análise'},cssStatus={pendente:'analise',em_analise:'analise',aguardando_hp:'analise',pendente_aceite:'aceite',pendente_instalacao:'aceite',conectado:'conectado',reprovada:'reprovada',cancelada:'reprovada'};const escapeHtml=value=>String(value??'').replace(/[&<>'\"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt',"'":'&#39;','\"':'&quot;'}[char])),normalize=value=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),formatCpf=value=>String(value).replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4'),formatPhone=value=>{if(!value)return'Não informado';const d=String(value);return d.length===11?d.replace(/(\d{2})(\d{5})(\d{4})/,'($1) $2-$3'):d.replace(/(\d{2})(\d{4})(\d{4})/,'($1) $2-$3')},formatDate=value=>value?new Date(`${value}T12:00:00`).toLocaleDateString('pt-BR'):'Não informado',formatDateTime=value=>new Date(value).toLocaleString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}),formatMoney=value=>Number(value).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}),todayKey=()=>new Date().toISOString().slice(0,10);
 
 const salesPageSize = 10;
-let salesPage = 1, salesTotal = 0, salesRequest = 0, salesSearchTimer;
+let salesPage = 1, salesTotal = 0, salesRequest = 0, salesSearchTimer, priorityFilter = null;
 const salesPager = document.createElement('nav');
 salesPager.className = 'pagination'; salesPager.setAttribute('aria-label','Páginas de vendas');
 const salesRange = document.createElement('p'); salesRange.className = 'result-range';
@@ -11,6 +11,9 @@ list.before(salesListColumn); salesListColumn.append(list, salesPager, salesRang
 function salesBaseQuery(columns, options, includeSearch = true) {
   let query = window.supabaseClient.from('sales').select(columns, options);
   if (responsibleFilter !== 'all') query = query.eq('seller_id', responsibleFilter);
+  if (includeSearch && priorityFilter === 'aceites') query = query.eq('status','pendente_aceite');
+  if (includeSearch && priorityFilter === 'instalacoes') query = query.eq('scheduled_installation_date',new Date().toLocaleDateString('en-CA')).not('status','in','(cancelada,reprovada,conectado)');
+  if (includeSearch && priorityFilter === 'atencao') query = query.or('status.eq.pendente_aceite,and(scheduled_installation_date.eq.'+new Date().toLocaleDateString('en-CA')+',status.not.in.(cancelada,reprovada,conectado))');
   if (periodStart && periodEnd) {
     const start = new Date(periodStart + 'T00:00:00'), end = new Date(periodEnd + 'T00:00:00');
     end.setDate(end.getDate() + 1);
@@ -89,7 +92,7 @@ async function loadSales(silent=false){
   const token=++salesRequest,openId=selectedId;
   if(!silent){list.hidden=false;emptyList.hidden=true;list.innerHTML='<div class="loading-card">Carregando esta página...</div>'}
   let query=salesBaseQuery('*, operators(name), seller:profiles!sales_seller_id_fkey(full_name)',{count:'exact'});
-  if(filter!=='todos')query=query.eq('status',filter);
+  if(filter!=='todos' && !priorityFilter)query=query.eq('status',filter);
   const offset=(salesPage-1)*salesPageSize;
   const count=states=>{let q=salesBaseQuery('id',{count:'exact',head:true},false);return states?q.in('status',states):q};
   const [result,total,pending,connected,rejected]=await Promise.all([
@@ -104,11 +107,30 @@ async function loadSales(silent=false){
   sales=result.data||[];
   for(const [id,res] of [['totalCount',total],['pendingCount',pending],['connectedCount',connected],['rejectedCount',rejected]])if(!res.error)document.querySelector('#'+id).textContent=res.count||0;
   render();
+  updateSalesPriorities();
   if(openId&&sales.some(item=>item.id===openId))openSale(openId);else if(openId)closeDetail();
   setupRealtime(user);
+}
+async function updateSalesPriorities(){
+ const box=document.querySelector('#salesPriorities');if(!box)return;
+ const day=new Date().toLocaleDateString('en-CA');
+ const base=()=>{let q=window.supabaseClient.from('sales').select('id',{count:'exact',head:true});if(responsibleFilter!=='all')q=q.eq('seller_id',responsibleFilter);return q};
+ const [acceptance,installations,attention]=await Promise.all([
+ base().eq('status','pendente_aceite'),
+ base().eq('scheduled_installation_date',day).not('status','in','(cancelada,reprovada,conectado)'),
+ base().or('status.eq.pendente_aceite,and(scheduled_installation_date.eq.'+day+',status.not.in.(cancelada,reprovada,conectado))')
+ ]);
+ for(const [id,res] of [['priorityAttention',attention],['priorityAcceptances',acceptance],['priorityInstallations',installations]]){
+  const el=document.getElementById(id);if(el)el.textContent=res.error?'—':res.count??0;
+ }
 }
 function scheduleRealtimeRefresh(){clearTimeout(realtimeRefreshTimer);realtimeRefreshTimer=setTimeout(()=>loadSales(true),400)}
 function setupRealtime(user){if(realtimeChannel)return;const canSeeAll=['admin','financeiro'].includes(user.profile.role),config={event:'*',schema:'public',table:'sales'};if(!canSeeAll)config.filter=`seller_id=eq.${user.id}`;realtimeChannel=window.supabaseClient.channel(`sales-${user.profile.role}-${user.id}`).on('postgres_changes',config,scheduleRealtimeRefresh).subscribe()}
 const salesStartDate=document.querySelector('#salesStartDate'),salesEndDate=document.querySelector('#salesEndDate'),salesPeriodClear=document.querySelector('#salesPeriodClear'),salesResponsibleFilter=document.querySelector('#salesResponsibleFilter');const maxSalesDate=todayKey();salesStartDate.max=maxSalesDate;salesEndDate.max=maxSalesDate;function applySalesPeriodAutomatically(){if(salesStartDate.value&&salesEndDate.value){periodStart=salesStartDate.value;periodEnd=salesEndDate.value}else{periodStart='';periodEnd=''}requestSalesPage()}salesStartDate.addEventListener('change',()=>{salesEndDate.min=salesStartDate.value;if(salesEndDate.value&&salesEndDate.value<salesStartDate.value)salesEndDate.value=salesStartDate.value;applySalesPeriodAutomatically()});salesEndDate.addEventListener('change',()=>{salesStartDate.max=salesEndDate.value||maxSalesDate;if(salesStartDate.value&&salesStartDate.value>salesEndDate.value)salesStartDate.value=salesEndDate.value;applySalesPeriodAutomatically()});salesPeriodClear.addEventListener('click',()=>{periodStart='';periodEnd='';salesStartDate.value='';salesEndDate.value='';salesStartDate.max=maxSalesDate;salesEndDate.min='';requestSalesPage()});
 salesResponsibleFilter.addEventListener('change',event=>{responsibleFilter=event.target.value;requestSalesPage()});
 list.addEventListener('click',e=>{const item=e.target.closest('.sale-card');if(item)openSale(item.dataset.id)});search.addEventListener('input',()=>{clearTimeout(salesSearchTimer);salesSearchTimer=setTimeout(requestSalesPage,300)});tabs.addEventListener('click',e=>{const button=e.target.closest('button');if(!button)return;tabs.querySelector('.active')?.classList.remove('active');button.classList.add('active');filter=button.dataset.filter;requestSalesPage()});overlay.addEventListener('click',closeDetail);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetail()});document.addEventListener('visibilitychange',()=>{if(!document.hidden)scheduleRealtimeRefresh()});window.addEventListener('beforeunload',()=>{if(realtimeChannel)window.supabaseClient.removeChannel(realtimeChannel)});document.querySelector('#menuButton').addEventListener('click',()=>document.querySelector('#sidebar').classList.toggle('open'));loadSales();
+// Ações rápidas da área de prioridades, reutilizando a paginação do banco.
+(() => {const section=document.querySelector('#salesPriorities');if(!section)return;
+ section.querySelector('#priorityCollapse')?.addEventListener('click',()=>{const collapsed=section.classList.toggle('collapsed');section.querySelector('#priorityCollapse').textContent=collapsed?'Mostrar prioridades':'Ocultar prioridades';});
+ section.addEventListener('click',event=>{const btn=event.target.closest('[data-priority]');if(!btn)return;const next=btn.dataset.priority;priorityFilter=priorityFilter===next?null:next;section.querySelectorAll('[data-priority]').forEach(el=>{el.classList.toggle('active',el.dataset.priority===priorityFilter);el.setAttribute('aria-pressed',String(el.dataset.priority===priorityFilter));});salesPage=1;closeDetail();loadSales();});
+})();
