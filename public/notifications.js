@@ -76,6 +76,39 @@
     });
     wrap.insertBefore(colorToggle, wrap.firstChild);
     applyColors();
+
+    const visualToggle = document.createElement('button');
+    visualToggle.id = 'modernVisualToggle';
+    visualToggle.type = 'button';
+    visualToggle.className = 'notification-bell modern-visual-toggle';
+    visualToggle.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 3v18M8 9h13"/></svg>';
+    const visualPreferenceKey = `contact:modern-visual:${window.currentUser.id}`;
+    let modernVisualEnabled = false;
+    try { modernVisualEnabled = localStorage.getItem(visualPreferenceKey) === 'true'; } catch (_) {}
+    const applyVisualPreference = () => {
+      document.documentElement.classList.toggle('modern-visual-enabled', modernVisualEnabled);
+      visualToggle.setAttribute('aria-pressed', String(modernVisualEnabled));
+      const label = modernVisualEnabled ? 'Novo visual (teste): ativado — voltar ao atual' : 'Novo visual (teste): ativar';
+      visualToggle.setAttribute('aria-label', label);
+      visualToggle.title = label;
+      visualToggle.style.background = modernVisualEnabled ? '#fff0e8' : '';
+      visualToggle.style.borderColor = modernVisualEnabled ? '#f97316' : '';
+      visualToggle.style.color = modernVisualEnabled ? '#ea580c' : '';
+    };
+    visualToggle.addEventListener('click', () => {
+      modernVisualEnabled = !modernVisualEnabled;
+      try { localStorage.setItem(visualPreferenceKey, String(modernVisualEnabled)); } catch (_) {}
+      applyVisualPreference();
+    });
+    window.addEventListener('storage', event => {
+      if (event.key === visualPreferenceKey || event.key === null) {
+        modernVisualEnabled = event.key !== null && event.newValue === 'true';
+        applyVisualPreference();
+      }
+    });
+    wrap.insertBefore(visualToggle, colorToggle.nextSibling);
+    applyVisualPreference();
+
     wrap.appendChild(profile);
 
     wrap.insertAdjacentHTML('beforeend', `
