@@ -28,13 +28,3 @@ if(!document.querySelector('script[src="notifications.js"]')){const script=docum
   applyMenuIcons();
   window.authReady?.then(user => { if (user) applyMenuIcons(); }).catch(() => {});
 })();
-
-;(() => {
-  if (!document.querySelector('#contactBlueTheme')) {
-    const theme = document.createElement('link');
-    theme.id = 'contactBlueTheme';
-    theme.rel = 'stylesheet';
-    theme.href = 'contact-blue.css?v=20261028';
-    document.head.appendChild(theme);
-  }
-})();
