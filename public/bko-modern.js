@@ -9,7 +9,7 @@
       const name = String(s.operators?.name || 'Operadora');
       const key = Object.keys(brands).find(key => name.toLowerCase().includes(key));
       const brand = key ? brands[key] : [name,'#edf1f7','#344152'];
-      const badge = '<span class="modern-operator-brand" style="--brand-bg:' + brand[1] + ';--brand-fg:' + brand[2] + '" aria-label="Operadora ' + escapeHtml(name) + '">' + escapeHtml(brand[0]) + '</span>';
+      const badge = '<span class="modern-operator-brand" style="--brand-bg:' + brand[1] + ';--brand-fg:' + brand[2] + '" aria-label="Operadora ' + escapeHtml(name) + '">' + (['claro','vero','desktop','alares'].includes(key) ? '<img src="operator-logos/' + key + '.svg" alt="' + escapeHtml(name) + '" width="76" height="30" style="display:block;width:76px;height:30px;object-fit:cover;border-radius:4px">' : escapeHtml(brand[0])) + '</span>';
       return original(s,index).replace('<div class="queue-return">',badge + '<div class="queue-return">');
     };
     window.render?.();
