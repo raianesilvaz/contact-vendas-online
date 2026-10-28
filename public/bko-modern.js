@@ -43,5 +43,29 @@
     if(event.shiftKey && document.activeElement===first){event.preventDefault();last.focus()}
     else if(!event.shiftKey && document.activeElement===last){event.preventDefault();first.focus()}
   });
+  // Novo layout é o padrão; o usuário pode voltar ao clássico quando desejar.
+  const key = 'contact-bko-layout';
+  const saved = localStorage.getItem(key);
+  root.classList.toggle('modern-visual-enabled', saved !== 'classic');
+  const topbar = document.querySelector('.topbar');
+  if (topbar && !document.getElementById('bkoLayoutToggle')) {
+    const btn = document.createElement('button');
+    btn.id = 'bkoLayoutToggle'; btn.type = 'button'; btn.className = 'bko-layout-toggle';
+    btn.setAttribute('aria-label', 'Alternar layout da Fila BKO');
+    btn.title = 'Alternar layout da Fila BKO';
+    const update = () => {
+      const modern = root.classList.contains('modern-visual-enabled');
+      btn.textContent = modern ? 'Modo antigo' : 'Novo layout';
+      btn.setAttribute('aria-pressed', String(!modern));
+    };
+    btn.addEventListener('click', () => {
+      const modern = !root.classList.contains('modern-visual-enabled');
+      root.classList.toggle('modern-visual-enabled', modern);
+      localStorage.setItem(key, modern ? 'modern' : 'classic');
+      update();
+    });
+    topbar.insertBefore(btn, topbar.querySelector('.profile'));
+    update();
+  }
   syncDrawer();
 })();
