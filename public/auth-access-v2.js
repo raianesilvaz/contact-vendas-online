@@ -28,3 +28,15 @@ if(!document.querySelector('script[src="notifications.js"]')){const script=docum
   applyMenuIcons();
   window.authReady?.then(user => { if (user) applyMenuIcons(); }).catch(() => {});
 })();
+
+;(() => {
+  const theme = document.createElement('link');
+  theme.rel = 'stylesheet'; theme.href = 'contact-identity.css?v=20261028';
+  document.head.appendChild(theme);
+  document.querySelectorAll('.sidebar .brand').forEach(brand => {
+    const img = document.createElement('img');
+    img.className = 'contact-official-logo'; img.src = 'contact-brand-logo.svg';
+    img.alt = 'Contact'; img.width = 154; img.height = 68;
+    brand.replaceChildren(img);
+  });
+})();
