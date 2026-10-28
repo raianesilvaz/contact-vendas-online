@@ -82,32 +82,48 @@
     visualToggle.type = 'button';
     visualToggle.className = 'notification-bell modern-visual-toggle';
     visualToggle.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 3v18M8 9h13"/></svg>';
-    const visualPreferenceKey = `contact:modern-visual:${window.currentUser.id}`;
-    let modernVisualEnabled = false;
-    try { modernVisualEnabled = localStorage.getItem(visualPreferenceKey) === 'true'; } catch (_) {}
-    const applyVisualPreference = () => {
-      document.documentElement.classList.toggle('modern-visual-enabled', modernVisualEnabled);
-      visualToggle.setAttribute('aria-pressed', String(modernVisualEnabled));
-      const label = modernVisualEnabled ? 'Novo visual (teste): ativado — voltar ao atual' : 'Novo visual (teste): ativar';
-      visualToggle.setAttribute('aria-label', label);
-      visualToggle.title = label;
-      visualToggle.style.background = modernVisualEnabled ? '#fff0e8' : '';
-      visualToggle.style.borderColor = modernVisualEnabled ? '#f97316' : '';
-      visualToggle.style.color = modernVisualEnabled ? '#ea580c' : '';
+    // Layout compartilhado: leitura para todos; escrita exclusiva de administradores via RLS.
+    const isAdmin = window.currentUser?.profile?.role === 'admin';
+    const applyVisual = enabled => {
+      document.documentElement.classList.toggle('modern-visual-enabled', !!enabled);
+      visualToggle.setAttribute('aria-pressed', String(!!enabled));
+      visualToggle.title = enabled ? 'Novo layout ativo — desativar para todos' : 'Layout antigo ativo — ativar novo para todos';
+      visualToggle.setAttribute('aria-label', visualToggle.title);
+      visualToggle.style.background = enabled ? '#e5faf6' : '';
+      visualToggle.style.borderColor = enabled ? '#008b8b' : '';
+      visualToggle.style.color = enabled ? '#007e83' : '';
     };
-    visualToggle.addEventListener('click', () => {
-      modernVisualEnabled = !modernVisualEnabled;
-      try { localStorage.setItem(visualPreferenceKey, String(modernVisualEnabled)); } catch (_) {}
-      applyVisualPreference();
-    });
-    window.addEventListener('storage', event => {
-      if (event.key === visualPreferenceKey || event.key === null) {
-        modernVisualEnabled = event.key !== null && event.newValue === 'true';
-        applyVisualPreference();
-      }
+    let globalEnabled = true;
+    applyVisual(globalEnabled);
+    visualToggle.hidden = !isAdmin;
+    if (!isAdmin) visualToggle.style.display = 'none';
+    const readGlobal = async () => {
+      const {data,error} = await window.supabaseClient.from('app_settings').select('enabled').eq('key','modern_sales_layout').single();
+      if (error) { console.warn('Não foi possível ler configuração de layout:',error); return; }
+      globalEnabled = !!data.enabled;
+      applyVisual(globalEnabled);
+    };
+    visualToggle.addEventListener('click', async () => {
+      if (!isAdmin || visualToggle.disabled) return;
+      visualToggle.disabled = true;
+      const next = !globalEnabled;
+      const {data,error} = await window.supabaseClient.from('app_settings').update({enabled:next,updated_at:new Date().toISOString(),updated_by:window.currentUser.id}).eq('key','modern_sales_layout').select('enabled').single();
+      visualToggle.disabled = false;
+      if (error) { console.error('Falha ao alterar layout global:',error); alert('Não foi possível alterar o layout para todos.'); return; }
+      globalEnabled = !!data.enabled;
+      applyVisual(globalEnabled);
     });
     wrap.insertBefore(visualToggle, colorToggle.nextSibling);
-    applyVisualPreference();
+    readGlobal();
+    const layoutChannel = window.supabaseClient.channel('contact-layout-global')
+      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'app_settings',filter:'key=eq.modern_sales_layout'}, payload => {
+        globalEnabled = !!payload.new.enabled;
+        applyVisual(globalEnabled);
+      }).subscribe();
+    // Sincroniza também quando o usuário retorna à aba, mesmo sem Realtime habilitado.
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) readGlobal(); });
+    window.addEventListener('focus', readGlobal);
+    setInterval(() => { if (!document.hidden) readGlobal(); }, 30000);
 
     wrap.appendChild(profile);
 
