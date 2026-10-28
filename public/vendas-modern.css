@@ -27,3 +27,20 @@ html.modern-visual-enabled .queue-content .detail-header{position:sticky;top:0;z
 /* Company badges share the BKO appearance and never shrink into plain letters. */
 html.modern-visual-enabled .modern-sale-top .rampin-badge{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:22px;width:22px;height:22px;padding:0;border-radius:999px;background:#ffd21f;color:#b51616;border:2px solid #ef3434;font-size:12px;font-weight:800;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 html.modern-visual-enabled .modern-sale-top .card-badges{min-height:22px;flex-wrap:nowrap}
+
+/* Minhas prioridades: compactas, acessíveis e alinhadas ao tema CONTACT */
+.sales-priorities{margin:14px 0 18px;padding:15px;border:1px solid #d6e7e5;background:#fff;border-radius:14px}
+.sales-priorities-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.sales-priorities-head .eyebrow{color:#008c87;font-size:9px;letter-spacing:.11em;font-weight:800}
+.sales-priorities-head h2{margin:3px 0 0;font-size:15px;color:#142b32}
+.sales-priorities-head>button{background:transparent;border:0;color:#007e80;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.sales-priorities-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.sales-priorities-grid>button{display:flex;align-items:center;gap:10px;text-align:left;padding:12px;border:1px solid #dce9e8;background:#f9fdfc;border-radius:11px;min-width:0;cursor:pointer;font:inherit}
+.sales-priorities-grid>button:hover,.sales-priorities-grid>button.active{border-color:#00afa7;background:#eafaf7}
+.sales-priorities-grid>button>span:nth-child(2){flex:1;min-width:0}
+.sales-priorities-grid strong{display:block;color:#102a32;font-size:21px;line-height:1.1}
+.sales-priorities-grid small{display:block;color:#667d83;font-size:11px;line-height:1.35;margin-top:4px}
+.priority-symbol{flex:0 0 32px;height:32px;display:grid;place-items:center;border-radius:9px;font-weight:800}
+.priority-symbol.attention{background:#ffe8e8;color:#c73746}.priority-symbol.acceptance{background:#fff2d9;color:#a76b00}.priority-symbol.installation{background:#e3f8f4;color:#008d87}
+.priority-arrow{color:#008c87;font-weight:800}.sales-priorities.collapsed .sales-priorities-grid{display:none}.sales-priorities.collapsed .sales-priorities-head{margin-bottom:0}
+@media(max-width:800px){.sales-priorities-grid{grid-template-columns:1fr}}
