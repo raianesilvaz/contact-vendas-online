@@ -44,7 +44,7 @@
     else if(!event.shiftKey && document.activeElement===last){event.preventDefault();first.focus()}
   });
   // Novo layout é o padrão; o usuário pode voltar ao clássico quando desejar.
-  const key = 'contact-bko-layout-v2';
+  const key = 'contact-bko-layout-v3';
   const saved = sessionStorage.getItem(key);
   root.classList.toggle('modern-visual-enabled', saved !== 'classic');
   const topbar = document.querySelector('.topbar');
@@ -55,7 +55,9 @@
     btn.title = 'Alternar layout da Fila BKO';
     const update = () => {
       const modern = root.classList.contains('modern-visual-enabled');
-      btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M10 3v18"/></svg>';\n      btn.title = modern ? 'Ativar modo antigo da BKO' : 'Ativar novo layout da BKO';\n      btn.setAttribute('aria-label', btn.title);
+      btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M10 3v18"/></svg>';
+      btn.title = modern ? 'Ativar modo antigo da BKO' : 'Ativar novo layout da BKO';
+      btn.setAttribute('aria-label', btn.title);
       btn.setAttribute('aria-pressed', String(!modern));
     };
     btn.addEventListener('click', () => {
