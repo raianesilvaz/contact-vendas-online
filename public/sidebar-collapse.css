@@ -22,3 +22,12 @@ body.sidebar-collapsed .logout-button{margin-left:0}
 .sidebar .user-mini{flex:0 0 auto;margin-top:12px;background:var(--nav)}
 body.sidebar-collapsed .sidebar nav{padding-right:0}
 @media(max-width:900px){.sidebar{height:100dvh;max-height:100dvh}.sidebar nav{-webkit-overflow-scrolling:touch}}
+
+/* Rodapé compacto, alinhado ao espaço interno real da sidebar */
+.sidebar .user-mini{width:100%;box-sizing:border-box;display:grid;grid-template-columns:30px minmax(0,1fr) 30px;align-items:center;column-gap:8px;min-height:52px;margin-top:10px;padding:10px 0 0;border-top:1px solid #30434a;background:transparent}
+.sidebar .user-mini>.avatar{width:30px;height:30px;min-width:30px;flex:none;font-size:12px}
+.sidebar .user-mini>div:nth-child(2){display:block;min-width:0;align-self:center}
+.sidebar .user-mini>div:nth-child(2) strong,.sidebar .user-mini>div:nth-child(2) small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.25}
+.sidebar .user-mini .logout-button{width:30px;height:30px;min-width:30px;display:grid;place-items:center;justify-self:end;align-self:center;margin:0;padding:0;line-height:1}
+body.sidebar-collapsed .sidebar .user-mini{display:flex;flex-direction:column;gap:8px}
+@media(max-width:900px){body.sidebar-collapsed .sidebar .user-mini{display:grid;grid-template-columns:30px minmax(0,1fr) 30px}}
