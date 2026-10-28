@@ -2,3 +2,6 @@
 .summary-operator-filter{display:flex;align-items:center;gap:7px;margin-left:3px}.summary-operator-filter>span{color:#8993a0;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.summary-operator-filter select{height:38px;min-width:156px;padding:0 31px 0 11px;border:1px solid #d7dde4;border-radius:9px;background:#fff;color:#344152;font:inherit;font-size:11px;font-weight:700;outline:none;cursor:pointer}.summary-operator-filter select:hover{border-color:#c3cbd5}.summary-operator-filter select:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(243,108,33,.1)}.summary-operator-filter select:disabled{opacity:.65;cursor:not-allowed}@media(max-width:1180px){.summary-operator-filter{margin-left:0}}@media(max-width:600px){.summary-operator-filter{width:100%;margin-top:9px}.summary-operator-filter select{flex:1;min-width:0}}
 
 .summary-icon.acceptance{color:#7952bd;background:#f1eafe}
+
+/* Filtro de empresa parceira: sem quebrar o cabeçalho em telas menores */
+.summary-period-bar{flex-wrap:wrap;justify-content:flex-end;max-width:100%}.summary-partner-filter select{min-width:165px;max-width:220px}.summary-operator-filter select:focus{border-color:#008f89;box-shadow:0 0 0 3px rgba(0,143,137,.12)}@media(max-width:1180px){.summary-period-bar{justify-content:flex-start}}
