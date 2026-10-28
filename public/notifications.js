@@ -6,7 +6,7 @@
   notificationAudio.preload = 'auto';
   notificationAudio.volume = 0.28;
 
-  const iconByType = { new_sale: '🛒', status_changed: '🔄', sale_cancelled: '⚠️' };
+  const iconByType = { new_sale: '🛒', status_changed: '🔄', sale_cancelled: '⚠️', installation_reminder: '📅' };
   const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
   const formatRelative = value => {
     const diff = Math.max(0, Date.now() - new Date(value).getTime());
@@ -165,7 +165,7 @@
     list.innerHTML = notifications.map(item => `
       <button class="notification-item ${item.read_at ? '' : 'unread'}" type="button" data-notification-id="${item.id}">
         <span class="notification-item-icon">${iconByType[item.type] || '🔔'}</span>
-        <span><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.message)}</p><small>${formatRelative(item.created_at)} · Ver venda →</small></span>
+        <span><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.message)}</p><small>${formatRelative(item.created_at)} · ${item.type === 'installation_reminder' ? 'Ver venda / avisar cliente →' : 'Ver venda →'}</small></span>
       </button>`).join('');
   }
 
@@ -223,6 +223,15 @@
       if (!error) { item.read_at = now; render(); }
     }
     if (!item.sale_id) return;
+    if (item.type === 'installation_reminder') {
+      const {data:sale} = await window.supabaseClient.from('sales').select('customer_name,phone_1,phone_2').eq('id',item.sale_id).maybeSingle();
+      const phone=String(sale?.phone_1||sale?.phone_2||'').replace(/\\D/g,'');
+      if(phone){
+        const message='Olá, '+(sale.customer_name||'')+'! Sua instalação de internet está prevista para este período. Por favor, confirme se haverá alguém no endereço para receber o técnico.';
+        const number=(phone.length===10||phone.length===11)?'55'+phone:phone;
+        window.open('https://wa.me/'+number+'?text='+encodeURIComponent(message),'_blank','noopener,noreferrer');
+      }
+    }
     const target = window.currentUser?.profile?.role === 'admin' ? 'bko.html' : 'vendas.html';
     window.location.href = `${target}?sale=${encodeURIComponent(item.sale_id)}`;
   }
