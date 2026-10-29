@@ -40,3 +40,5 @@ if(!document.querySelector('script[src^="notifications.js"]')){const script=docu
     brand.replaceChildren(img);
   });
 })();
+
+;(()=>{if(location.pathname.endsWith('/configuracoes.html'))return;const s=document.createElement('script');s.src='referral-reminder.js?v=20261029-1';document.body.appendChild(s)})();
