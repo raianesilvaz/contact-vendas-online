@@ -44,3 +44,9 @@ html.modern-visual-enabled .modern-sale-top .card-badges{min-height:22px;flex-wr
 .priority-symbol.attention{background:#ffe8e8;color:#c73746}.priority-symbol.acceptance{background:#fff2d9;color:#a76b00}.priority-symbol.installation{background:#e3f8f4;color:#008d87}
 .priority-arrow{color:#008c87;font-weight:800}.sales-priorities.collapsed .sales-priorities-grid{display:none}.sales-priorities.collapsed .sales-priorities-head{margin-bottom:0}
 @media(max-width:800px){.sales-priorities-grid{grid-template-columns:1fr}}
+
+/* Copiar dados sem quebrar o alinhamento do painel de detalhes. */
+.queue-content .seller-detail-value{display:flex;align-items:center;gap:7px;min-width:0}
+.queue-content .seller-detail-value strong{min-width:0;overflow-wrap:anywhere}
+.queue-content .seller-copy-button{flex:0 0 auto;border:1px solid #d6e8e6;border-radius:6px;background:#f1faf9;color:#008d88;font-size:15px;line-height:1;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.queue-content .seller-copy-button:hover{background:#d9f4ef;border-color:#008d88}
