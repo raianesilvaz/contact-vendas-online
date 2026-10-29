@@ -38,18 +38,18 @@ function renderSellerRanking(){
   if($('#sellerRankingSection').hidden)return;
   const [from,to]=range();
   const members=teamPeople.map(p=>{
-    const items=teamSales.filter(s=>s.seller_id===p.id&&s.status!=='cancelada'&&inRange(s,from,to));
-    const connected=items.filter(s=>s.status==='conectado').length,rejected=items.filter(s=>s.status==='reprovada').length;
-    const done=connected+rejected,eligible=done>=5,conversion=done?100*connected/done:0;
+    const items=teamSales.filter(s=>s.seller_id===p.id&&inRange(s,from,to));
+    const connected=items.filter(s=>s.status==='conectado').length,approved=items.filter(s=>['pendente_aceite','pendente_instalacao','conectado'].includes(s.status)).length,rejected=items.filter(s=>['reprovada','cancelada'].includes(s.status)).length;
+    const done=approved+rejected,eligible=done>=5,conversion=done?100*approved/done:0;
     const days=new Set(items.map(s=>day(s.created_at))).size;
-    return {id:p.id,name:p.full_name,total:items.length,connected,rejected,eligible,conversion,days};
+    return {id:p.id,name:p.full_name,total:items.length,connected,approved,rejected,eligible,conversion,days};
   });
-  const maxConnected=Math.max(1,...members.map(m=>m.connected));
+  const maxConnected=Math.max(1,...members.map(m=>m.connected));const maxApproved=Math.max(1,...members.map(m=>m.approved));
   const maxDays=Math.max(1,Math.min(7,Math.round((new Date(to+'T12:00:00')-new Date(from+'T12:00:00'))/86400000)+1));
-  members.forEach(m=>m.score=Math.round(40*m.connected/maxConnected+(m.eligible?50*m.conversion/100:0)+10*Math.min(1,m.days/maxDays)));
+  members.forEach(m=>m.score=Math.round(20*m.connected/maxConnected+30*m.approved/maxApproved+(m.eligible?40*m.conversion/100:0)+10*Math.min(1,m.days/maxDays)));
   const ranked=[...members];
-  if(rankingMode==='quality')ranked.sort((a,b)=>Number(b.eligible)-Number(a.eligible)||b.conversion-a.conversion||b.connected-a.connected);
-  else if(rankingMode==='production')ranked.sort((a,b)=>b.connected-a.connected||b.total-a.total);
+  if(rankingMode==='quality')ranked.sort((a,b)=>Number(b.eligible)-Number(a.eligible)||b.conversion-a.conversion||b.approved-a.approved);
+  else if(rankingMode==='production')ranked.sort((a,b)=>b.approved-a.approved||b.connected-a.connected||b.total-a.total);
   else ranked.sort((a,b)=>b.score-a.score||b.connected-a.connected);
   const positions=new Map();let place=0;
   ranked.forEach(m=>{if(rankingMode==='quality'&&!m.eligible)return;positions.set(m.id,++place)});
