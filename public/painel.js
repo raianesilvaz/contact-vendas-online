@@ -2,7 +2,7 @@
 'use strict';
 const $=s=>document.querySelector(s), fmt=n=>Number(n||0).toLocaleString('pt-BR'), pct=n=>Number(n||0).toFixed(1).replace('.',',')+'%', esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const localDay=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
-let sales=[],profiles=new Map(),operators=new Map(),user=null,mode='month',rankMode='quality',rows=[],isAdmin=false;
+let sales=[],profiles=new Map(),operators=new Map(),user=null,mode='month',rankMode='score',rows=[],isAdmin=false;
 const resolved=s=>s.status==='conectado'||s.status==='reprovada';
 const count=a=>({total:a.length,connected:a.filter(s=>s.status==='conectado').length,rejected:a.filter(s=>s.status==='reprovada').length,pending:a.filter(s=>!resolved(s)&&s.status!=='cancelada').length});
 const rate=x=>x.connected+x.rejected?100*x.connected/(x.connected+x.rejected):0;
