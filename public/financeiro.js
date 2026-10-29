@@ -26,7 +26,7 @@ async function generateOriginal(){
     const current=existing.find(x=>Number(x.installment_no)===n);
     return {current,data:{account_id:accountId,cycle:'original',installment_no:n,due_date:addMonthsSafe(due,n-1),amount,status:current?.status||(n===1?'pendente':'futuro')}};
   });
-  // Never modify paid invoices; do not depend on an upsert unique constraint.
+  // Atualiza as parcelas existentes sem upsert e preserva as parcelas já pagas.
   for(const {current,data} of changes){
     if(current?.status==='pago')continue;
     const query=current?.id
