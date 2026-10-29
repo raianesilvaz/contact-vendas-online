@@ -2,7 +2,7 @@
 'use strict';
 const $=s=>document.querySelector(s),fmt=n=>Number(n||0).toLocaleString('pt-BR'),pct=n=>n.toFixed(1).replace('.',',')+'%';
 const day=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
-let sales=[],mode='month',user=null,teamSales=[],teamPeople=[],rankingMode='quality';
+let sales=[],mode='month',user=null,teamSales=[],teamPeople=[],rankingMode='score';
 const isDone=s=>['conectado','reprovada'].includes(s.status);
 function range(){const d=new Date(),today=day(d);if(mode==='today')return[today,today];if(mode==='week'){d.setDate(d.getDate()-6);return[day(d),today]}if(mode==='previous'){d.setDate(1);d.setDate(0);const end=day(d);d.setDate(1);return[day(d),end]}if(mode==='custom')return[$('#dateFrom').value||today,$('#dateTo').value||today];d.setDate(1);return[day(d),today]}
 const inRange=(s,from,to)=>day(s.created_at)>=from&&day(s.created_at)<=to;
