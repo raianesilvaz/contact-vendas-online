@@ -59,7 +59,7 @@ function renderSellerRanking(){
   if(user.profile.role==='vendedora')$('#myRankBanner').innerHTML=myPlace?'<strong>🏆 Sua posição: '+myPlace+'º lugar</strong><span>Você está entre '+place+' vendedores classificados neste período.</span>':'<strong>💎 Você está em avaliação</strong><span>São necessárias 5 vendas resolvidas para entrar no ranking de qualidade.</span>';
   $('#sellerRankingRows').innerHTML=ranked.map(m=>{
     const position=positions.get(m.id),label=position?(position===1?'🥇':position===2?'🥈':position===3?'🥉':position+'º'):'—';
-    return '<div class="ranking-row'+(m.id===user.id?' is-me':'')+'"><span><b class="rank-medal">'+label+'</b><b>'+safe(m.name)+'</b>'+(m.id===user.id?'<small>Você</small>':'')+'</span><span>'+fmt(m.total)+'</span><span>'+fmt(m.connected)+'</span><span>'+fmt(m.rejected)+'</span><span>'+(m.eligible?pct(m.conversion):'Em avaliação')+'</span><strong>'+(rankingMode==='quality'&&!m.eligible?'—':m.score+'/100')+'</strong></div>';
+    return '<div class="ranking-row'+(m.id===user.id?' is-me':'')+'"><span><b class="rank-medal">'+label+'</b><b>'+safe(m.name)+'</b>'+(m.id===user.id?'<small>Você</small>':'')+'</span><span>'+fmt(m.total)+'</span><span>'+fmt(m.approved)+'</span><span>'+fmt(m.connected)+'</span><span>'+fmt(m.rejected)+'</span><span>'+(m.eligible?pct(m.conversion):'Em avaliação')+'</span><strong>'+(rankingMode==='quality'&&!m.eligible?'—':m.score+'/100')+'</strong></div>';
   }).join('');
 }
 
