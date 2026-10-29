@@ -41,4 +41,4 @@ if(!document.querySelector('script[src^="notifications.js"]')){const script=docu
   });
 })();
 
-;(()=>{if(location.pathname.endsWith('/configuracoes.html'))return;const s=document.createElement('script');s.src='referral-reminder.js?v=20261029-1';document.body.appendChild(s)})();
+;(()=>{if(location.pathname.endsWith('/configuracoes.html'))return;const s=document.createElement('script');s.src='referral-reminder.js?v=20261029-admin-test-2';document.body.appendChild(s)})();
