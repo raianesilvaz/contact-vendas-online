@@ -83,11 +83,11 @@
     visualToggle.className = 'notification-bell modern-visual-toggle';
     visualToggle.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 3v18M8 9h13"/></svg>';
     // Layout compartilhado: leitura para todos; escrita exclusiva de administradores via RLS.
-    const isAdmin = window.currentUser?.profile?.role === 'admin';
+    const isBko = window.currentUser?.profile?.role === 'admin' && String(window.currentUser?.profile?.full_name || '').trim().toLowerCase() === 'bko';
     const applyVisual = enabled => {
       document.documentElement.classList.toggle('modern-visual-enabled', !!enabled);
       visualToggle.setAttribute('aria-pressed', String(!!enabled));
-      visualToggle.title = enabled ? 'Novo layout ativo — desativar para todos' : 'Layout antigo ativo — ativar novo para todos';
+      visualToggle.title = enabled ? 'Novo layout ativo — desativar para todos (somente BKO)' : 'Layout antigo ativo — ativar novo para todos (somente BKO)';
       visualToggle.setAttribute('aria-label', visualToggle.title);
       visualToggle.style.background = enabled ? '#e5faf6' : '';
       visualToggle.style.borderColor = enabled ? '#008b8b' : '';
@@ -95,8 +95,8 @@
     };
     let globalEnabled = true;
     applyVisual(globalEnabled);
-    visualToggle.hidden = !isAdmin;
-    if (!isAdmin) visualToggle.style.display = 'none';
+    visualToggle.hidden = !isBko;
+    if (!isBko) visualToggle.style.display = 'none';
     const readGlobal = async () => {
       const {data,error} = await window.supabaseClient.from('app_settings').select('enabled').eq('key','modern_sales_layout').single();
       if (error) { console.warn('Não foi possível ler configuração de layout:',error); return; }
@@ -104,7 +104,7 @@
       applyVisual(globalEnabled);
     };
     visualToggle.addEventListener('click', async () => {
-      if (!isAdmin || visualToggle.disabled) return;
+      if (!isBko || visualToggle.disabled) return;
       visualToggle.disabled = true;
       const next = !globalEnabled;
       const {data,error} = await window.supabaseClient.from('app_settings').update({enabled:next,updated_at:new Date().toISOString(),updated_by:window.currentUser.id}).eq('key','modern_sales_layout').select('enabled').single();
