@@ -2,12 +2,12 @@ let sales=[],filter='todos',selectedId=null,realtimeChannel=null,realtimeRefresh
 
 const salesPageSize = 10;
 let salesPage = 1, salesTotal = 0, salesRequest = 0, salesSearchTimer, priorityFilter = null;
-const salesPager = document.createElement('nav');
+const salesPager = document.querySelector('#salesPagination') || document.createElement('nav');
 salesPager.className = 'pagination'; salesPager.setAttribute('aria-label','Páginas de vendas');
 const salesRange = document.createElement('p'); salesRange.className = 'result-range';
 const salesListColumn = document.createElement('div');
 salesListColumn.className = 'sales-list-column';
-list.before(salesListColumn); salesListColumn.append(list); const externalPager=document.querySelector('#salesPagination'); if(externalPager){externalPager.replaceWith(salesPager);salesPager.append(salesRange)}else{salesListColumn.append(salesPager,salesRange)}
+list.before(salesListColumn); salesListColumn.append(list); if(salesPager.id==='salesPagination'){salesPager.after(salesRange)}else{salesListColumn.append(salesPager,salesRange)}
 function salesBaseQuery(columns, options, includeSearch = true) {
   let query = window.supabaseClient.from('sales').select(columns, options);
   if (responsibleFilter !== 'all') query = query.eq('seller_id', responsibleFilter);
@@ -31,7 +31,7 @@ function salesBaseQuery(columns, options, includeSearch = true) {
 }
 function renderSalesPager() {
   const pages = Math.max(1,Math.ceil(salesTotal / salesPageSize));
-  salesPager.hidden = false;
+  salesPager.hidden = false; salesPager.style.setProperty('display','flex','important');
   const numbers = new Set([1,pages]);
   for (let page=Math.max(1,salesPage-2);page<=Math.min(pages,salesPage+2);page++) numbers.add(page);
   let previous=0;
