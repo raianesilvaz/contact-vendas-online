@@ -31,7 +31,7 @@ function salesBaseQuery(columns, options, includeSearch = true) {
 }
 function renderSalesPager() {
   const pages = Math.max(1,Math.ceil(salesTotal / salesPageSize));
-  salesPager.hidden = pages <= 1;
+  salesPager.hidden = false;
   const numbers = new Set([1,pages]);
   for (let page=Math.max(1,salesPage-2);page<=Math.min(pages,salesPage+2);page++) numbers.add(page);
   let previous=0;
