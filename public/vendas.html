@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css?v=20261028-beta-contact-1" />
     <link rel="stylesheet" href="bko-whatsapp-shortcut.css?v=20260903-1" />
-  <link rel="stylesheet" href="sidebar-collapse.css?v=20260914-1"><link rel="stylesheet" href="vendas-modern.css?v=20261029-copy-1"></head>
+  <link rel="stylesheet" href="sidebar-collapse.css?v=20260914-1"><link rel="stylesheet" href="vendas-modern.css?v=20261029-copy-1"><style>.sales-pagination{display:flex;align-items:center;justify-content:center;gap:14px;padding:22px 10px;flex-wrap:wrap}.sales-pagination[hidden]{display:none}.sales-pagination button{padding:10px 16px;border:1px solid #cddfe1;border-radius:9px;background:#fff;color:#087f7b;font-weight:700;cursor:pointer}.sales-pagination button:disabled{opacity:.4;cursor:not-allowed}.sales-pagination span{font-size:12px;color:#526477;font-weight:600}</style></head>
   <body>
     <aside class="sidebar" id="sidebar">
       <div class="brand"><span class="brand-mark">C</span><span class="brand-name">CONTACT</span></div>
@@ -57,7 +57,7 @@
           <div class="filter-tabs" id="filterTabs" aria-label="Filtrar por status"><button class="active" data-filter="todos">Todos</button><button data-filter="pendente">Aguardando análise</button><button data-filter="em_analise">Em análise</button><button data-filter="pendente_aceite">Aceite pendente</button><button data-filter="conectado">Conectados</button><button data-filter="reprovada">Reprovados</button><button data-filter="cancelada">Cancelados</button></div>
         </section>
         <div class="queue-layout"><section class="sales-list" id="salesList" aria-label="Fila de vendas"></section><aside class="detail-panel" id="detailPanel" aria-live="polite"><div class="empty-detail"><span>▤</span><h2>Selecione uma venda</h2><p>Clique em um cartão para visualizar todos os dados e o retorno do BKO.</p></div></aside></div>
-        <div class="empty-list" id="emptyList" hidden><span>⌕</span><h2>Nenhuma venda encontrada</h2><p id="emptyListMessage">Cadastre a primeira venda ou altere os filtros.</p></div>
+        <nav id="salesPagination" class="sales-pagination" aria-label="Paginação de vendas" hidden></nav><div class="empty-list" id="emptyList" hidden><span>⌕</span><h2>Nenhuma venda encontrada</h2><p id="emptyListMessage">Cadastre a primeira venda ou altere os filtros.</p></div>
       </div>
     </main>
     <div class="mobile-overlay" id="mobileOverlay"></div>
