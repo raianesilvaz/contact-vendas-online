@@ -7,7 +7,7 @@ salesPager.className = 'pagination'; salesPager.setAttribute('aria-label','Pági
 const salesRange = document.createElement('p'); salesRange.className = 'result-range';
 const salesListColumn = document.createElement('div');
 salesListColumn.className = 'sales-list-column';
-list.before(salesListColumn); salesListColumn.append(list, salesPager, salesRange);
+list.before(salesListColumn); salesListColumn.append(list); const externalPager=document.querySelector('#salesPagination'); if(externalPager){externalPager.replaceWith(salesPager);salesPager.append(salesRange)}else{salesListColumn.append(salesPager,salesRange)}
 function salesBaseQuery(columns, options, includeSearch = true) {
   let query = window.supabaseClient.from('sales').select(columns, options);
   if (responsibleFilter !== 'all') query = query.eq('seller_id', responsibleFilter);
