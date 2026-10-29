@@ -77,8 +77,39 @@
     wrap.insertBefore(colorToggle, wrap.firstChild);
     applyColors();
 
-    // Layout moderno obrigatório em todas as telas; sem botão ou leitura de configuração.
-    document.documentElement.classList.add('modern-visual-enabled');
+    // A preferência é individual; outros perfis sempre usam o layout atual.
+    const layoutUser = window.currentUser;
+    if (layoutUser.profile?.role === 'admin') {
+      const layoutKey = `contact:admin-modern-visual:${layoutUser.id}`;
+      let modernEnabled = true;
+      try { modernEnabled = localStorage.getItem(layoutKey) !== 'false'; } catch (_) {}
+      const layoutToggle = document.createElement('button');
+      layoutToggle.type = 'button';
+      layoutToggle.className = 'notification-bell modern-visual-toggle';
+      layoutToggle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18M9 9h12"/></svg>';
+      const applyLayout = () => {
+        document.documentElement.classList.toggle('modern-visual-enabled', modernEnabled);
+        layoutToggle.setAttribute('aria-pressed', String(modernEnabled));
+        const label = modernEnabled ? 'Usar layout anterior nesta conta' : 'Usar layout atual nesta conta';
+        layoutToggle.setAttribute('aria-label', label);
+        layoutToggle.title = label;
+      };
+      layoutToggle.addEventListener('click', () => {
+        modernEnabled = !modernEnabled;
+        try { localStorage.setItem(layoutKey, String(modernEnabled)); } catch (_) {}
+        applyLayout();
+      });
+      window.addEventListener('storage', event => {
+        if (event.key === layoutKey || event.key === null) {
+          modernEnabled = event.key === null || event.newValue !== 'false';
+          applyLayout();
+        }
+      });
+      colorToggle.after(layoutToggle);
+      applyLayout();
+    } else {
+      document.documentElement.classList.add('modern-visual-enabled');
+    }
 
     wrap.appendChild(profile);
 
