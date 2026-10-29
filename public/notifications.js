@@ -77,19 +77,8 @@
     wrap.insertBefore(colorToggle, wrap.firstChild);
     applyColors();
 
-    // Alternância de layout temporariamente bloqueada para todos, inclusive BKO.
-    // Mantemos apenas a leitura da configuração existente, sem botão ou escrita.
-    const applyVisual = enabled => document.documentElement.classList.toggle('modern-visual-enabled', !!enabled);
-    applyVisual(false);
-    const readGlobal = async () => {
-      const {data,error} = await window.supabaseClient.from('app_settings').select('enabled').eq('key','modern_sales_layout').single();
-      if (error) { console.warn('Não foi possível ler configuração de layout:',error); return; }
-      applyVisual(!!data.enabled);
-    };
-    readGlobal();
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) readGlobal(); });
-    window.addEventListener('focus', readGlobal);
-    setInterval(() => { if (!document.hidden) readGlobal(); }, 30000);
+    // Layout moderno obrigatório em todas as telas; sem botão ou leitura de configuração.
+    document.documentElement.classList.add('modern-visual-enabled');
 
     wrap.appendChild(profile);
 
