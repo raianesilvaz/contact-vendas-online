@@ -124,3 +124,37 @@ html.modern-visual-enabled .detail-danger span,.detail-danger span{color:#557d7b
 /* Controle compacto da visualização BKO no topo */
 .topbar .bko-layout-toggle{margin-left:auto;width:34px;height:34px;padding:0;display:grid;place-items:center;border:1px solid #00a99f;border-radius:9px;background:#e8faf7;color:#007d7b}
 .topbar .bko-layout-toggle[aria-pressed="true"]{background:#fff;border-color:#dbe4e9;color:#64748b}
+
+/* Keep the received timestamp on its own line, including cards with company badges. */
+.bko-card .card-top,
+html.modern-visual-enabled .bko-card .card-top{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:22px 15px;
+  align-items:start;
+  justify-content:stretch;
+  gap:1px;
+  min-width:0;
+}
+.bko-card .card-top .card-badges,
+html.modern-visual-enabled .bko-card .card-top .card-badges{
+  grid-column:1;
+  grid-row:1;
+  min-width:0;
+  max-width:100%;
+  flex-wrap:nowrap;
+}
+.bko-card .card-top small,
+html.modern-visual-enabled .bko-card .card-top small{
+  display:block;
+  grid-column:1;
+  grid-row:2;
+  width:100%;
+  min-width:0;
+  margin:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:10px;
+  line-height:15px;
+}
