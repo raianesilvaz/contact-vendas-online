@@ -1,0 +1,20 @@
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s),safe=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+if(!window.L){$('#mapStatus').textContent='Não foi possível carregar o mapa. Atualize a página para tentar novamente.';return}
+const map=L.map('coverageMap',{preferCanvas:true}).setView([-22.3,-47.8],7);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
+const config={desktop:{name:'Desktop',color:'#2366ca'},alcans:{name:'Alcans',color:'#008c83'}},cache={},pending={};let manifest;
+function status(text){$('#mapStatus').textContent=text}
+function visibleBounds(){const bounds=L.latLngBounds([]);for(const layer of Object.values(cache))if(map.hasLayer(layer))bounds.extend(layer.getBounds());return bounds}
+function fit(){const b=visibleBounds();if(b.isValid())map.fitBounds(b,{padding:[25,25],maxZoom:13})}
+async function getManifest(){if(!manifest){const r=await fetch('coverage-data/manifest.json');if(!r.ok)throw Error('Falha no índice');manifest=await r.json()}return manifest}
+async function build(key){const index=await getManifest(),features=[];for(const file of index[key].files){const r=await fetch('coverage-data/'+file);if(!r.ok)throw Error('Falha ao carregar área');const data=await r.json();features.push(...data.features)}
+const layer=L.geoJSON({type:'FeatureCollection',features},{style:f=>({color:config[key].color,weight:f.geometry.type==='LineString'?1.3:1.7,fillOpacity:.12,dashArray:f.geometry.type==='LineString'?'5 5':null}),onEachFeature:(f,l)=>{l.bindPopup('<div class="area-popup"><span>'+config[key].name+'</span><strong>'+safe(f.properties.name).replace(/\n/g,'<br>')+'</strong>'+(f.properties.note?'<p>'+safe(f.properties.note).replace(/\n/g,'<br>')+'</p>':'')+'<small>'+(f.geometry.type==='LineString'?'Contorno do arquivo original. Linha não confirma uma área de cobertura.':'Área do mapa de origem. Confirme disponibilidade com a operadora.')+'</small></div>')}});
+cache[key]=layer;$('#'+key+'Count').textContent=index[key].polygons+' áreas'+(index[key].lines?' · '+index[key].lines+' contornos':'');return layer}
+async function toggle(key){const check=$('#'+key+'Toggle');if(!check.checked){if(cache[key])map.removeLayer(cache[key]);status('Selecione uma área para consultar os detalhes.');return}status('Carregando '+config[key].name+'…');check.disabled=true;try{pending[key]??=build(key).catch(e=>{delete pending[key];throw e});const layer=await pending[key];if(check.checked){layer.addTo(map);fit()}status('Mapa pronto. Clique em uma área para ver os detalhes.')}catch(e){check.checked=false;status('Não foi possível carregar '+config[key].name+'. Marque a camada para tentar novamente.');console.error(e)}finally{check.disabled=false}}
+for(const key of Object.keys(config))$('#'+key+'Toggle').addEventListener('change',()=>toggle(key));
+$('#fitMap').addEventListener('click',fit);
+$('#areaSearch').addEventListener('input',()=>{const term=$('#areaSearch').value.trim().toLocaleLowerCase('pt-BR'),results=$('#areaResults');results.replaceChildren();if(term.length<3)return;const matches=[];for(const [key,group] of Object.entries(cache)){if(!map.hasLayer(group))continue;group.eachLayer(l=>{if(matches.length<15&&String(l.feature.properties.name).toLocaleLowerCase('pt-BR').includes(term))matches.push([key,l])})}if(!matches.length){results.textContent='Nenhuma área encontrada nas camadas carregadas.';return}for(const [key,l] of matches){const b=document.createElement('button');b.type='button';b.textContent=config[key].name+' · '+l.feature.properties.name.split('\n')[0];b.onclick=()=>{map.fitBounds(l.getBounds(),{maxZoom:16,padding:[30,30]});l.openPopup()};results.appendChild(b)}});
+toggle('desktop');
+})();
