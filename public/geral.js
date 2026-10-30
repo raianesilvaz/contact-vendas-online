@@ -28,7 +28,8 @@ function periodBounds(){
 
 function toast(message){const el=document.querySelector('#generalToast');el.textContent=message;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3500)}
 function fillOptions(id,values){const el=document.querySelector(id),current=el.value;el.innerHTML=el.options[0].outerHTML+[...new Set(values.filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR')).map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');el.value=current}
-function filtered(){const q=norm(document.querySelector('#searchFilter').value),status=document.querySelector('#statusFilter').value,operator=document.querySelector('#operatorFilter').value,seller=document.querySelector('#sellerFilter').value;return sales.filter(s=>(!q||norm([s.customer_name,s.cpf,s.contract_number,s.plan_name].join(' ')).includes(q))&&(!status||s.status===status)&&(!operator||s.operator?.name===operator)&&(!seller||s.seller?.full_name===seller))}
+const companyName=s=>String(s.partner_company||'').trim()||(s.is_rampin?'Rampin':'Sem empresa');
+function filtered(){const q=norm(document.querySelector('#searchFilter').value),status=document.querySelector('#statusFilter').value,operator=document.querySelector('#operatorFilter').value,seller=document.querySelector('#sellerFilter').value,company=document.querySelector('#companyFilter').value;return sales.filter(s=>(!q||norm([s.customer_name,s.cpf,s.contract_number,s.plan_name].join(' ')).includes(q))&&(!status||s.status===status)&&(!operator||s.operator?.name===operator)&&(!seller||s.seller?.full_name===seller)&&(!company||companyName(s)===company))}
 function render(){const rows=filtered();document.querySelector('#recordCount').textContent=`${rows.length} ${rows.length===1?'registro exibido':'registros exibidos'}`;document.querySelector('#sumTotal').textContent=rows.length;document.querySelector('#sumConnected').textContent=rows.filter(s=>s.status==='conectado').length;document.querySelector('#sumRejected').textContent=rows.filter(s=>s.status==='reprovada').length;document.querySelector('#sumCanceled').textContent=rows.filter(s=>s.status==='cancelada').length;document.querySelector('#sumPending').textContent=rows.filter(s=>!['conectado','reprovada','cancelada'].includes(s.status)).length;document.querySelector('#sumValue').textContent=money(rows.reduce((t,s)=>t+Number(s.value||0),0));if(!rows.length){tbody.innerHTML='<tr><td colspan="16" class="empty">Nenhuma venda encontrada para os filtros selecionados.</td></tr>';return}tbody.innerHTML=rows.map(s=>`<tr><td>${brDate(s.created_at)}</td><td title="${esc(s.customer_name)}">${esc(s.customer_name)}</td><td>${esc(s.cpf||'—')}</td><td><span class="status-pill status-${esc(s.status)}">${esc(statusNames[s.status]||s.status)}</span></td><td>${esc(s.contract_number||'—')}</td><td>${esc(s.operator?.name||'—')}</td><td>${brDate(s.scheduled_installation_date)}</td><td>${brDate(s.installation_date)}</td><td>${esc(s.seller?.full_name||'—')}</td><td>${esc(s.plan_name||'—')}</td><td>${money(s.value)}</td><td>Dia ${esc(s.due_day||'—')}</td><td class="${s.is_multi?'flag-yes':'flag-no'}">${s.is_multi?'Sim':'Não'}</td><td class="${s.mobile_activation_date?'flag-yes':'flag-no'}">${s.mobile_activation_date?brDate(s.mobile_activation_date):'Não'}</td><td class="${s.acceptance_completed?'flag-yes':'flag-no'}">${s.acceptance_completed?'Feito':'Pendente'}</td><td title="${esc(s.bko_return||'')}">${esc(s.bko_return||'—')}</td></tr>`).join('')}
 
 async function load(){
@@ -40,7 +41,7 @@ async function load(){
     return;
   }
   tbody.innerHTML='<tr><td colspan="16" class="empty">Carregando vendas...</td></tr>';
-  const{data,error}=await window.supabaseClient.from('sales').select('id,created_at,customer_name,cpf,status,contract_number,plan_name,value,due_day,is_multi,mobile_activation_date,acceptance_completed,bko_return,scheduled_installation_date,installation_date,seller:profiles!sales_seller_id_fkey(full_name),operator:operators(name)').gte('created_at',bounds.start).lt('created_at',bounds.end).order('created_at',{ascending:true}).limit(1000);
+  const{data,error}=await window.supabaseClient.from('sales').select('id,created_at,customer_name,cpf,partner_company,is_rampin,status,contract_number,plan_name,value,due_day,is_multi,mobile_activation_date,acceptance_completed,bko_return,scheduled_installation_date,installation_date,seller:profiles!sales_seller_id_fkey(full_name),operator:operators(name)').gte('created_at',bounds.start).lt('created_at',bounds.end).order('created_at',{ascending:true}).limit(1000);
   if(error){tbody.innerHTML='<tr><td colspan="16" class="empty">Não foi possível carregar as vendas.</td></tr>';toast(error.message||'Erro ao carregar os dados.');return}
   sales=data||[];
   fillOptions('#statusFilter',sales.map(s=>statusNames[s.status]||s.status));
@@ -48,6 +49,7 @@ async function load(){
   [...statusEl.options].forEach(o=>{const key=Object.keys(statusNames).find(k=>statusNames[k]===o.value);if(key)o.value=key});
   fillOptions('#operatorFilter',sales.map(s=>s.operator?.name));
   fillOptions('#sellerFilter',sales.map(s=>s.seller?.full_name));
+  fillOptions('#companyFilter',['Rampin','Guilherme - Vero','Guilherme - Desktop','MidiaSimples - Vero','MidiaSimples - Alares','Nelson - Desktop','Sem empresa',...sales.map(companyName)]);
   render();
 }
 
@@ -72,12 +74,13 @@ function selectPeriod(period){
   const startInput=document.querySelector('#startDateFilter'),endInput=document.querySelector('#endDateFilter');
   startInput.addEventListener('change',()=>{endInput.min=startInput.value;if(endInput.value&&endInput.value<startInput.value)endInput.value='';if(startInput.value&&endInput.value)load()});
   endInput.addEventListener('change',()=>{startInput.max=endInput.value;if(startInput.value&&endInput.value)load()});
-  ['#searchFilter','#statusFilter','#operatorFilter','#sellerFilter'].forEach(id=>document.querySelector(id).addEventListener(id==='#searchFilter'?'input':'change',render));
+  ['#searchFilter','#statusFilter','#operatorFilter','#sellerFilter','#companyFilter'].forEach(id=>document.querySelector(id).addEventListener(id==='#searchFilter'?'input':'change',render));
   document.querySelector('#clearFilters').addEventListener('click',()=>{
     document.querySelector('#searchFilter').value='';
     document.querySelector('#statusFilter').value='';
     document.querySelector('#operatorFilter').value='';
     document.querySelector('#sellerFilter').value='';
+    document.querySelector('#companyFilter').value='';
     startInput.value='';endInput.value='';startInput.max='';endInput.min='';
     selectPeriod('week');
   });
