@@ -30,7 +30,7 @@ function selectOperator(key){
  if(!operatorNames[key]||key===selectedOperator)return;
  selectedOperator=key;request++;
  document.querySelectorAll('[data-commission-operator]').forEach(button=>{const active=button.dataset.commissionOperator===key;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1});
- const brand=$('.commission-brand');brand.src='operator-logos/'+key+'.svg';brand.alt=operatorNames[key];
+ 
  $('#commissionClaroPanel').hidden=key!=='claro';$('#commissionPendingPanel').hidden=key==='claro';
  $('#commissionPendingTitle').textContent='Comissões '+operatorNames[key];
  if(key==='claro')load();
