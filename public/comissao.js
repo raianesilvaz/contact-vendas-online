@@ -34,7 +34,7 @@ function selectOperator(key){
  selectedOperator=key;request++;
  document.querySelectorAll('[data-commission-operator]').forEach(button=>{const active=button.dataset.commissionOperator===key;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1});
  
- const supported=['claro','desktop'].includes(key),desk=key!=='claro';
+ const supported=['claro','desktop','vero'].includes(key),desk=key!=='claro';
  $('#commissionClaroPanel').hidden=!supported;$('#commissionPendingPanel').hidden=supported;
  $('#commissionClaroPanel').setAttribute('aria-labelledby','commissionTab-'+key);
  $('#commissionHalf').closest('label').hidden=desk;
