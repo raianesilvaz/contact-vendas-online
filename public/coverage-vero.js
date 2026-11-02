@@ -2,7 +2,7 @@
 'use strict';
 const $=s=>document.querySelector(s),norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 let citiesPromise,sequence=0,timer;
-async function cities(){citiesPromise??=fetch('coverage-data/vero-cities.json').then(r=>{if(!r.ok)throw Error();return r.json()}).then(d=>d.cities).catch(e=>{citiesPromise=null;throw e});return citiesPromise}
+async function cities(){citiesPromise??=fetch('coverage-data/vero-cities.json').then(r=>{if(!r.ok)throw Error();return r.json()}).then(d=>d.cities).catch(e=>{citiesPromise=null;throw e});await window.ContactCoverageCatalog.refresh();return window.ContactCoverageCatalog.mergeVero(await citiesPromise)}
 function clear(){window.ContactCoverageResults.vero([])}
 function render(rows){window.ContactCoverageResults.vero(rows)}
 async function checkCity(city,uf){const token=++sequence;clear();try{const list=await cities();if(token!==sequence)return;render(list.filter(r=>norm(r.city)===norm(city)&&r.uf===String(uf).toUpperCase()))}catch{if(token===sequence){window.ContactCoverageResults.note('Lista de cidades da VERO indisponível. Tente novamente.')}}}
