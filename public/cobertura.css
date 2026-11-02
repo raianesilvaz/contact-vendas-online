@@ -18,3 +18,5 @@
 .provider-map-card:hover{border-color:#6acfc5;background:#fbfffe}
 .provider-map-card[aria-pressed="true"]{border-color:#008b8b;box-shadow:0 0 0 2px #008b8b12;background:#f5fcfa}
 @media(max-width:600px){.provider-grid{grid-template-columns:1fr}.coverage-content .provider-card{min-height:150px;padding:17px}.provider-card a{margin:0}}
+
+.coverage-content .page-heading{display:flex;align-items:center;justify-content:space-between;gap:20px}.coverage-add-city{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex-shrink:0;padding:11px 16px;border:1px solid #008b8b;border-radius:8px;background:#008b8b;color:#fff;font-size:12px;font-weight:700}.coverage-add-city:hover{background:#006e73;border-color:#006e73}.coverage-add-city svg{width:16px;height:16px}@media(max-width:600px){.coverage-content .page-heading{align-items:flex-start;flex-direction:column;gap:14px}}
