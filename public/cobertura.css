@@ -5,3 +5,16 @@
 .coverage-content .page-heading{margin-bottom:24px}.coverage-content .page-heading h1{margin:7px 0 6px}.coverage-content .page-heading p{font-size:13px;line-height:1.6}.coverage-loading{padding:38px 34px;color:var(--muted);font-size:13px}.coverage-search{position:static;min-width:0}.coverage-search input{width:auto;padding:0;height:38px}.coverage-search .sr-only{position:absolute}.coverage-content[hidden]{display:none!important}
 
 .operator-tag.claro{background:#fff0f1;color:#b51d2b}
+
+/* Operadoras em uma única grade; mapa compartilhado logo abaixo. */
+.provider-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.coverage-content .provider-card{display:grid;grid-template-columns:1fr auto;align-items:start;gap:15px 10px;padding:20px;min-height:170px;text-align:left;font:inherit;color:inherit;width:100%;margin:0}
+.provider-card .provider-brand{grid-column:1/-1;width:auto;min-height:35px}
+.provider-card .provider-info{min-width:0}
+.provider-card .provider-info p{margin-top:6px}
+.provider-card .provider-status{font-size:12px;line-height:1.5}
+.provider-card a,.provider-map-action{align-self:end;white-space:nowrap;margin:0;font-size:11px;color:#00838a;font-weight:650}
+.provider-map-card{cursor:pointer;transition:border-color .15s,box-shadow .15s,background .15s}
+.provider-map-card:hover{border-color:#6acfc5;background:#fbfffe}
+.provider-map-card[aria-pressed="true"]{border-color:#008b8b;box-shadow:0 0 0 2px #008b8b12;background:#f5fcfa}
+@media(max-width:600px){.provider-grid{grid-template-columns:1fr}.coverage-content .provider-card{min-height:150px;padding:17px}.provider-card a{margin:0}}
