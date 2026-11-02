@@ -3,3 +3,5 @@
 @media(max-width:850px){.provider-grid{grid-template-columns:1fr}}@media(max-width:600px){.coverage-content{padding:28px 16px}.coverage-search{gap:8px;padding-left:12px}.coverage-search input{font-size:12px}.coverage-search button{padding:0 14px}.results-panel{padding:18px 15px}.provider-card{padding:15px 12px;gap:12px;flex-wrap:wrap}.provider-brand,.provider-brand img{width:76px}.provider-info{flex:1;min-width:135px}.provider-card a{margin-left:88px}.results-heading{gap:8px}.map-head{flex-wrap:wrap}.map-head div{min-width:100%;margin-bottom:4px}#coverageMap{height:360px}}
 
 .coverage-content .page-heading{margin-bottom:24px}.coverage-content .page-heading h1{margin:7px 0 6px}.coverage-content .page-heading p{font-size:13px;line-height:1.6}.coverage-loading{padding:38px 34px;color:var(--muted);font-size:13px}.coverage-search{position:static;min-width:0}.coverage-search input{width:auto;padding:0;height:38px}.coverage-search .sr-only{position:absolute}.coverage-content[hidden]{display:none!important}
+
+.operator-tag.claro{background:#fff0f1;color:#b51d2b}
