@@ -17,3 +17,5 @@
 
 /* Prazo e prioridade compartilham a mesma linha de título e altura de controle. */
 .tk-fields{align-items:end}.tk-fields .tk-field-caption{display:flex;align-items:baseline;gap:7px;min-height:17px;line-height:17px}.tk-fields .tk-field-caption small{line-height:inherit}.tk-drawer .tk-fields select[name="priority"],.tk-fields .tk-date-trigger{height:42px;min-height:42px;box-sizing:border-box}
+
+.tk-drawer .ciw-trigger.ciw-trigger{min-height:42px;height:42px;font-size:12px;box-sizing:border-box}.tk-drawer .ciw-trigger .ciw-label{font:inherit;color:inherit;line-height:1.4}.tk-drawer .ciw-menu .ciw-option{font-size:12px}
