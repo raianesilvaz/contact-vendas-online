@@ -15,7 +15,7 @@ controls.querySelector('.summary-custom-cancel').addEventListener('click',()=>po
 controls.querySelector('.summary-custom-apply').addEventListener('click',()=>{if(!startInput.value||!endInput.value){window.alert('Selecione a data inicial e a data final.');return}if(startInput.value>endInput.value){window.alert('A data inicial não pode ser maior que a data final.');return}customStart=startInput.value;customEnd=endInput.value;activate('custom')});
 const loadOperators=async()=>{const{data,error}=await window.supabaseClient.from('operators').select('id,name').eq('active',true).order('name');if(error){operatorSelect.innerHTML='<option value="">Todas as operadoras</option>';operatorSelect.disabled=true;return}operatorSelect.innerHTML='<option value="">Todas as operadoras</option>'+data.map(item=>`<option value="${item.id}">${item.name}</option>`).join('')};
 operatorSelect.addEventListener('change',()=>window.applyBkoOperatorFilter?.(operatorSelect.value));
-const partnerChoices=['Rampin','Guilherme - Vero','Guilherme - Desktop','MidiaSimples - Vero','MidiaSimples - Alares','Nelson - Desktop'];
+const partnerChoices=['Rampin','Guilherme - Vero','Guilherme - Desktop','Guilherme - Alares','MidiaSimples - Vero','MidiaSimples - Alares','Nelson - Desktop'];
 partnerChoices.forEach(name=>partnerSelect.add(new Option(name,name)));
 partnerSelect.add(new Option('Sem empresa parceira','__none__'));
 partnerSelect.addEventListener('change',()=>window.applyBkoPartnerFilter?.(partnerSelect.value));

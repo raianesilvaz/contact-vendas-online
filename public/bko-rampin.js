@@ -1,6 +1,6 @@
 (()=>{
   const db=()=>window.supabaseClient;
-  const choices=['Rampin','Guilherme - Vero','Guilherme - Desktop','MidiaSimples - Vero','MidiaSimples - Alares','Nelson - Desktop'];
+  const choices=['Rampin','Guilherme - Vero','Guilherme - Desktop','Guilherme - Alares','MidiaSimples - Vero','MidiaSimples - Alares','Nelson - Desktop'];
   const flags=new Map();
   let busy=false;
   const labelFor=s=>choices.includes(s?.partner_company)?s.partner_company:(s?.is_rampin?'Rampin':null);
@@ -26,7 +26,7 @@
     const heading=document.createElement('span');heading.textContent='Empresa parceira';
     const select=document.createElement('select');select.id='partnerCompany';select.setAttribute('aria-label','Empresa parceira');
     const none=document.createElement('option');none.value='';none.textContent='Nenhuma empresa';select.appendChild(none);
-    choices.forEach(name=>{const option=document.createElement('option');option.value=name;option.textContent=`Venda ${name}`;select.appendChild(option)});
+    choices.forEach(name=>{const option=document.createElement('option');option.value=name;option.textContent=name==='Guilherme - Alares'?'Venda Guilherme Alares':`Venda ${name}`;select.appendChild(option)});
     select.value=selectedLabel||'';
     label.append(heading,select);wrap.appendChild(label);
     select.addEventListener('change',async()=>{

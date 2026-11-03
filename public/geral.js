@@ -49,7 +49,7 @@ async function load(){
   [...statusEl.options].forEach(o=>{const key=Object.keys(statusNames).find(k=>statusNames[k]===o.value);if(key)o.value=key});
   fillOptions('#operatorFilter',sales.map(s=>s.operator?.name));
   fillOptions('#sellerFilter',sales.map(s=>s.seller?.full_name));
-  fillOptions('#companyFilter',['Rampin','Guilherme - Vero','Guilherme - Desktop','MidiaSimples - Vero','MidiaSimples - Alares','Nelson - Desktop','Sem empresa',...sales.map(companyName)]);
+  fillOptions('#companyFilter',['Rampin','Guilherme - Vero','Guilherme - Desktop','Guilherme - Alares','MidiaSimples - Vero','MidiaSimples - Alares','Nelson - Desktop','Sem empresa',...sales.map(companyName)]);
   render();
 }
 
