@@ -6,7 +6,7 @@
   notificationAudio.preload = 'auto';
   notificationAudio.volume = 0.28;
 
-  const iconByType = { new_sale: '🛒', status_changed: '🔄', sale_cancelled: '⚠️', installation_reminder: '📅' };
+  const iconByType = { task_assigned: '☑️', task_reminder: '⏰', new_sale: '🛒', status_changed: '🔄', sale_cancelled: '⚠️', installation_reminder: '📅' };
   const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
   const formatRelative = value => {
     const diff = Math.max(0, Date.now() - new Date(value).getTime());
@@ -155,7 +155,7 @@
         <span class="notification-item-icon">${iconByType[item.type] || '🔔'}</span>
         <div class="notification-item-body"><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.message)}</p><small>${formatRelative(item.created_at)}</small>
           <div class="notification-actions">
-            <button type="button" class="notification-action-sale" data-notification-action="sale" data-notification-id="${item.id}">👁 Ver venda</button>
+            <button type="button" class="notification-action-sale" data-notification-action="sale" data-notification-id="${item.id}">${item.task_id ? '☑ Ver tarefa' : '👁 Ver venda'}</button>
             ${item.type === 'installation_reminder' ? `<button type="button" class="notification-action-whatsapp" data-notification-action="whatsapp" data-notification-id="${item.id}">💬 Avisar cliente</button>` : ''}
           </div>
         </div>
@@ -165,7 +165,7 @@
   async function loadNotifications() {
     const user = window.currentUser;
     if (!user) return;
-    const { data, error } = await window.supabaseClient.from('notifications').select('id,user_id,sale_id,type,title,message,read_at,created_at').eq('user_id', user.id).order('created_at', { ascending:false }).limit(100);
+    const { data, error } = await window.supabaseClient.from('notifications').select('id,user_id,sale_id,task_id,type,title,message,read_at,created_at').eq('user_id', user.id).order('created_at', { ascending:false }).limit(100);
     if (!error) { notifications = data || []; render(); }
   }
 
@@ -215,6 +215,7 @@
       const { error } = await window.supabaseClient.from('notifications').update({ read_at:now }).eq('id', item.id);
       if (!error) { item.read_at = now; render(); }
     }
+    if(item.task_id){window.location.href='tarefas.html?task='+encodeURIComponent(item.task_id);return;}
     if (!item.sale_id) return;
     if (item.type === 'installation_reminder' && action === 'whatsapp') {
       const {data:sale} = await window.supabaseClient.from('sales').select('customer_name,phone_1,phone_2').eq('id',item.sale_id).maybeSingle();
@@ -271,3 +272,4 @@
 
   window.addEventListener('beforeunload', () => { if (notificationChannel) window.supabaseClient.removeChannel(notificationChannel); });
 })();
+
