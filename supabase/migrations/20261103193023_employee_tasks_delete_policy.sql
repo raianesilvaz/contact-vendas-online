@@ -1,0 +1,1 @@
+create policy employee_tasks_delete on public.employee_tasks for delete to authenticated using ((select private.current_user_role()) is not null and (assignee_id=(select auth.uid()) or (created_by=(select auth.uid()) and (select private.current_user_role())='admin')));
