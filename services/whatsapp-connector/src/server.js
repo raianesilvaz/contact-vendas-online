@@ -10,7 +10,7 @@ import { useRemoteAuthState } from './remote-auth-state.js';
 import { useRetryMessageStore, createRetryCounterCache } from './retry-message-store.js';
 import { sendRecoverableText, serialSender } from './reliable-text-send.js';
 
-const CONNECTOR_VERSION = '20261104-message-recovery-1';
+const CONNECTOR_VERSION = '20261104-message-recovery-2';
 
 const PORT = Number(process.env.PORT || 3100);
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -54,6 +54,9 @@ let authStore = null;
 let primaryMessageStore = null;
 const primaryRetryCounters = createRetryCounterCache();
 const enqueuePrimarySend = serialSender();
+let replacementRetries = 0;
+let replacementTimer = null;
+let lastDisconnectCode = null;
 let manualDisconnect = false;
 let lastSendAt = 0;
 const state = {
@@ -181,6 +184,7 @@ async function createSocket() {
     }
     if (connection === 'close') {
       const code = disconnectCode(lastDisconnect);
+      lastDisconnectCode = code;
       const loggedOut = code === DisconnectReason.loggedOut;
       client = null;
       initializePromise = null;
@@ -190,8 +194,17 @@ async function createSocket() {
         return;
       }
       if (code === DisconnectReason.connectionReplaced) {
-        // Do not fight a replacement instance during a deployment or share ratchet keys.
-        updateState({ status: 'disconnected', qr: null, error: 'A conexão foi assumida por outra instância do conector.' });
+        // Let a retiring deployment drain before ONE retry; never start an endless session fight.
+        if (replacementRetries++ === 0) {
+          updateState({ status: 'initializing', qr: null, error: 'Aguardando a troca de instância para reconectar.' });
+          console.warn('Sessão substituída: aguardando 45 segundos para a única tentativa de reconexão.');
+          clearTimeout(replacementTimer);
+          replacementTimer = setTimeout(() => {
+            if (!manualDisconnect && !client) initializeClient().catch(console.error);
+          }, 45_000);
+        } else {
+          updateState({ status: 'disconnected', qr: null, error: 'Outra instância continua usando esta sessão. Mantenha somente um conector ativo.' });
+        }
         return;
       }
       if (loggedOut) {
@@ -264,7 +277,10 @@ async function initializeClient() {
   return initializePromise;
 }
 
-app.get('/health', (_request, response) => response.json({ ok: true, whatsapp: state.status, version: CONNECTOR_VERSION, build: process.env.RENDER_GIT_COMMIT || null, messageRecoveryReady: Boolean(primaryMessageStore) }));
+app.get('/health', (_request, response) => {
+  response.setHeader('Cache-Control', 'no-store');
+  response.json({ ok: true, whatsapp: state.status, version: CONNECTOR_VERSION, build: process.env.RENDER_GIT_COMMIT || null, messageRecoveryReady: Boolean(primaryMessageStore), lastDisconnectCode });
+});
 app.get('/api/whatsapp/attendance/status', requireFinanceAccess, (_request,response)=>{response.setHeader('Cache-Control','no-store');response.json(publicAttendanceState());});
 app.get('/api/whatsapp/attendance/qr', requireFinanceAccess, (_request,response)=>{response.setHeader('Cache-Control','no-store');response.json({qr:attendanceState.qr,status:attendanceState.status});});
 app.post('/api/whatsapp/attendance/connect', requireFinanceAccess, (_request,response)=>{initializeAttendanceClient().catch(()=>{});response.status(202).json(publicAttendanceState());});
@@ -278,6 +294,8 @@ app.get('/api/whatsapp/qr', requireFinanceAccess, (_request, response) => {
   response.json({ qr: state.qr, status: state.status });
 });
 app.post('/api/whatsapp/connect', requireFinanceAccess, (_request, response) => {
+  clearTimeout(replacementTimer);
+  replacementRetries = 0;
   initializeClient().catch(() => {});
   response.status(202).json(publicState());
 });
@@ -324,6 +342,7 @@ app.post('/api/whatsapp/send-campaign-message', requireFinanceAccess, async (req
   }
 });
 app.post('/api/whatsapp/disconnect', requireFinanceAccess, async (_request, response) => {
+  clearTimeout(replacementTimer);
   manualDisconnect = true;
   const socket = client;
   client = null;

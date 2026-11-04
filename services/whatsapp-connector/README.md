@@ -37,9 +37,9 @@ Esta integração usa Baileys, uma solução não oficial sujeita a mudanças e 
 - O conector gera a mensagem Baileys, grava o conteúdo exato criptografado e só então transmite. Falha de armazenamento interrompe o envio antes da transmissão.
 - `getMessage` atende às solicitações de recuperação do WhatsApp com o mesmo identificador. Os contadores de recuperação são limitados e preservados nas reconexões.
 - O arquivo usa a RPC privada existente, separado das chaves Signal, com até 256 mensagens, 512 KiB e 7 dias. A identidade do pareamento é validada; outra sessão ou destinatário não pode recuperar esse conteúdo. Os aliases LID vêm apenas da resposta autenticada do WhatsApp.
-- Reconexões reutilizam o estado de autenticação em memória. Uma gravação temporariamente malsucedida deixa de bloquear as seguintes. A troca de instância encerra a reconexão da instância antiga para evitar disputa pela mesma sessão.
+- Reconexões reutilizam o estado de autenticação em memória. Uma gravação temporariamente malsucedida deixa de bloquear as seguintes. Uma sessão substituída aguarda 45 segundos para a instância anterior encerrar, faz uma única tentativa e para se a disputa continuar, em vez de reconectar indefinidamente.
 - Mensagens e chaves não são impressas nos logs. As operações de envio são serializadas e a lista de dispositivos é consultada novamente na transmissão.
-- `GET /health` inclui `version`, `build` (quando o Render informa a revisão) e `messageRecoveryReady`. A versão desta correção é `20261104-message-recovery-1`.
+- `GET /health` inclui `version`, `build` (quando o Render informa a revisão), `messageRecoveryReady` e `lastDisconnectCode`, sem credenciais ou mensagens. A versão desta correção é `20261104-message-recovery-2`.
 - Uma resposta de envio significa encaminhamento ao WhatsApp, não confirmação de entrega ou leitura. Mensagens anteriores à implantação não possuem necessariamente o conteúdo original no arquivo e podem continuar indisponíveis; não reenviar campanhas inteiras para testar.
 
 Validação: `npm run check` e `npm test`, incluindo geração real do protocolo Baileys com socket simulado, recuperação após reinício, identidade/LID, falhas de armazenamento, limites e serialização. Nenhuma mensagem real é enviada pelos testes.
