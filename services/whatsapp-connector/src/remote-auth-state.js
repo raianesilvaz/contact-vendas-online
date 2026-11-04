@@ -1,5 +1,6 @@
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 import { BufferJSON, initAuthCreds, proto } from '@whiskeysockets/baileys';
+import { sessionRpc } from './remote-session-rpc.js';
 
 const FORMAT_VERSION = 1;
 
@@ -34,26 +35,20 @@ export function decryptSession(value, secret) {
   return JSON.parse(plaintext.toString('utf8'), BufferJSON.reviver);
 }
 
-function rpcUrl(baseUrl, name) {
-  return `${String(baseUrl).replace(/\/+$/, '')}/rest/v1/rpc/${name}`;
-}
-
 export async function useRemoteAuthState({
   supabaseUrl,
   publishableKey,
   accessToken,
   encryptionSecret,
   sessionId = 'primary',
-  fetchImpl = fetch
+  fetchImpl = fetch,
+  sleep
 }) {
   if (!supabaseUrl || !publishableKey || !accessToken || !encryptionSecret) {
     throw new Error('Configuração da sessão remota incompleta.');
   }
 
-  const headers = { apikey: publishableKey, 'Content-Type': 'application/json' };
-  const call = async (name, body) => fetchImpl(rpcUrl(supabaseUrl, name), {
-    method: 'POST', headers, body: JSON.stringify(body)
-  });
+  const call = sessionRpc({ supabaseUrl, publishableKey, accessToken, fetchImpl, sleep });
   let document = { creds: initAuthCreds(), keys: {} };
   let writesEnabled = true;
   let writeQueue = Promise.resolve();
@@ -71,7 +66,8 @@ export async function useRemoteAuthState({
   const persist = () => {
     if (!writesEnabled) return writeQueue;
     const snapshot = encryptSession(document, encryptionSecret);
-    writeQueue = writeQueue.then(async () => {
+    // A failed write is reported to its caller without poisoning every future write.
+    writeQueue = writeQueue.catch(() => {}).then(async () => {
       if (!writesEnabled) return;
       const response = await call('contact_put_whatsapp_connector_session', {
         p_token: accessToken,
@@ -110,6 +106,7 @@ export async function useRemoteAuthState({
       }
     },
     saveCreds: persist,
+    flush: () => writeQueue,
     clear: async () => {
       writesEnabled = false;
       await writeQueue.catch(() => {});
@@ -123,3 +120,4 @@ export async function useRemoteAuthState({
     }
   };
 }
+

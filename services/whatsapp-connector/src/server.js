@@ -5,7 +5,12 @@ import makeWASocket, {
   fetchLatestBaileysVersion
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
+import { createHash } from 'node:crypto';
 import { useRemoteAuthState } from './remote-auth-state.js';
+import { useRetryMessageStore, createRetryCounterCache } from './retry-message-store.js';
+import { sendRecoverableText, serialSender } from './reliable-text-send.js';
+
+const CONNECTOR_VERSION = '20261104-message-recovery-1';
 
 const PORT = Number(process.env.PORT || 3100);
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -46,6 +51,9 @@ let attendanceManualDisconnect = false;
 const attendanceState = { status: 'disconnected', qr: null, phone: null, name: null, error: null, updatedAt: new Date().toISOString() };
 let initializePromise = null;
 let authStore = null;
+let primaryMessageStore = null;
+const primaryRetryCounters = createRetryCounterCache();
+const enqueuePrimarySend = serialSender();
 let manualDisconnect = false;
 let lastSendAt = 0;
 const state = {
@@ -111,14 +119,24 @@ function disconnectCode(lastDisconnect) {
 }
 
 async function createSocket() {
-  authStore = await useRemoteAuthState({
+  authStore ||= await useRemoteAuthState({
     supabaseUrl: SUPABASE_URL,
     publishableKey: SUPABASE_KEY,
     accessToken: SESSION_ACCESS_TOKEN,
     encryptionSecret: SESSION_ENCRYPTION_KEY,
     sessionId: SESSION_ID
   });
+  await authStore.saveCreds();
   const { state: authState, saveCreds } = authStore;
+  primaryMessageStore ||= await useRetryMessageStore({
+    supabaseUrl: SUPABASE_URL,
+    publishableKey: SUPABASE_KEY,
+    accessToken: SESSION_ACCESS_TOKEN,
+    encryptionSecret: SESSION_ENCRYPTION_KEY,
+    sessionId: SESSION_ID,
+    identity: createHash('sha256').update(authState.creds.signedIdentityKey.public).digest('hex')
+  });
+  const messageStore = primaryMessageStore;
   const { version } = await fetchLatestBaileysVersion();
   const socket = makeWASocket({
     version,
@@ -128,10 +146,19 @@ async function createSocket() {
     browser: ['CONTACT', 'Chrome', '1.0.0'],
     markOnlineOnConnect: false,
     syncFullHistory: false,
-    generateHighQualityLinkPreview: false
+    generateHighQualityLinkPreview: false,
+    getMessage: async key => {
+      const message = messageStore.get(key);
+      if (!message) console.warn('WhatsApp pediu recuperação de uma mensagem que não está no arquivo desta sessão.');
+      return message;
+    },
+    msgRetryCounterCache: primaryRetryCounters,
+    maxMsgRetryCount: 5
   });
   client = socket;
-  socket.ev.on('creds.update', saveCreds);
+  socket.ev.on('creds.update', () => {
+    if (client === socket) saveCreds().catch(() => console.error('Não foi possível persistir as credenciais do WhatsApp; o próximo envio tentará novamente.'));
+  });
   socket.ev.on('connection.update', async update => {
     if (client !== socket) return;
     const { connection, qr, lastDisconnect } = update;
@@ -162,11 +189,20 @@ async function createSocket() {
         manualDisconnect = false;
         return;
       }
+      if (code === DisconnectReason.connectionReplaced) {
+        // Do not fight a replacement instance during a deployment or share ratchet keys.
+        updateState({ status: 'disconnected', qr: null, error: 'A conexão foi assumida por outra instância do conector.' });
+        return;
+      }
       if (loggedOut) {
         const store = authStore;
+        const messageStore = primaryMessageStore;
         authStore = null;
+        primaryMessageStore = null;
+        primaryRetryCounters.flushAll();
         try {
           await store?.clear();
+          await messageStore?.clear();
         } catch (error) {
           console.error('Falha ao remover sessão expirada:', error?.message || error);
           updateState({ status: 'error', qr: null, error: 'Não foi possível remover a sessão expirada do WhatsApp.' });
@@ -190,7 +226,9 @@ async function createAttendanceSocket() {
   const { version } = await fetchLatestBaileysVersion();
   const socket = makeWASocket({ version, auth: authState, logger, printQRInTerminal: false, browser: ['CONTACT Atendimento','Chrome','1.0.0'], markOnlineOnConnect: false, syncFullHistory: true, generateHighQualityLinkPreview: false });
   attendanceClient = socket;
-  socket.ev.on('creds.update', saveCreds);
+  socket.ev.on('creds.update', () => {
+    if (attendanceClient === socket) saveCreds().catch(() => console.error('Não foi possível persistir as credenciais do Atendimento.'));
+  });
   socket.ev.on('messaging-history.set', async ({ messages=[] }) => {
     console.log(`Sincronizando histórico do Atendimento: ${messages.length} mensagens recebidas.`);
     for (const item of messages) await persistAttendanceMessage(item).catch(error=>console.error('Falha ao sincronizar histórico do Atendimento:',error?.message||error));
@@ -226,7 +264,7 @@ async function initializeClient() {
   return initializePromise;
 }
 
-app.get('/health', (_request, response) => response.json({ ok: true, whatsapp: state.status }));
+app.get('/health', (_request, response) => response.json({ ok: true, whatsapp: state.status, version: CONNECTOR_VERSION, build: process.env.RENDER_GIT_COMMIT || null, messageRecoveryReady: Boolean(primaryMessageStore) }));
 app.get('/api/whatsapp/attendance/status', requireFinanceAccess, (_request,response)=>{response.setHeader('Cache-Control','no-store');response.json(publicAttendanceState());});
 app.get('/api/whatsapp/attendance/qr', requireFinanceAccess, (_request,response)=>{response.setHeader('Cache-Control','no-store');response.json({qr:attendanceState.qr,status:attendanceState.status});});
 app.post('/api/whatsapp/attendance/connect', requireFinanceAccess, (_request,response)=>{initializeAttendanceClient().catch(()=>{});response.status(202).json(publicAttendanceState());});
@@ -243,6 +281,17 @@ app.post('/api/whatsapp/connect', requireFinanceAccess, (_request, response) => 
   initializeClient().catch(() => {});
   response.status(202).json(publicState());
 });
+async function sendPrimaryText(phone, message) {
+  return enqueuePrimarySend(async () => {
+    const socket = client;
+    if (!socket || state.status !== 'connected') throw Object.assign(new Error('WhatsApp não está conectado.'), { statusCode: 409 });
+    const [registration] = await socket.onWhatsApp(phone);
+    if (!registration?.exists || !registration.jid) throw Object.assign(new Error('Este número não possui WhatsApp.'), { statusCode: 400 });
+    await authStore.saveCreds();
+    if (client !== socket || state.status !== 'connected') throw Object.assign(new Error('A conexão mudou. Aguarde a reconexão antes de enviar.'), { statusCode: 409 });
+    return sendRecoverableText(socket, primaryMessageStore, registration.jid, message, undefined, [registration.lid]);
+  });
+}
 app.post('/api/whatsapp/send-test', requireFinanceAccess, async (request, response) => {
   if (!client || state.status !== 'connected') return response.status(409).json({ error: 'WhatsApp não está conectado.' });
   if (Date.now() - lastSendAt < 10_000) return response.status(429).json({ error: 'Aguarde 10 segundos antes de outro teste.' });
@@ -252,13 +301,11 @@ app.post('/api/whatsapp/send-test', requireFinanceAccess, async (request, respon
   if (phone.length < 12 || phone.length > 13) return response.status(400).json({ error: 'Informe um telefone brasileiro válido com DDD.' });
   if (!message || message.length > 2000) return response.status(400).json({ error: 'A mensagem deve ter entre 1 e 2.000 caracteres.' });
   try {
-    const [registration] = await client.onWhatsApp(phone);
-    if (!registration?.exists) return response.status(400).json({ error: 'Este número não possui WhatsApp.' });
-    const sent = await client.sendMessage(registration.jid, { text: message });
+    const sent = await sendPrimaryText(phone, message);
     lastSendAt = Date.now();
     response.json({ ok: true, messageId: sent?.key?.id || null });
   } catch (error) {
-    response.status(500).json({ error: error.message || 'Não foi possível enviar a mensagem.' });
+    response.status(error.statusCode || 500).json({ error: error.message || 'Não foi possível enviar a mensagem.' });
   }
 });
 
@@ -270,12 +317,10 @@ app.post('/api/whatsapp/send-campaign-message', requireFinanceAccess, async (req
   if (phone.length < 12 || phone.length > 13) return response.status(400).json({ error: 'Telefone inválido.' });
   if (!message || message.length > 4000) return response.status(400).json({ error: 'Mensagem inválida.' });
   try {
-    const [registration] = await client.onWhatsApp(phone);
-    if (!registration?.exists) return response.status(400).json({ error: 'Este número não possui WhatsApp.' });
-    const sent = await client.sendMessage(registration.jid, { text: message });
+    const sent = await sendPrimaryText(phone, message);
     response.json({ ok: true, messageId: sent?.key?.id || null });
   } catch (error) {
-    response.status(500).json({ error: error.message || 'Não foi possível enviar.' });
+    response.status(error.statusCode || 500).json({ error: error.message || 'Não foi possível enviar.' });
   }
 });
 app.post('/api/whatsapp/disconnect', requireFinanceAccess, async (_request, response) => {
@@ -284,12 +329,18 @@ app.post('/api/whatsapp/disconnect', requireFinanceAccess, async (_request, resp
   client = null;
   initializePromise = null;
   const store = authStore;
+  const messageStore = primaryMessageStore;
   authStore = null;
+  primaryMessageStore = null;
+  primaryRetryCounters.flushAll();
   try { await store?.clear(); } catch (error) {
     console.error('Falha ao remover sessão remota:', error?.message || error);
   }
   try { await socket?.logout(); } catch {}
   try { socket?.end(undefined); } catch {}
+  try { await messageStore?.clear(); } catch {
+    console.error('Não foi possível limpar o arquivo de recuperação da sessão encerrada.');
+  }
   updateState({ status: 'disconnected', qr: null, phone: null, name: null, error: null });
   response.json(publicState());
 });
@@ -302,3 +353,4 @@ app.listen(PORT, () => {
   console.log(`Conector WhatsApp disponível na porta ${PORT}.`);
   if (String(process.env.AUTO_START).toLowerCase() === 'true') initializeClient().catch(console.error);
 });
+

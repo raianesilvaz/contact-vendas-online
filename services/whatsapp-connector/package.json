@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npx --yes node@20 --env-file=.env src/server.js",
     "start:production": "node src/server.js",
-    "check": "node --check src/server.js && node --check src/remote-auth-state.js",
+    "check": "node --check src/server.js && node --check src/remote-auth-state.js && node --check src/remote-session-rpc.js && node --check src/retry-message-store.js && node --check src/reliable-text-send.js",
     "test": "node --test"
   },
   "engines": { "node": ">=20" },
@@ -18,3 +18,4 @@
     "ws": "^8.18.0"
   }
 }
+
