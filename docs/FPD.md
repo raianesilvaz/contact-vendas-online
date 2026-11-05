@@ -1,0 +1,38 @@
+# Tratamento FPD
+
+Acesso: administrador → Financeiro → Envio de Cobranças → FPD.
+
+1. Importar Excel (.xlsx/.xls, até 10 MB, 1 a 10.000 registros).
+2. Conferir a prévia e confirmar a substituição integral da tabela anterior.
+3. Editar Status/Observação e usar Salvar alterações na linha.
+
+Colunas aceitas do arquivo FPD CONTACT: NUM_FATURA, NUM_CONTRATO,
+DSC_TIPO_COBRANCA, DAT_INSTALACAO, DAT_VENCIMENTO, DAT_PAGAMENTO,
+DSC_SITUACAO_COBRANCA, NR_ANO_MES_INST, DIAS_EM_ABERTO, ACOMPANHAMENTO.
+CLIENTE, STATUS, VENDEDOR e OBS da planilha não são importados: nomes vêm das
+vendas; tratamentos começam em branco. Contratos repetidos com faturas diferentes
+são aceitos; pares contrato/fatura duplicados são rejeitados.
+
+O arquivo é lido no navegador com SheetJS CE 0.20.3, distribuído localmente.
+Os registros normalizados são enviados à função existente import_fpd_records.
+A migração fpd_replace_workspace muda somente o workspace FPD: validação,
+bloqueio de importações concorrentes, exclusão de registros/importação anterior,
+inserção com consulta de sales/profiles e resumo, tudo na mesma transação.
+Erros revertem a substituição inteira. Retries do mesmo request_id são idempotentes
+enquanto aquela importação for a vigente. Nenhum arquivo Excel nem histórico é retido.
+
+As funções permanecem SECURITY INVOKER. As políticas de exclusão são limitadas
+a administradores ativos nas tabelas FPD. As políticas de CONTACT não mudam.
+Contratos sem correspondência ou ambíguos ficam sinalizados, sem escolher uma
+venda arbitrária. Status/Observação são atualizados por save_fpd_treatment com
+annotation_version; conflitos exigem recarregar após preservar o texto pendente.
+
+Verificações: npm run build (inclui testes do parser), npm run validate,
+Wrangler dry-run, leitura real da planilha de 540 linhas, teste visual com dados
+fictícios e testes transacionais no banco revertidos ao final: matching, edição,
+conflito de versão, retry, rollback após falha e substituição sem histórico.
+Não foi realizada uma importação permanente de dados reais nesta entrega.
+
+Rollback de interface: reverter o PR desta funcionalidade. A função de substituição
+pode permanecer no banco sem uso pela interface anterior; não restaurar a função
+antiga de acúmulo/histórico nem excluir tabelas ou tratamentos durante rollback.
