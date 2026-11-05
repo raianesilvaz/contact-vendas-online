@@ -207,6 +207,24 @@
     }
   }
 
+
+  function installationReminderMessage(sale) {
+    const isoDate=String(sale.scheduled_installation_date||'').slice(0,10);
+    const date=/^\d{4}-\d{2}-\d{2}$/.test(isoDate)?isoDate.split('-').reverse().join('/'):'A CONFIRMAR';
+    const shortTime=value=>/^([01]\d|2[0-3]):[0-5]\d/.test(String(value||''))?String(value).slice(0,5):'';
+    const start=shortTime(sale.scheduled_installation_start),end=shortTime(sale.scheduled_installation_end);
+    const period=start&&end?'DAS '+start+' ÀS '+end:'A CONFIRMAR';
+    const address=[String(sale.full_address||'').trim(),String(sale.address_complement||'').trim()].filter(Boolean).join(' · ')||'A CONFIRMAR';
+    return [
+      'OLÁ, '+(String(sale.customer_name||'').trim()||'CLIENTE')+'! 😊',
+      isoDate?'🏠 PASSANDO PARA LEMBRAR QUE A INSTALAÇÃO DA SUA INTERNET ESTÁ AGENDADA!':'🏠 PASSANDO PARA LEMBRAR DA INSTALAÇÃO DA SUA INTERNET.',
+      '📅 DATA: '+date+'\n🕒 PERÍODO PREVISTO: '+period+'\n📍 ENDEREÇO: '+address,
+      '👤 PEDIMOS QUE UM RESPONSÁVEL MAIOR DE 18 ANOS ESTEJA NO LOCAL DURANTE ESSE PERÍODO PARA RECEBER A EQUIPE TÉCNICA.',
+      '✅ PODE CONFIRMAR SUA DISPONIBILIDADE?',
+      'EQUIPE CONTACT 💙'
+    ].join('\n\n').toLocaleUpperCase('pt-BR');
+  }
+
   async function openNotification(id, action = 'sale') {
     const item = notifications.find(row => row.id === id);
     if (!item) return;
@@ -218,10 +236,10 @@
     if(item.task_id){window.location.href='tarefas.html?task='+encodeURIComponent(item.task_id);return;}
     if (!item.sale_id) return;
     if (item.type === 'installation_reminder' && action === 'whatsapp') {
-      const {data:sale} = await window.supabaseClient.from('sales').select('customer_name,phone_1,phone_2').eq('id',item.sale_id).maybeSingle();
-      const phone=String(sale?.phone_1||sale?.phone_2||'').replace(/\\D/g,'');
+      const {data:sale} = await window.supabaseClient.from('sales').select('customer_name,phone_1,phone_2,scheduled_installation_date,scheduled_installation_start,scheduled_installation_end,full_address,address_complement').eq('id',item.sale_id).maybeSingle();
+      const phone=String(sale?.phone_1||sale?.phone_2||'').replace(/\D/g,'');
       if(phone){
-        const message='Olá, '+(sale.customer_name||'')+'! Sua instalação de internet está prevista para este período. Por favor, confirme se haverá alguém no endereço para receber o técnico.';
+        const message=installationReminderMessage(sale);
         const number=(phone.length===10||phone.length===11)?'55'+phone:phone;
         window.open('https://wa.me/'+number+'?text='+encodeURIComponent(message),'_blank','noopener,noreferrer');
       }
