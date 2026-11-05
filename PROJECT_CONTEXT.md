@@ -166,3 +166,12 @@ Também existe atualização manual no topo como alternativa operacional quando 
 - A primeira versão permite somente conectar, desconectar e enviar uma mensagem manual para um número informado.
 - Disparos em lote e automações permanecem fora do escopo até validação do teste.
 - A integração usa `whatsapp-web.js`, portanto é não oficial e está sujeita a bloqueios ou mudanças do WhatsApp.
+
+
+## FPD — versão inicial (05/11/2026)
+- Financeiro → Envio de Cobranças → FPD, depois de Histórico.
+- Importação Excel com prévia, contrato/fatura únicos; Cliente e Vendedor consultados em sales/profiles apenas para leitura.
+- Status e Observação editáveis com salvamento explícito por linha e controle de concorrência.
+- Uma única tabela vigente: cada importação substitui todos os registros e tratamentos FPD, sem histórico.
+- Acesso inicial de administrador, preservando o acesso existente do FPD.
+- Em cada publicação, informar à usuária os estados de Git/PR, commit, banco Supabase e Cloudflare. Distinguir envio ao GitHub de produção confirmada; não anunciar produção sem evidência.
