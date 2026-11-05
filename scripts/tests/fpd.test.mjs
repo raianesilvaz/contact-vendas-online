@@ -13,3 +13,19 @@ test('same contract may contain separate invoices',()=>assert.equal(parse([heade
 test('rejects empty, missing-column, invalid invoice and invalid day inputs',()=>{
  for(const grid of [[],[header],[header,['5','123']],[header,['1','']],[header,['1','123','NaN']],[header,['1','123','1e99']]])assert.throws(()=>parse(grid));
 });
+
+
+// The API role preloads safeupdate, unlike the SQL management connection.
+// Regress the exact SQL shape that caused production imports to fail.
+test('replacement deletes use explicit FPD ID predicates under the import lock',async()=>{
+ const {readFileSync,readdirSync}=await import('node:fs');
+ const folder=new URL('../../supabase/migrations/',import.meta.url);
+ const file=readdirSync(folder).find(p=>p.endsWith('_fpd_safeupdate_import.sql'));
+ const sql=readFileSync(new URL(file,folder),'utf8');
+ assert.match(sql,/pg_advisory_xact_lock/);
+ assert.match(sql,/delete from public\.fpd_records where id = any\(v_record_ids\)/i);
+ assert.match(sql,/delete from public\.fpd_imports where id = any\(v_import_ids\)/i);
+ assert.doesNotMatch(sql,/delete from public\.\w+\s*;/i);
+ assert.doesNotMatch(sql,/security definer|safeupdate\.enabled\s*=\s*(?:off|false)/i);
+ assert.doesNotMatch(sql,/(?:delete from|update|insert into) public\.(?:sales|profiles)\b/i);
+});

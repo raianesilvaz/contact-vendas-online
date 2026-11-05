@@ -36,3 +36,12 @@ Não foi realizada uma importação permanente de dados reais nesta entrega.
 Rollback de interface: reverter o PR desta funcionalidade. A função de substituição
 pode permanecer no banco sem uso pela interface anterior; não restaurar a função
 antiga de acúmulo/histórico nem excluir tabelas ou tratamentos durante rollback.
+
+## Correção safeupdate
+
+O papel authenticator usado pelo PostgREST carrega safeupdate, que exige WHERE
+em DELETE/UPDATE. A conexão de gestão SQL não carrega esse módulo; por isso os
+testes anteriores de substituição não reproduziram a proteção da API. A migração
+fpd_safeupdate_import captura os IDs FPD dentro do bloqueio de importação e usa
+WHERE id = ANY(ids) nas duas exclusões. Nenhuma configuração ou permissão é
+modificada. O teste de regressão verifica os predicados e o isolamento das escritas.
