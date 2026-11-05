@@ -156,7 +156,7 @@
         <div class="notification-item-body"><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.message)}</p><small>${formatRelative(item.created_at)}</small>
           <div class="notification-actions">
             <button type="button" class="notification-action-sale" data-notification-action="sale" data-notification-id="${item.id}">${item.task_id ? '☑ Ver tarefa' : '👁 Ver venda'}</button>
-            ${item.type === 'installation_reminder' ? `<button type="button" class="notification-action-whatsapp" data-notification-action="whatsapp" data-notification-id="${item.id}">💬 Avisar cliente</button><button type="button" class="notification-action-sale" data-notification-action="copy-reminder" data-notification-id="${item.id}">Copiar lembrete</button>` : ''}
+            ${item.type === 'installation_reminder' ? `<button type="button" class="notification-action-whatsapp" data-notification-action="whatsapp" data-notification-id="${item.id}">💬 Avisar cliente</button>` : ''}
           </div>
         </div>
       </div>`).join('');
@@ -226,29 +226,6 @@
   }
 
 
-  async function copyInstallationReminder(message, notificationId) {
-    try {
-      await navigator.clipboard.writeText(message);
-      const button=[...document.querySelectorAll('[data-notification-action="copy-reminder"]')].find(el=>el.dataset.notificationId===notificationId);
-      if(button){button.textContent='✓ Copiado!';setTimeout(()=>{if(button.isConnected)button.textContent='Copiar lembrete'},2500)}
-    } catch (_) {
-      let dialog=document.querySelector('#installationReminderCopy');
-      if(!dialog){
-        dialog=document.createElement('dialog');
-        dialog.id='installationReminderCopy';
-        dialog.setAttribute('aria-labelledby','installationReminderCopyTitle');
-        dialog.style.cssText='width:min(520px,calc(100vw - 32px));max-height:85vh;padding:24px;border:1px solid #cddfe1;border-radius:16px;color:#123e4a;box-shadow:0 20px 70px #102c3c33;font-family:inherit';
-        dialog.innerHTML='<h2 id="installationReminderCopyTitle" style="margin:0 0 8px;font-size:20px">Copiar lembrete</h2><p style="font-size:13px;line-height:1.5;color:#617b89">Pressione Ctrl + C ou use a opção Copiar. Depois, cole a mensagem no WhatsApp.</p><textarea readonly aria-label="Mensagem do lembrete" style="display:block;width:100%;box-sizing:border-box;min-height:260px;padding:12px;border:1px solid #cddfe1;border-radius:9px;resize:vertical;font:inherit;font-size:13px;line-height:1.5"></textarea><div style="display:flex;justify-content:flex-end;margin-top:16px"><button type="button" style="border:0;border-radius:8px;background:#008e95;color:white;padding:10px 18px;font:inherit;cursor:pointer">Fechar</button></div>';
-        dialog.querySelector('button').onclick=()=>dialog.close();
-        document.body.appendChild(dialog);
-      }
-      dialog.querySelector('textarea').value=message;
-      dialog.showModal();
-      dialog.querySelector('textarea').focus();
-      dialog.querySelector('textarea').select();
-    }
-  }
-
   async function openNotification(id, action = 'sale') {
     const item = notifications.find(row => row.id === id);
     if (!item) return;
@@ -259,18 +236,17 @@
     }
     if(item.task_id){window.location.href='tarefas.html?task='+encodeURIComponent(item.task_id);return;}
     if (!item.sale_id) return;
-    if (item.type === 'installation_reminder' && ['whatsapp','copy-reminder'].includes(action)) {
+    if (item.type === 'installation_reminder' && action === 'whatsapp') {
       const {data:sale,error} = await window.supabaseClient.from('sales').select('customer_name,phone_1,phone_2,scheduled_installation_date,scheduled_installation_start,scheduled_installation_end,full_address,address_complement').eq('id',item.sale_id).maybeSingle();
       if(error||!sale){alert('Não foi possível carregar o lembrete. Tente novamente.');return}
       const message=installationReminderMessage(sale);
-      if(action==='copy-reminder'){await copyInstallationReminder(message,item.id);return}
       const phone=String(sale?.phone_1||sale?.phone_2||'').replace(/\D/g,'');
       if(phone){
         const number=(phone.length===10||phone.length===11)?'55'+phone:phone;
         window.open('https://api.whatsapp.com/send?phone='+number+'&text='+encodeURIComponent(message),'_blank','noopener,noreferrer');
       }
     }
-    if (['whatsapp','copy-reminder'].includes(action)) return;
+    if (action === 'whatsapp') return;
     const target = window.currentUser?.profile?.role === 'admin' ? 'bko.html' : 'vendas.html';
     window.location.href = `${target}?sale=${encodeURIComponent(item.sale_id)}`;
   }
