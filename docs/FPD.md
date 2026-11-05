@@ -45,3 +45,23 @@ testes anteriores de substituição não reproduziram a proteção da API. A mig
 fpd_safeupdate_import captura os IDs FPD dentro do bloqueio de importação e usa
 WHERE id = ANY(ids) nas duas exclusões. Nenhuma configuração ou permissão é
 modificada. O teste de regressão verifica os predicados e o isolamento das escritas.
+
+## Visualização em planilha
+
+A grade compacta usa uma coluna por campo, cabeçalho fixo e Fatura/Contrato
+congelados na rolagem horizontal. Cada cabeçalho abre filtro com busca de valores,
+seleção múltipla (inclui células vazias) e ordenação crescente/decrescente. Filtros
+são combinados sobre todos os registros carregados antes da paginação. A pesquisa
+de valores do filtro seleciona os resultados encontrados; o botão Aplicar confirma.
+
+Status/Observação são editáveis diretamente nas células. Salvar alterações grava
+todas as linhas pendentes; Enter ou o indicador no número da linha grava uma linha.
+As alterações ficam em memória ao filtrar, ordenar ou trocar de página. Falhas de
+salvamento preservam as linhas ainda pendentes. A atualização da tabela requer
+confirmação quando houver alterações não salvas.
+
+Cores: campos da planilha em azul; campos de cliente/tratamento em rosa; pagamento
+ou renegociação em verde; status Desabilitado em roxo; Conectado/Pago em verde.
+Essas cores são derivadas dos valores exibidos e não alteram o banco. O botão
+Ampliar planilha ocupa a janela, com saída por Reduzir planilha ou Escape.
+Nenhuma migração ou alteração dos dados é necessária para esta visualização.

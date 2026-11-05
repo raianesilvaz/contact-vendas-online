@@ -1,18 +1,69 @@
 (()=>{
   const panel=document.querySelector('#collectionsFpd');if(!panel)return;
   const $=s=>panel.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  let db,rows=[],meta=null,preview=null,page=0,busy=false,dirty=new Set();const size=50;
+  let db,rows=[],meta=null,preview=null,page=0,busy=false,dirty=new Set();let size=100;
   function message(text,error=false){$('#fpdMessage').textContent=text;$('#fpdMessage').classList.toggle('is-error',error);}
   function lock(value){busy=value;panel.querySelectorAll('button,input,select,textarea').forEach(el=>el.disabled=value);}
-  function filtered(){const q=$('#fpdSearch').value.trim().toLocaleLowerCase('pt-BR'),filter=$('#fpdFilter').value;return rows.filter(r=>(!q||[r.contract_number,r.customer_name,r.seller_name,r.treatment_status,r.notes].some(v=>String(v||'').toLocaleLowerCase('pt-BR').includes(q)))&&(!filter||(filter==='pending'?!r.treatment_status:filter==='unmatched'?r.match_status!=='matched':!!r.treatment_status)));}
+  const grid=window.contactFpdGrid,filters={};let sort=null,menuState=null;
+  function filtered(){return grid.filter(rows,{filters,sort,search:$('#fpdSearch').value,quick:$('#fpdFilter').value});}
+  function controls(){
+    $('#fpdSaveAll').disabled=busy||!dirty.size;
+    $('#fpdSaveAll').textContent=dirty.size?`Salvar alterações (${dirty.size})`:'Tudo salvo';
+    $('#fpdPending').textContent=dirty.size?`${dirty.size} linha(s) com alterações não salvas`:'Status e Observação: edite na célula e salve. Enter salva a linha.';
+  }
+  function rowTone(r){const situation=grid.fold(r.collection_situation),status=grid.fold(r.treatment_status);return r.payment_date_text||situation.includes('pag')||situation.includes('renegociad')||status==='pago'?'fpd-paid':'';}
+  function statusTone(v){const s=grid.fold(v);return s.includes('desabilitad')?'fpd-disabled':s==='conectado'||s==='pago'?'fpd-connected':s?'fpd-contacted':'';}
   function render(){
     $('#fpdTotal').textContent=rows.length;$('#fpdTreated').textContent=rows.filter(r=>r.treatment_status).length;$('#fpdUnmatched').textContent=rows.filter(r=>r.match_status!=='matched').length;
-    $('#fpdMeta').textContent=meta?`${meta.file_name} · Importada em ${new Date(meta.imported_at).toLocaleString('pt-BR')} · Os tratamentos ficam salvos até a próxima importação.`:'Nenhuma planilha importada.';
+    $('#fpdMeta').textContent=meta?`${meta.file_name} · Importada em ${new Date(meta.imported_at).toLocaleString('pt-BR')}`:'Nenhuma planilha importada.';
+    $('#fpdColumns').innerHTML='<col style="width:38px">'+grid.columns.map(c=>`<col style="width:${c.width}px">`).join('');
+    $('#fpdHead').innerHTML='<tr class="fpd-letters"><th aria-hidden="true"></th>'+grid.columns.map((c,i)=>`<th class="${c.manual?'fpd-manual':''}" aria-hidden="true">${String.fromCharCode(65+i)}</th>`).join('')+'</tr><tr class="fpd-headers"><th scope="col" aria-label="Linha">#</th>'+grid.columns.map(c=>`<th scope="col" class="${c.manual?'fpd-manual':''} ${filters[c.key]?'fpd-filtered':''}" aria-sort="${sort?.key===c.key?(sort.direction==='asc'?'ascending':'descending'):'none'}"><button type="button" data-column="${c.key}" aria-label="Filtrar ${esc(c.label)}" aria-haspopup="dialog" aria-expanded="${menuState?.key===c.key}" title="Filtrar ou ordenar ${esc(c.label)}"><span>${esc(c.label)}</span><span class="fpd-filter-icon" aria-hidden="true">${sort?.key===c.key?(sort.direction==='asc'?'↑':'↓'):''}⌄${filters[c.key]?' •':''}</span></button></th>`).join('')+'</tr>';
     const list=filtered();page=Math.min(page,Math.max(0,Math.ceil(list.length/size)-1));
-    $('#fpdRows').innerHTML=list.slice(page*size,(page+1)*size).map(r=>`<tr data-id="${esc(r.id)}"><td><b>${esc(r.contract_number)}</b><br>${r.invoice_no}ª fatura</td><td>${esc(r.customer_name||'—')}${r.match_status!=='matched'?`<small>${r.match_status==='ambiguous'?'Contrato com mais de uma venda':'Contrato não encontrado'}</small>`:''}</td><td>${esc(r.seller_name||'—')}</td><td><label><span class="sr-only">Status do contrato ${esc(r.contract_number)}</span><input data-field="treatment_status" maxlength="100" list="fpdStatuses" value="${esc(r.treatment_status)}" placeholder="Definir status"></label></td><td><label><span class="sr-only">Observação do contrato ${esc(r.contract_number)}</span><textarea data-field="notes" maxlength="5000" placeholder="Escrever observação">${esc(r.notes)}</textarea></label><button type="button" class="fpd-save" data-save="${esc(r.id)}">${dirty.has(r.id)?'Salvar alterações':'Salvo'}</button></td><td>${esc(r.due_date_text||'—')}</td><td>${esc(r.payment_date_text||'—')}</td><td>${esc(r.days_open??'—')}</td><td>${esc(r.collection_situation||'—')}</td><td>${esc(r.follow_up||'—')}</td><td>${esc(r.collection_type||'—')}</td><td>${esc(r.installation_date_text||'—')}</td><td>${esc(r.installation_month||'—')}</td></tr>`).join('');
-    $('#fpdEmpty').hidden=!!list.length;$('#fpdTable').hidden=!list.length;$('#fpdEmpty').innerHTML=rows.length?'Nenhum registro encontrado nos filtros.':'<strong>Sua tabela FPD começa aqui</strong>Importe a planilha Excel para buscar os clientes e vendedores e iniciar o tratamento.';
-    $('#fpdPage').textContent=list.length?`${page*size+1}–${Math.min((page+1)*size,list.length)} de ${list.length} registros`:'0 registros';$('#fpdPrev').disabled=page===0;$('#fpdNext').disabled=(page+1)*size>=list.length;
+    $('#fpdRows').innerHTML=list.slice(page*size,(page+1)*size).map((r,index)=>`<tr data-id="${esc(r.id)}" class="${rowTone(r)} ${dirty.has(r.id)?'fpd-dirty':''}"><th scope="row"><span>${page*size+index+1}</span><button type="button" data-save="${esc(r.id)}" aria-label="Salvar linha ${page*size+index+1}" title="Salvar esta linha" ${dirty.has(r.id)?'':'hidden'}>✓</button></th>`+grid.columns.map(c=>{
+      const v=grid.value(r,c.key),label=`${c.label} do contrato ${r.contract_number}, fatura ${r.invoice_no}`;
+      const warning=c.key==='customer_name'&&r.match_status!=='matched'?(r.match_status==='ambiguous'?'Contrato com mais de uma venda':'Contrato não encontrado'):'';
+      return `<td class="${c.manual?'fpd-manual':''} ${c.key==='treatment_status'?statusTone(v):''} ${c.editable?'fpd-editable':''}" title="${esc(warning||v)}">${c.editable?`<input data-field="${c.key}" maxlength="${c.key==='notes'?5000:100}" ${c.key==='treatment_status'?'list="fpdStatuses"':''} aria-label="${esc(label)}" value="${esc(v)}" placeholder="${c.key==='notes'?'Observação...':'Definir status'}">`:c.key==='invoice_no'?`${esc(v)}ª FATURA`:esc(v||'—')}${warning?`<span class="fpd-match-warning" title="${esc(warning)}">⚠</span>`:''}</td>`;
+    }).join('')+'</tr>').join('');
+    $('#fpdEmpty').hidden=!!list.length;$('#fpdTable').hidden=!rows.length;
+    $('#fpdEmpty').innerHTML=rows.length?'Nenhum registro encontrado. Ajuste os filtros das colunas ou limpe os filtros.':'<strong>Sua tabela FPD começa aqui</strong>Importe a planilha Excel para iniciar o tratamento.';
+    $('#fpdPage').textContent=list.length?`${page*size+1}–${Math.min((page+1)*size,list.length)} de ${list.length} linhas · ${rows.length} no total`:`0 de ${rows.length} linhas`;
+    $('#fpdPrev').disabled=busy||page===0;$('#fpdNext').disabled=busy||(page+1)*size>=list.length;
+    $('#fpdActiveFilters').innerHTML=Object.entries(filters).map(([key,values])=>`<button type="button" data-clear="${key}" title="Remover filtro">${esc(grid.columns.find(c=>c.key===key).label)}: ${values.size} valor(es) ×</button>`).join('')+(sort?`<button type="button" data-clear-sort>Ordem: ${esc(grid.columns.find(c=>c.key===sort.key).label)} ${sort.direction==='asc'?'↑':'↓'} ×</button>`:'');
+    $('#fpdClearFilters').disabled=busy||(!Object.keys(filters).length&&!sort&&!$('#fpdSearch').value&&!$('#fpdFilter').value);
+    controls();
   }
+  function closeMenu(){const key=menuState?.key;const menu=$('#fpdColumnMenu');if(menu)menu.hidden=true;menuState=null;if(key)$('#fpdHead').querySelector(`[data-column="${key}"]`)?.setAttribute('aria-expanded','false');}
+  function drawChoices(){
+    const q=grid.fold($('#fpdValueSearch').value);
+    $('#fpdValueOptions').innerHTML=menuState.values.map((v,i)=>({v,i})).filter(x=>grid.fold(x.v||'(Em branco)').includes(q)).map(({v,i})=>`<label><input type="checkbox" data-choice="${i}" ${menuState.selected.has(v)?'checked':''}><span>${esc(v||'(Em branco)')}</span></label>`).join('')||'<p>Nenhum valor encontrado.</p>';
+    $('#fpdChoiceCount').textContent=`${menuState.selected.size} de ${menuState.values.length} valores selecionados`;
+  }
+  function openMenu(key,button){
+    if(busy)return;closeMenu();const col=grid.columns.find(c=>c.key===key),values=grid.choices(rows,key);
+    menuState={key,values,selected:new Set(filters[key]||values)};
+    $('#fpdColumnTitle').textContent=`Filtrar ${col.label}`;$('#fpdValueSearch').value='';drawChoices();
+    const menu=$('#fpdColumnMenu'),rect=button.getBoundingClientRect();menu.hidden=false;
+    menu.style.left=Math.max(8,Math.min(rect.left,window.innerWidth-296))+'px';
+    menu.style.top=Math.max(8,Math.min(rect.bottom+5,window.innerHeight-Math.min(460,window.innerHeight-16)))+'px';
+    button.setAttribute('aria-expanded','true');$('#fpdValueSearch').focus();
+  }
+  $('#fpdHead').onclick=e=>{const b=e.target.closest('[data-column]');if(b)openMenu(b.dataset.column,b);};
+  $('#fpdCloseColumn').onclick=closeMenu;
+  $('#fpdValueSearch').oninput=()=>{const q=grid.fold($('#fpdValueSearch').value);menuState.selected=q?new Set(menuState.values.filter(v=>grid.fold(v||'(Em branco)').includes(q))):new Set(filters[menuState.key]||menuState.values);drawChoices();};
+  $('#fpdValueOptions').onchange=e=>{if(!e.target.matches('[data-choice]'))return;const value=menuState.values[Number(e.target.dataset.choice)];if(e.target.checked)menuState.selected.add(value);else menuState.selected.delete(value);$('#fpdChoiceCount').textContent=`${menuState.selected.size} de ${menuState.values.length} valores selecionados`;};
+  $('#fpdSelectValues').onclick=()=>{const q=grid.fold($('#fpdValueSearch').value);menuState.values.filter(v=>grid.fold(v||'(Em branco)').includes(q)).forEach(v=>menuState.selected.add(v));drawChoices();};
+  $('#fpdClearValues').onclick=()=>{const q=grid.fold($('#fpdValueSearch').value);menuState.values.filter(v=>grid.fold(v||'(Em branco)').includes(q)).forEach(v=>menuState.selected.delete(v));drawChoices();};
+  $('#fpdApplyColumn').onclick=()=>{if(menuState.selected.size===menuState.values.length)delete filters[menuState.key];else filters[menuState.key]=new Set(menuState.selected);page=0;closeMenu();render();};
+  $('#fpdRemoveColumn').onclick=()=>{delete filters[menuState.key];page=0;closeMenu();render();};
+  for(const [id,direction] of [['#fpdSortAsc','asc'],['#fpdSortDesc','desc']])$(id).onclick=()=>{sort={key:menuState.key,direction};page=0;closeMenu();render();};
+  $('#fpdActiveFilters').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.hasAttribute('data-clear-sort'))sort=null;else delete filters[b.dataset.clear];page=0;render();};
+  $('#fpdClearFilters').onclick=()=>{for(const k of Object.keys(filters))delete filters[k];sort=null;$('#fpdSearch').value='';$('#fpdFilter').value='';page=0;render();};
+  $('#fpdExpand').onclick=()=>{panel.classList.toggle('fpd-expanded');const expanded=panel.classList.contains('fpd-expanded');$('#fpdExpand').textContent=expanded?'Reduzir planilha':'Ampliar planilha';$('#fpdExpand').setAttribute('aria-pressed',String(expanded));closeMenu();};
+  document.addEventListener('click',e=>{if(menuState&&!e.target.closest('#fpdColumnMenu')&&!e.target.closest('[data-column]'))closeMenu();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(menuState)closeMenu();else if(panel.classList.contains('fpd-expanded'))$('#fpdExpand').click();}});
+  window.addEventListener('resize',closeMenu);
+  $('#fpdTableWrap').addEventListener('scroll',closeMenu);
+  new MutationObserver(()=>{document.body.classList.toggle('fpd-sheet-active',!panel.hidden&&!!$('#fpdExpand'));if(!$('#fpdExpand'))return;if(panel.hidden){closeMenu();panel.classList.remove('fpd-expanded');$('#fpdExpand').textContent='Ampliar planilha';$('#fpdExpand').setAttribute('aria-pressed','false');}}).observe(panel,{attributes:true,attributeFilter:['hidden']});
   async function load(){
     lock(true);message('Carregando tabela FPD...');
     try{
@@ -46,15 +97,18 @@
     finally{lock(false);render();}
     if(success){await load();if(!$('#fpdMessage').classList.contains('is-error'))message('Planilha importada. Cliente e Vendedor consultados; Status e Observação prontos para preenchimento.');}
   }
-  async function save(id){
-    if(busy||!dirty.has(id))return;const row=rows.find(r=>r.id===id);lock(true);message('Salvando tratamento...');
-    try{const r=await db.rpc('save_fpd_treatment',{p_id:id,p_version:row.annotation_version,p_status:row.treatment_status,p_notes:row.notes});if(r.error)throw r.error;Object.assign(row,Array.isArray(r.data)?r.data[0]:r.data);dirty.delete(id);message('Tratamento salvo.');}
-    catch(e){message('Não foi possível salvar: '+e.message+' Suas alterações continuam nesta tela.',true);}
+  async function saveRows(ids){
+    if(busy)return;ids=ids.filter(id=>dirty.has(id));if(!ids.length)return;closeMenu();lock(true);let saved=0;
+    try{for(const id of ids){const row=rows.find(r=>r.id===id);message(`Salvando ${saved+1} de ${ids.length} linha(s)...`);const r=await db.rpc('save_fpd_treatment',{p_id:id,p_version:row.annotation_version,p_status:row.treatment_status,p_notes:row.notes});if(r.error)throw r.error;Object.assign(row,Array.isArray(r.data)?r.data[0]:r.data);dirty.delete(id);saved++;}message(`${saved} linha(s) salva(s).`);}
+    catch(e){message(`Salvas: ${saved} de ${ids.length}. Não foi possível concluir: ${e.message} As alterações pendentes continuam na grade.`,true);}
     finally{lock(false);render();}
   }
-  $('#fpdRows').addEventListener('input',e=>{const field=e.target.dataset.field;if(!field)return;const id=e.target.closest('tr').dataset.id;rows.find(r=>r.id===id)[field]=e.target.value;dirty.add(id);e.target.closest('tr').querySelector('[data-save]').textContent='Salvar alterações';});
-  $('#fpdRows').addEventListener('click',e=>{const b=e.target.closest('[data-save]');if(b)save(b.dataset.save);});
-  $('#fpdImport').onclick=()=>$('#fpdFile').click();$('#fpdFile').onchange=e=>pick(e.target.files[0]);$('#fpdConfirm').onclick=importFile;
+  $('#fpdRows').addEventListener('input',e=>{const field=e.target.dataset.field;if(!field)return;const tr=e.target.closest('tr'),id=tr.dataset.id;rows.find(r=>r.id===id)[field]=e.target.value;dirty.add(id);tr.classList.add('fpd-dirty');tr.querySelector('[data-save]').hidden=false;if(field==='treatment_status')e.target.closest('td').className='fpd-manual fpd-editable '+statusTone(e.target.value);controls();});
+  $('#fpdRows').addEventListener('keydown',e=>{if(!e.target.dataset.field)return;if(e.key==='Enter'){e.preventDefault();saveRows([e.target.closest('tr').dataset.id]);}if(e.key==='ArrowDown'||e.key==='ArrowUp'){const adjacent=e.key==='ArrowDown'?e.target.closest('tr').nextElementSibling:e.target.closest('tr').previousElementSibling;const input=adjacent?.querySelector(`[data-field="${e.target.dataset.field}"]`);if(input){e.preventDefault();input.focus();}}});
+  $('#fpdRows').addEventListener('click',e=>{const b=e.target.closest('[data-save]');if(b)saveRows([b.dataset.save]);});
+  $('#fpdSaveAll').onclick=()=>saveRows([...dirty]);
+  $('#fpdPageSize').onchange=()=>{size=Number($('#fpdPageSize').value);page=0;render();};
+  $('#fpdImport').onclick=()=>$('#fpdFile').click();$('#fpdFile').onchange=e=>{const file=e.target.files[0];e.target.value='';pick(file);};$('#fpdConfirm').onclick=importFile;
   $('#fpdCancel').onclick=()=>{preview=null;$('#fpdPreview').hidden=true;message('');};
   $('#fpdReload').onclick=()=>{if(dirty.size&&!confirm('Descartar alterações ainda não salvas e recarregar a tabela?'))return;load();};
   for(const id of ['#fpdSearch','#fpdFilter'])$(id).addEventListener('input',()=>{page=0;render();});

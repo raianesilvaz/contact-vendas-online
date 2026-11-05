@@ -29,3 +29,27 @@ test('replacement deletes use explicit FPD ID predicates under the import lock',
  assert.doesNotMatch(sql,/security definer|safeupdate\.enabled\s*=\s*(?:off|false)/i);
  assert.doesNotMatch(sql,/(?:delete from|update|insert into) public\.(?:sales|profiles)\b/i);
 });
+
+import '../../public/fpd-grid.js';
+const grid=globalThis.contactFpdGrid;
+const sheetRows=[
+ {id:1,contract_number:'10',seller_name:'Luana',treatment_status:'',days_open:9,due_date_text:'25/10/2026',customer_name:'Márcia'},
+ {id:2,contract_number:'20',seller_name:'Luana',treatment_status:'Pago',days_open:61,due_date_text:'01/11/2026'},
+ {id:3,contract_number:'30',seller_name:'Ana',treatment_status:'',days_open:2,due_date_text:'03/09/2026'}
+];
+test('spreadsheet combines column filters across all records and accepts blanks',()=>{
+ const result=grid.filter(sheetRows,{filters:{seller_name:new Set(['Luana']),treatment_status:new Set([''])}});
+ assert.deepEqual(result.map(r=>r.id),[1]);
+ assert.deepEqual(grid.filter(sheetRows,{filters:{seller_name:new Set()}}),[]);
+ assert.equal(grid.filter(Array.from({length:540},(_,i)=>({...sheetRows[0],id:i})),{filters:{seller_name:new Set(['Luana'])}}).length,540);
+});
+test('spreadsheet filters use exact cell values and preserve zero in choices',()=>{
+ assert.equal(grid.filter(sheetRows,{filters:{seller_name:new Set(['Luan'])}}).length,0);
+ assert.deepEqual(grid.choices([{days_open:0},{days_open:null},{days_open:9}],'days_open'),['0','9','']);
+});
+test('spreadsheet orders numbers and Brazilian dates, with accent-insensitive search',()=>{
+ assert.deepEqual(grid.filter(sheetRows,{sort:{key:'days_open',direction:'asc'}}).map(r=>r.days_open),[2,9,61]);
+ assert.deepEqual(grid.filter(sheetRows,{sort:{key:'due_date_text',direction:'asc'}}).map(r=>r.id),[3,1,2]);
+ assert.deepEqual(grid.filter(sheetRows,{search:'marcia'}).map(r=>r.id),[1]);
+ assert.deepEqual(grid.filter(sheetRows,{sort:{key:'contract_number',direction:'desc'}}).map(r=>r.id),[3,2,1]);
+});
