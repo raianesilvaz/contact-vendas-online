@@ -216,12 +216,12 @@
     const period=start&&end?'DAS '+start+' ÀS '+end:'A CONFIRMAR';
     const address=[String(sale.full_address||'').trim(),String(sale.address_complement||'').trim()].filter(Boolean).join(' · ')||'A CONFIRMAR';
     return [
-      'OLÁ, '+(String(sale.customer_name||'').trim()||'CLIENTE')+'! 😊',
-      isoDate?'🏠 PASSANDO PARA LEMBRAR QUE A INSTALAÇÃO DA SUA INTERNET ESTÁ AGENDADA!':'🏠 PASSANDO PARA LEMBRAR DA INSTALAÇÃO DA SUA INTERNET.',
-      '📅 DATA: '+date+'\n🕒 PERÍODO PREVISTO: '+period+'\n📍 ENDEREÇO: '+address,
-      '👤 PEDIMOS QUE UM RESPONSÁVEL MAIOR DE 18 ANOS ESTEJA NO LOCAL DURANTE ESSE PERÍODO PARA RECEBER A EQUIPE TÉCNICA.',
+      'OLÁ, '+(String(sale.customer_name||'').trim()||'CLIENTE')+'! ☺',
+      isoDate?'⌂ PASSANDO PARA LEMBRAR QUE A INSTALAÇÃO DA SUA INTERNET ESTÁ AGENDADA!':'⌂ PASSANDO PARA LEMBRAR DA INSTALAÇÃO DA SUA INTERNET.',
+      '▣ DATA: '+date+'\n⏰ PERÍODO PREVISTO: '+period+'\n⌖ ENDEREÇO: '+address,
+      '• PEDIMOS QUE UM RESPONSÁVEL MAIOR DE 18 ANOS ESTEJA NO LOCAL DURANTE ESSE PERÍODO PARA RECEBER A EQUIPE TÉCNICA.',
       '✅ PODE CONFIRMAR SUA DISPONIBILIDADE?',
-      'EQUIPE CONTACT 💙'
+      'EQUIPE CONTACT ♥'
     ].join('\n\n').toLocaleUpperCase('pt-BR');
   }
 
