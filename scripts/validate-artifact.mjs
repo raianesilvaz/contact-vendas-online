@@ -9,7 +9,7 @@ assert.equal(config.assets.binding, 'ASSETS');
 assert.ok(statSync(new URL(config.assets.directory + '/', root)).isDirectory());
 execFileSync(process.execPath, ['--check', new URL(config.main, root).pathname]);
 execFileSync(process.execPath, ['--check', new URL('public/cobrancas-central.js', root).pathname]);
-for (const file of ['fpd-data.js', 'fpd.js', 'vendor/xlsx-0.20.3.full.min.js']) {
+for (const file of ['fpd-data.js', 'fpd-grid.js', 'fpd.js', 'vendor/xlsx-0.20.3.full.min.js']) {
   execFileSync(process.execPath, ['--check', new URL('public/' + file, root).pathname]);
 }
 execFileSync(process.execPath, ['--test', new URL('scripts/tests/fpd.test.mjs', root).pathname]);
