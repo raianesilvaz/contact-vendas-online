@@ -175,3 +175,8 @@ Também existe atualização manual no topo como alternativa operacional quando 
 - Uma única tabela vigente: cada importação substitui todos os registros e tratamentos FPD, sem histórico.
 - Acesso inicial de administrador, preservando o acesso existente do FPD.
 - Em cada publicação, informar à usuária os estados de Git/PR, commit, banco Supabase e Cloudflare. Distinguir envio ao GitHub de produção confirmada; não anunciar produção sem evidência.
+
+## Data de nascimento no novo cadastro de venda
+- Campo digitável com teclado numérico e máscara DD/MM/AAAA: 22091995 → 22/09/1995, sem calendário e sem Tab entre partes.
+- Escopo somente index.html/saleForm; outras datas mantêm seus calendários.
+- Validar datas reais e converter para YYYY-MM-DD ao montar birth_date; não modificar datas ou vendas existentes.

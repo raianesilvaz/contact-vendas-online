@@ -109,7 +109,7 @@
             <div class="form-grid">
               <label class="field field-wide"><span>Nome completo <em>*</em></span><input name="nome" autocomplete="name" placeholder="Digite o nome completo" required /><small class="error">Informe o nome completo.</small></label>
               <label class="field field-wide"><span>Nome da mãe <em>*</em></span><input name="mae" placeholder="Digite o nome completo da mãe" required /><small class="error">Informe o nome da mãe.</small></label>
-              <label class="field"><span>Data de nascimento <em>*</em></span><input name="nascimento" type="date" required /><small class="error">Informe a data de nascimento.</small></label>
+              <label class="field"><span>Data de nascimento <em>*</em></span><input name="nascimento" type="text" inputmode="numeric" placeholder="DD/MM/AAAA" autocomplete="bday" maxlength="10" pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}" required /><small class="error">Informe uma data válida no formato DD/MM/AAAA.</small></label>
               <label class="field"><span>CPF <em>*</em></span><input id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" required /><small class="error">Informe um CPF válido.</small></label>
             </div>
             <div class="sale-attachments-field">
@@ -151,6 +151,6 @@
 
     <div class="toast" id="toast" role="status"><span>✓</span><div><strong id="toastTitle">Venda cadastrada!</strong><small id="toastMessage">Os dados foram gravados com segurança.</small></div></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
-    <script src="supabase-config.js?v=2"></script><script src="auth-access-v2.js?v=20261103-global-calendar-1"></script><script src="address-cep.js?v=20261022-clean"></script><script src="script.js?v=20261007-multi-cpf"></script><script src="sale-attachments-form.js?v=20261001"></script><script src="seller-note-form.js?v=2"></script>
+    <script src="supabase-config.js?v=2"></script><script src="auth-access-v2.js?v=20261103-global-calendar-1"></script><script src="address-cep.js?v=20261022-clean"></script><script src="birth-date-mask.js?v=20261106-numeric"></script><script src="script.js?v=20261106-birth-mask"></script><script src="sale-attachments-form.js?v=20261001"></script><script src="seller-note-form.js?v=2"></script>
   </body>
 </html>
