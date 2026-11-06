@@ -11,7 +11,7 @@
     {key:'installation_month',label:'Ano / mês inst.',width:85,type:'number'},
     {key:'days_open',label:'Dias em aberto',width:80,type:'number'},
     {key:'follow_up',label:'Acompanhamento',width:110},
-    {key:'customer_name',label:'Cliente',width:180,manual:true},
+    {key:'customer_name',label:'Cliente',width:180,manual:true,editable:true},
     {key:'treatment_status',label:'Status',width:110,manual:true,editable:true},
     {key:'seller_name',label:'Vendedor',width:110,manual:true},
     {key:'notes',label:'Observação',width:180,manual:true,editable:true}

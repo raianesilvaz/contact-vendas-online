@@ -71,3 +71,13 @@ seletor de quantidade de linhas nem botões Anterior/Próxima. O rodapé informa
 quantos registros passam pelos filtros e o total importado. O carregamento do
 banco continua dividido em lotes para respeitar os limites da API, reunidos antes
 da renderização, sem alterar os dados ou a importação.
+
+## Nome do cliente manual
+
+Cliente é editável na grade para permitir preencher nomes não encontrados na
+consulta automática e corrigir o nome apenas no FPD. Salvar alterações ou Enter
+gravará Cliente, Status e Observação pela função save_fpd_row com verificação de
+annotation_version. O nome tem limite de 300 caracteres. Vendas e perfis originais
+não são alterados. O indicador de contrato não encontrado continua indicando a
+ausência de vínculo automático, mesmo após o preenchimento manual do nome.
+O nome manual permanece até a próxima importação, como os demais dados FPD.
