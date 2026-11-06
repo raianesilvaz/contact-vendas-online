@@ -9,7 +9,7 @@
   function controls(){
     $('#fpdSaveAll').disabled=busy||!dirty.size;
     $('#fpdSaveAll').textContent=dirty.size?`Salvar alterações (${dirty.size})`:'Tudo salvo';
-    $('#fpdPending').textContent=dirty.size?`${dirty.size} linha(s) com alterações não salvas`:'Status e Observação: edite na célula e salve. Enter salva a linha.';
+    $('#fpdPending').textContent=dirty.size?`${dirty.size} linha(s) com alterações não salvas`:'Cliente, Status e Observação: edite na célula e salve. Enter salva a linha.';
   }
   function rowTone(r){const situation=grid.fold(r.collection_situation),status=grid.fold(r.treatment_status);return r.payment_date_text||situation.includes('pag')||situation.includes('renegociad')||status==='pago'?'fpd-paid':'';}
   function statusTone(v){const s=grid.fold(v);return s.includes('desabilitad')?'fpd-disabled':s==='conectado'||s==='pago'?'fpd-connected':s?'fpd-contacted':'';}
@@ -22,7 +22,7 @@
     $('#fpdRows').innerHTML=list.map((r,index)=>`<tr data-id="${esc(r.id)}" class="${rowTone(r)} ${dirty.has(r.id)?'fpd-dirty':''}"><th scope="row"><span>${index+1}</span><button type="button" data-save="${esc(r.id)}" aria-label="Salvar linha ${index+1}" title="Salvar esta linha" ${dirty.has(r.id)?'':'hidden'}>✓</button></th>`+grid.columns.map(c=>{
       const v=grid.value(r,c.key),label=`${c.label} do contrato ${r.contract_number}, fatura ${r.invoice_no}`;
       const warning=c.key==='customer_name'&&r.match_status!=='matched'?(r.match_status==='ambiguous'?'Contrato com mais de uma venda':'Contrato não encontrado'):'';
-      return `<td class="${c.manual?'fpd-manual':''} ${c.key==='treatment_status'?statusTone(v):''} ${c.editable?'fpd-editable':''}" title="${esc(warning||v)}">${c.editable?`<input data-field="${c.key}" maxlength="${c.key==='notes'?5000:100}" ${c.key==='treatment_status'?'list="fpdStatuses"':''} aria-label="${esc(label)}" value="${esc(v)}" placeholder="${c.key==='notes'?'Observação...':'Definir status'}">`:c.key==='invoice_no'?`${esc(v)}ª FATURA`:esc(v||'—')}${warning?`<span class="fpd-match-warning" title="${esc(warning)}">⚠</span>`:''}</td>`;
+      return `<td class="${c.manual?'fpd-manual':''} ${c.key==='treatment_status'?statusTone(v):''} ${c.editable?'fpd-editable':''}" title="${esc(warning||v)}">${c.editable?`<input data-field="${c.key}" maxlength="${c.key==='notes'?5000:c.key==='customer_name'?300:100}" ${c.key==='treatment_status'?'list="fpdStatuses"':''} aria-label="${esc(label)}" value="${esc(v)}" placeholder="${c.key==='notes'?'Observação...':c.key==='customer_name'?'Nome do cliente...':'Definir status'}">`:c.key==='invoice_no'?`${esc(v)}ª FATURA`:esc(v||'—')}${warning?`<span class="fpd-match-warning" title="${esc(warning)}">⚠</span>`:''}</td>`;
     }).join('')+'</tr>').join('');
     $('#fpdEmpty').hidden=!!list.length;$('#fpdTable').hidden=!rows.length;
     $('#fpdEmpty').innerHTML=rows.length?'Nenhum registro encontrado. Ajuste os filtros das colunas ou limpe os filtros.':'<strong>Sua tabela FPD começa aqui</strong>Importe a planilha Excel para iniciar o tratamento.';
@@ -98,7 +98,7 @@
   }
   async function saveRows(ids){
     if(busy)return;ids=ids.filter(id=>dirty.has(id));if(!ids.length)return;closeMenu();lock(true);let saved=0;
-    try{for(const id of ids){const row=rows.find(r=>r.id===id);message(`Salvando ${saved+1} de ${ids.length} linha(s)...`);const r=await db.rpc('save_fpd_treatment',{p_id:id,p_version:row.annotation_version,p_status:row.treatment_status,p_notes:row.notes});if(r.error)throw r.error;Object.assign(row,Array.isArray(r.data)?r.data[0]:r.data);dirty.delete(id);saved++;}message(`${saved} linha(s) salva(s).`);}
+    try{for(const id of ids){const row=rows.find(r=>r.id===id);message(`Salvando ${saved+1} de ${ids.length} linha(s)...`);const r=await db.rpc('save_fpd_row',{p_id:id,p_version:row.annotation_version,p_status:row.treatment_status,p_notes:row.notes,p_customer_name:row.customer_name??null});if(r.error)throw r.error;Object.assign(row,Array.isArray(r.data)?r.data[0]:r.data);dirty.delete(id);saved++;}message(`${saved} linha(s) salva(s).`);}
     catch(e){message(`Salvas: ${saved} de ${ids.length}. Não foi possível concluir: ${e.message} As alterações pendentes continuam na grade.`,true);}
     finally{lock(false);render();}
   }
