@@ -1,7 +1,7 @@
 # Acompanhamento das campanhas de Cobranças
 
-A página Cobranças mostra um painel persistente, independentemente da aba interna
-selecionada. A execução mais recente aparece primeiro e até 11 anteriores ficam
+A página Cobranças mostra o acompanhamento somente dentro da aba Campanhas.
+O painel fica oculto em Fila de cobranças, Histórico e FPD. A execução mais recente aparece primeiro e até 11 anteriores ficam
 em Outras execuções. Dados salvos são consultados a cada cinco segundos enquanto
 a página está visível; falhas preservam o último resultado com aviso de desatualização.
 
