@@ -24,9 +24,22 @@ HTTP. Pausar durante uma requisição não impede registrar sua conclusão. Mens
 aceitas pelo conector permanecem como enviadas no estado local mesmo se o registro
 no banco falhar; um aviso pede conferência para evitar reenvio indevido.
 
-Escopo: interface de campanhas integrada em /cobrancas. A consulta é restrita aos
-mesmos perfis admin/financeiro já usados no histórico. Não muda schema, RLS,
-serviço WhatsApp nem dados operacionais durante a publicação. Testes usam stubs,
-sem mensagens reais. Os testes exercitam o código de processamento extraído do
-arquivo de produção: finalização após pausa durante envio, exclusão de execução
-simultânea e cancelamento antes do HTTP.
+A confirmação de encerramento usa a RPC finish_processed_campaign, restrita a
+administradores e executada com as permissões/RLS do chamador. Ela confere a
+quantidade completa e só conclui quando todos os destinatários estão em sent,
+error ou cancelled. A operação é idempotente e não envia nem modifica mensagens.
+Listas incompletas ou com waiting/sending são rejeitadas. Não há finalização
+forçada de destinatários pendentes.
+
+Se a persistência falhar, a interface deixa de mostrar envio ativo e oferece
+Finalizar campanha para repetir apenas a confirmação. A confirmação tem limite
+de espera de 12 segundos. O monitor também oferece esse botão para execuções
+salvas que já tenham sido inteiramente processadas. O último resultado continua
+consultável ao fechar o resumo. A rota antiga /campanhas usa a mesma confirmação
+e conclui após o último destinatário, sem aguardar mais um intervalo.
+
+Validação: testes com stubs exercitam os dois remetentes, pausa durante envio,
+exclusão de chamadas simultâneas, cancelamento antes do HTTP, falha e repetição
+de encerramento sem reenvio e timeout da confirmação. Testes transacionais da
+RPC verificam idempotência e rejeição de waiting, sending e lista incompleta;
+todos os registros sintéticos são revertidos. Nenhuma mensagem real foi enviada.
