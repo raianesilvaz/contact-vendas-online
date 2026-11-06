@@ -1,7 +1,7 @@
 (()=>{
   const panel=document.querySelector('#collectionsFpd');if(!panel)return;
   const $=s=>panel.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  let db,rows=[],meta=null,preview=null,page=0,busy=false,dirty=new Set();let size=100;
+  let db,rows=[],meta=null,preview=null,busy=false,dirty=new Set();
   function message(text,error=false){$('#fpdMessage').textContent=text;$('#fpdMessage').classList.toggle('is-error',error);}
   function lock(value){busy=value;panel.querySelectorAll('button,input,select,textarea').forEach(el=>el.disabled=value);}
   const grid=window.contactFpdGrid,filters={};let sort=null,menuState=null;
@@ -18,16 +18,15 @@
     $('#fpdMeta').textContent=meta?`${meta.file_name} · Importada em ${new Date(meta.imported_at).toLocaleString('pt-BR')}`:'Nenhuma planilha importada.';
     $('#fpdColumns').innerHTML='<col style="width:38px">'+grid.columns.map(c=>`<col style="width:${c.width}px">`).join('');
     $('#fpdHead').innerHTML='<tr class="fpd-letters"><th aria-hidden="true"></th>'+grid.columns.map((c,i)=>`<th class="${c.manual?'fpd-manual':''}" aria-hidden="true">${String.fromCharCode(65+i)}</th>`).join('')+'</tr><tr class="fpd-headers"><th scope="col" aria-label="Linha">#</th>'+grid.columns.map(c=>`<th scope="col" class="${c.manual?'fpd-manual':''} ${filters[c.key]?'fpd-filtered':''}" aria-sort="${sort?.key===c.key?(sort.direction==='asc'?'ascending':'descending'):'none'}"><button type="button" data-column="${c.key}" aria-label="Filtrar ${esc(c.label)}" aria-haspopup="dialog" aria-expanded="${menuState?.key===c.key}" title="Filtrar ou ordenar ${esc(c.label)}"><span>${esc(c.label)}</span><span class="fpd-filter-icon" aria-hidden="true">${sort?.key===c.key?(sort.direction==='asc'?'↑':'↓'):''}⌄${filters[c.key]?' •':''}</span></button></th>`).join('')+'</tr>';
-    const list=filtered();page=Math.min(page,Math.max(0,Math.ceil(list.length/size)-1));
-    $('#fpdRows').innerHTML=list.slice(page*size,(page+1)*size).map((r,index)=>`<tr data-id="${esc(r.id)}" class="${rowTone(r)} ${dirty.has(r.id)?'fpd-dirty':''}"><th scope="row"><span>${page*size+index+1}</span><button type="button" data-save="${esc(r.id)}" aria-label="Salvar linha ${page*size+index+1}" title="Salvar esta linha" ${dirty.has(r.id)?'':'hidden'}>✓</button></th>`+grid.columns.map(c=>{
+    const list=filtered();
+    $('#fpdRows').innerHTML=list.map((r,index)=>`<tr data-id="${esc(r.id)}" class="${rowTone(r)} ${dirty.has(r.id)?'fpd-dirty':''}"><th scope="row"><span>${index+1}</span><button type="button" data-save="${esc(r.id)}" aria-label="Salvar linha ${index+1}" title="Salvar esta linha" ${dirty.has(r.id)?'':'hidden'}>✓</button></th>`+grid.columns.map(c=>{
       const v=grid.value(r,c.key),label=`${c.label} do contrato ${r.contract_number}, fatura ${r.invoice_no}`;
       const warning=c.key==='customer_name'&&r.match_status!=='matched'?(r.match_status==='ambiguous'?'Contrato com mais de uma venda':'Contrato não encontrado'):'';
       return `<td class="${c.manual?'fpd-manual':''} ${c.key==='treatment_status'?statusTone(v):''} ${c.editable?'fpd-editable':''}" title="${esc(warning||v)}">${c.editable?`<input data-field="${c.key}" maxlength="${c.key==='notes'?5000:100}" ${c.key==='treatment_status'?'list="fpdStatuses"':''} aria-label="${esc(label)}" value="${esc(v)}" placeholder="${c.key==='notes'?'Observação...':'Definir status'}">`:c.key==='invoice_no'?`${esc(v)}ª FATURA`:esc(v||'—')}${warning?`<span class="fpd-match-warning" title="${esc(warning)}">⚠</span>`:''}</td>`;
     }).join('')+'</tr>').join('');
     $('#fpdEmpty').hidden=!!list.length;$('#fpdTable').hidden=!rows.length;
     $('#fpdEmpty').innerHTML=rows.length?'Nenhum registro encontrado. Ajuste os filtros das colunas ou limpe os filtros.':'<strong>Sua tabela FPD começa aqui</strong>Importe a planilha Excel para iniciar o tratamento.';
-    $('#fpdPage').textContent=list.length?`${page*size+1}–${Math.min((page+1)*size,list.length)} de ${list.length} linhas · ${rows.length} no total`:`0 de ${rows.length} linhas`;
-    $('#fpdPrev').disabled=busy||page===0;$('#fpdNext').disabled=busy||(page+1)*size>=list.length;
+    $('#fpdRowCount').textContent=`${list.length} de ${rows.length} registros exibidos`;
     $('#fpdActiveFilters').innerHTML=Object.entries(filters).map(([key,values])=>`<button type="button" data-clear="${key}" title="Remover filtro">${esc(grid.columns.find(c=>c.key===key).label)}: ${values.size} valor(es) ×</button>`).join('')+(sort?`<button type="button" data-clear-sort>Ordem: ${esc(grid.columns.find(c=>c.key===sort.key).label)} ${sort.direction==='asc'?'↑':'↓'} ×</button>`:'');
     $('#fpdClearFilters').disabled=busy||(!Object.keys(filters).length&&!sort&&!$('#fpdSearch').value&&!$('#fpdFilter').value);
     controls();
@@ -53,11 +52,11 @@
   $('#fpdValueOptions').onchange=e=>{if(!e.target.matches('[data-choice]'))return;const value=menuState.values[Number(e.target.dataset.choice)];if(e.target.checked)menuState.selected.add(value);else menuState.selected.delete(value);$('#fpdChoiceCount').textContent=`${menuState.selected.size} de ${menuState.values.length} valores selecionados`;};
   $('#fpdSelectValues').onclick=()=>{const q=grid.fold($('#fpdValueSearch').value);menuState.values.filter(v=>grid.fold(v||'(Em branco)').includes(q)).forEach(v=>menuState.selected.add(v));drawChoices();};
   $('#fpdClearValues').onclick=()=>{const q=grid.fold($('#fpdValueSearch').value);menuState.values.filter(v=>grid.fold(v||'(Em branco)').includes(q)).forEach(v=>menuState.selected.delete(v));drawChoices();};
-  $('#fpdApplyColumn').onclick=()=>{if(menuState.selected.size===menuState.values.length)delete filters[menuState.key];else filters[menuState.key]=new Set(menuState.selected);page=0;closeMenu();render();};
-  $('#fpdRemoveColumn').onclick=()=>{delete filters[menuState.key];page=0;closeMenu();render();};
-  for(const [id,direction] of [['#fpdSortAsc','asc'],['#fpdSortDesc','desc']])$(id).onclick=()=>{sort={key:menuState.key,direction};page=0;closeMenu();render();};
-  $('#fpdActiveFilters').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.hasAttribute('data-clear-sort'))sort=null;else delete filters[b.dataset.clear];page=0;render();};
-  $('#fpdClearFilters').onclick=()=>{for(const k of Object.keys(filters))delete filters[k];sort=null;$('#fpdSearch').value='';$('#fpdFilter').value='';page=0;render();};
+  $('#fpdApplyColumn').onclick=()=>{if(menuState.selected.size===menuState.values.length)delete filters[menuState.key];else filters[menuState.key]=new Set(menuState.selected);closeMenu();render();};
+  $('#fpdRemoveColumn').onclick=()=>{delete filters[menuState.key];closeMenu();render();};
+  for(const [id,direction] of [['#fpdSortAsc','asc'],['#fpdSortDesc','desc']])$(id).onclick=()=>{sort={key:menuState.key,direction};closeMenu();render();};
+  $('#fpdActiveFilters').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.hasAttribute('data-clear-sort'))sort=null;else delete filters[b.dataset.clear];render();};
+  $('#fpdClearFilters').onclick=()=>{for(const k of Object.keys(filters))delete filters[k];sort=null;$('#fpdSearch').value='';$('#fpdFilter').value='';render();};
   $('#fpdExpand').onclick=()=>{panel.classList.toggle('fpd-expanded');const expanded=panel.classList.contains('fpd-expanded');$('#fpdExpand').textContent=expanded?'Reduzir planilha':'Ampliar planilha';$('#fpdExpand').setAttribute('aria-pressed',String(expanded));closeMenu();};
   document.addEventListener('click',e=>{if(menuState&&!e.target.closest('#fpdColumnMenu')&&!e.target.closest('[data-column]'))closeMenu();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(menuState)closeMenu();else if(panel.classList.contains('fpd-expanded'))$('#fpdExpand').click();}});
@@ -107,12 +106,10 @@
   $('#fpdRows').addEventListener('keydown',e=>{if(!e.target.dataset.field)return;if(e.key==='Enter'){e.preventDefault();saveRows([e.target.closest('tr').dataset.id]);}if(e.key==='ArrowDown'||e.key==='ArrowUp'){const adjacent=e.key==='ArrowDown'?e.target.closest('tr').nextElementSibling:e.target.closest('tr').previousElementSibling;const input=adjacent?.querySelector(`[data-field="${e.target.dataset.field}"]`);if(input){e.preventDefault();input.focus();}}});
   $('#fpdRows').addEventListener('click',e=>{const b=e.target.closest('[data-save]');if(b)saveRows([b.dataset.save]);});
   $('#fpdSaveAll').onclick=()=>saveRows([...dirty]);
-  $('#fpdPageSize').onchange=()=>{size=Number($('#fpdPageSize').value);page=0;render();};
   $('#fpdImport').onclick=()=>$('#fpdFile').click();$('#fpdFile').onchange=e=>{const file=e.target.files[0];e.target.value='';pick(file);};$('#fpdConfirm').onclick=importFile;
   $('#fpdCancel').onclick=()=>{preview=null;$('#fpdPreview').hidden=true;message('');};
   $('#fpdReload').onclick=()=>{if(dirty.size&&!confirm('Descartar alterações ainda não salvas e recarregar a tabela?'))return;load();};
-  for(const id of ['#fpdSearch','#fpdFilter'])$(id).addEventListener('input',()=>{page=0;render();});
-  $('#fpdPrev').onclick=()=>{page--;render();};$('#fpdNext').onclick=()=>{page++;render();};
+  for(const id of ['#fpdSearch','#fpdFilter'])$(id).addEventListener('input',()=>{render();});
   window.addEventListener('beforeunload',e=>{if(dirty.size||busy){e.preventDefault();e.returnValue='';}});
   lock(true);Promise.resolve(window.authReady).then(user=>{if(!user||user.profile?.role!=='admin'){panel.innerHTML='<p class="fpd-message">O FPD está disponível somente para administradores.</p>';return;}db=window.supabaseClient;load();}).catch(()=>message('Não foi possível validar seu acesso. Atualize a página.',true));
 })();
