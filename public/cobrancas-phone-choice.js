@@ -6,7 +6,7 @@
   title.id = 'collectionPhoneChoiceTitle';
   title.textContent = 'Escolha o telefone';
   const description = document.createElement('p');
-  description.textContent = 'A mensagem será aberta no WhatsApp para o número escolhido.';
+  description.textContent = 'O WhatsApp será aberto para o número escolhido.';
   const options = document.createElement('div');
   options.className = 'collection-phone-options';
   const close = document.createElement('button');
@@ -26,17 +26,12 @@
         : phone;
   }
 
-  document.addEventListener('click', event => {
-    const action = event.target.closest('.collection-item .wa-btn[data-phone-2]');
-    if (!action) return;
-    const phone1 = action.dataset.phone1;
-    const phone2 = action.dataset.phone2;
-    if (!phone1 || !phone2 || phone1 === phone2) return;
-    event.preventDefault();
+  function showPhoneChoice(phone1, phone2, href = 'https://wa.me/') {
+    if (!phone1 || !phone2 || phone1 === phone2) return false;
     options.replaceChildren();
     for (const [label, phone] of [['Telefone 1', phone1], ['Telefone 2', phone2]]) {
       const link = document.createElement('a');
-      const url = new URL(action.href);
+      const url = new URL(href);
       url.pathname = `/${phone}`;
       link.href = url.href;
       link.target = '_blank';
@@ -46,5 +41,15 @@
       options.appendChild(link);
     }
     dialog.showModal();
+    return true;
+  }
+
+  window.showCollectionWhatsAppChoice = showPhoneChoice;
+
+  document.addEventListener('click', event => {
+    const action = event.target.closest('.collection-item .wa-btn[data-phone-2]');
+    if (action && showPhoneChoice(action.dataset.phone1, action.dataset.phone2, action.href)) {
+      event.preventDefault();
+    }
   });
 })();
