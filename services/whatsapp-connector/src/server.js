@@ -11,7 +11,7 @@ import { useRetryMessageStore, createRetryCounterCache } from './retry-message-s
 import { sendRecoverableText, serialSender } from './reliable-text-send.js';
 import { installPersonalAttendance } from './personal-attendance.js';
 
-const CONNECTOR_VERSION = '20261110-ephemeral-attendance';
+const CONNECTOR_VERSION = '20261110-attendance-contact-identity';
 
 const PORT = Number(process.env.PORT || 3100);
 const SUPABASE_URL = process.env.SUPABASE_URL;

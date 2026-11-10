@@ -2,13 +2,12 @@ import makeWASocket, { DisconnectReason, fetchLatestBaileysVersion, initAuthCred
 import QRCode from 'qrcode';
 import { createRetryMessageStore, createRetryCounterCache } from './retry-message-store.js';
 import { sendRecoverableText, serialSender } from './reliable-text-send.js';
-import { openPersonalInbox } from './personal-chat-store.js';
+import { openPersonalInbox, privateJid } from './personal-chat-store.js';
 
 const roles = new Set(['admin','vendedora','financeiro']);
-const privateJid = jid => typeof jid === 'string' && /^\d+(?::\d+)?@(s\.whatsapp\.net|lid)$/.test(jid);
 const sessionIdFormat = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
 const historyTypes = proto.Message.HistorySyncNotification.HistorySyncType;
-const initialHistory = new Set([historyTypes.INITIAL_BOOTSTRAP, historyTypes.RECENT]);
+const initialHistory = new Set([historyTypes.INITIAL_BOOTSTRAP, historyTypes.RECENT, historyTypes.PUSH_NAME]);
 const timestamp = value => {
   const seconds = Number(value);
   return seconds > 0 && seconds <= 8.64e12 ? seconds * 1000 : 0;
@@ -141,21 +140,39 @@ export function installPersonalAttendance(app, config, { makeSocket = makeWASock
         getMessage:async key=>recovery.get(key),msgRetryCounterCache:retryCounters,maxMsgRetryCount:5});
       slot.socket = socket;
       const live = () => current() && slot.socket === socket;
+      function recordMessages(messages, fallbackTime) {
+        for (const message of messages) {
+          const { key } = message;
+          if (!key?.fromMe && privateJid(key?.remoteJid)) {
+            inbox.identify({ id: key.remoteJid, jid: key.senderPn, lid: key.senderLid,
+              notify: message.pushName, verifiedName: message.verifiedBizName });
+          }
+        }
+        inbox.save(messages.map(message => clean(message, fallbackTime)).filter(Boolean));
+      }
+      function recordContacts(contacts) {
+        if (live()) for (const contact of contacts) inbox.identify(contact);
+      }
+      socket.ev.on('contacts.upsert', recordContacts);
+      socket.ev.on('contacts.update', recordContacts);
+      socket.ev.on('chats.phoneNumberShare', ({ lid, jid }) => {
+        if (live()) inbox.identify({ id: lid, jid });
+      });
       socket.ev.on('messaging-history.set', ({ chats = [], contacts = [], messages = [] }) => {
         if (!live()) return;
-        const names = new Map(contacts.filter(contact => privateJid(contact.id))
-          .map(contact => [jidNormalizedUser(contact.id), contact.name || contact.notify]));
-        inbox.addChats(chats.filter(chat => privateJid(chat.id)).map(chat => {
-          const jid = jidNormalizedUser(chat.id);
-          return { jid, name: String(chat.displayName || chat.name || names.get(jid) || '').slice(0, 100),
-            at: timestamp(chat.lastMsgTimestamp || chat.conversationTimestamp) };
-        }));
-        inbox.save(messages.map(message => clean(message, 0)).filter(Boolean));
+        recordContacts(contacts);
+        const recent = chats.filter(chat => privateJid(chat.id));
+        for (const chat of recent) {
+          inbox.identify({ id: chat.id, jid: chat.pnJid, lid: chat.lidJid, name: chat.name });
+        }
+        inbox.addChats(recent.map(chat => ({
+          jid: jidNormalizedUser(chat.id), name: String(chat.displayName || '').trim().slice(0,100),
+          at: timestamp(chat.lastMsgTimestamp || chat.conversationTimestamp)
+        })));
+        recordMessages(messages, 0);
       });
       socket.ev.on('messages.upsert', ({ type, messages = [] }) => {
-        if (!live() || !['notify', 'append'].includes(type)) return;
-        const now = Date.now();
-        inbox.save(messages.map(message => clean(message, now)).filter(Boolean));
+        if (live() && ['notify', 'append'].includes(type)) recordMessages(messages, Date.now());
       });
       socket.ev.on('connection.update', async ({connection,qr,lastDisconnect})=>{
         if(!live())return;

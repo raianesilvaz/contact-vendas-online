@@ -54,6 +54,7 @@ test('personal connector syncs recent conversations in memory and discards them 
   const alice=await until(()=>sockets[0]);alice.ev.emit('connection.update',{qr:'fictitious-qr'});
   const history = proto.Message.HistorySyncNotification.HistorySyncType;
   assert.equal(alice.options.shouldSyncHistoryMessage({syncType:history.RECENT}),true);
+  assert.equal(alice.options.shouldSyncHistoryMessage({syncType:history.PUSH_NAME}),true);
   assert.equal(alice.options.shouldSyncHistoryMessage({syncType:history.FULL}),false);
   await until(async()=> (await call('alice','/status')).data.qr);
   assert.equal((await call('bob','/status?owner='+ids.alice)).data.qr,null);
@@ -82,6 +83,37 @@ test('personal connector syncs recent conversations in memory and discards them 
   assert.equal(alice.sent.length,1);
   assert.equal(alice.sent[0].jid,jid);
   assert.equal((await call('alice','/status?jid='+encodeURIComponent(jid))).data.messages.at(-1).body,'Resposta fictícia');
+
+  const lid='123456789012345@lid', phoneJid='5511000000010@s.whatsapp.net';
+  const missing='998877665544332@lid', inbound='112233445566778@lid';
+  const shared='112233445566779@lid';
+  alice.ev.emit('messaging-history.set', {
+    chats:[{id:lid,pnJid:phoneJid,conversationTimestamp:3},{id:missing,conversationTimestamp:4},
+      {id:shared,conversationTimestamp:5}],
+    messages:[{key:{id:'unmapped',remoteJid:missing,fromMe:true,senderPn:'5511000000099@s.whatsapp.net'},
+      message:{conversation:'Enviada'},pushName:'Meu próprio nome',messageTimestamp:4}]
+  });
+  const findContact=async id=>(await call('alice','/status')).data.conversations.find(item=>item.jid===id);
+  assert.equal((await findContact(lid)).phone,'+5511000000010');
+  assert.equal((await findContact(lid)).name,'');
+  assert.equal((await findContact(missing)).phone,null);
+  assert.equal((await findContact(missing)).name,'');
+  alice.ev.emit('messaging-history.set',{contacts:[{id:lid,notify:'Nome de perfil'}]});
+  assert.equal((await findContact(lid)).name,'Nome de perfil');
+  alice.ev.emit('contacts.upsert',[{id:phoneJid,name:'Nome salvo'}]);
+  alice.ev.emit('contacts.update',[{id:lid,notify:'Perfil atualizado'}]);
+  assert.equal((await findContact(lid)).name,'Nome salvo');
+  alice.ev.emit('chats.phoneNumberShare',{lid:shared,jid:'5511000000020@s.whatsapp.net'});
+  assert.equal((await findContact(shared)).phone,'+5511000000020');
+  alice.ev.emit('messages.upsert',{type:'notify',messages:[{
+    key:{id:'new',remoteJid:inbound,senderPn:'5511000000030:4@s.whatsapp.net'},
+    message:{conversation:'Recebida'},pushName:'Nome recebido',messageTimestamp:6
+  }]});
+  const received=await findContact(inbound);
+  assert.equal(received.name,'Nome recebido');
+  assert.equal(received.phone,'+5511000000030');
+  assert.equal((await call('alice','/status?jid='+encodeURIComponent(inbound))).data.messages[0].body,'Recebida');
+
   assert.equal((await call('bob','/disconnect','POST',{owner:ids.alice})).status,200);
   assert.equal((await call('alice','/status')).data.status,'connected');
   assert.equal((await call('alice','/disconnect','POST')).status,200);
