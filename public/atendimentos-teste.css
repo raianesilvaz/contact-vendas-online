@@ -1,0 +1,40 @@
+.attendance-test-content {
+  max-width: 1440px;
+  padding: 24px 30px 20px;
+}
+.attendance-test-heading {
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.attendance-test-badge {
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+.attendance-test-notice {
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.attendance-test-notice p { margin: 0 0 6px; }
+.attendance-test-notice a { color: var(--orange-dark); font-weight: 700; }
+.attendance-test-frame {
+  display: block;
+  width: 100%;
+  height: calc(100dvh - 198px);
+  min-height: 490px;
+  border: 0;
+}
+.attendance-test-frame[hidden] { display: none; }
+@media (max-width: 600px) {
+  .attendance-test-content { padding: 16px 12px; }
+  .attendance-test-heading { display: flex; }
+  .attendance-test-heading p { font-size: 12px; }
+  .attendance-test-frame { height: calc(100dvh - 164px); min-height: 430px; }
+}

@@ -7,6 +7,7 @@
   };
 
   try {
+    if (!await window.authReady) return showLogin();
     const { data, error } = await window.supabaseClient.auth.getSession();
     if (error || !data.session?.access_token) return showLogin();
     const response = await fetch('/api/atendimentos-teste', {
