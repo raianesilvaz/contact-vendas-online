@@ -103,9 +103,9 @@ const phoneFor = person => person?.phone || (person?.jid?.endsWith('@s.whatsapp.
 function displayPhone(person) {
  const digits=phoneFor(person).replace(/\D/g,'');
  if(!digits)return '';
- return digits.replace(/^55(\d{2})(\d{4,5})(\d{4})$/,'55 ($1) $2-$3').replace(/^/,'+');
+ return '+'+digits.replace(/^55(\d{2})(\d{4,5})(\d{4})$/,'55 ($1) $2-$3');
 }
-const nameFor = person => person?.name?.trim() || 'Contato do WhatsApp';
+const nameFor = person => person?.name?.trim() || displayPhone(person) || 'Contato do WhatsApp';
 const initials = name => name.split(/\s+/).slice(0,2).map(part=>part[0]).join('').toUpperCase();
 const avatar = person => `<span class="avatar" aria-hidden="true">${person?.name?.trim()?escapeHtml(initials(nameFor(person))):icon('person')}</span>`;
 const time = at => at ? new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit'}).format(at) : '';
@@ -148,7 +148,7 @@ function renderList() {
  const query=$('search-input').value.trim().toLocaleLowerCase('pt-BR');
  const digits=query.replace(/\D/g,'');
  $('list').innerHTML=threads.filter(person=>!query||nameFor(person).toLocaleLowerCase('pt-BR').includes(query)||(digits&&phoneFor(person).includes(digits))).map(person=>
-  `<button class="thread" type="button" data-jid="${escapeHtml(person.jid)}" aria-pressed="${person.jid===selected?.jid}">${avatar(person)}<span><strong>${escapeHtml(person.name?.trim() || displayPhone(person) || nameFor(person))}</strong><p>${escapeHtml(person.body||'Nova conversa')}</p></span><span class="thread-time">${time(person.at)}</span></button>`
+  `<button class="thread" type="button" data-jid="${escapeHtml(person.jid)}" aria-pressed="${person.jid===selected?.jid}">${avatar(person)}<span><strong>${escapeHtml(nameFor(person))}</strong><p>${escapeHtml(person.body||'Nova conversa')}</p></span><span class="thread-time">${time(person.at)}</span></button>`
  ).join('')||`<div class="empty"><strong>${connected()?'Nenhuma conversa':'WhatsApp desconectado'}</strong>${connected()?'As conversas aparecem conforme o WhatsApp sincroniza.':'Conecte seu número para começar.'}</div>`;
 }
 function renderMessages() {
@@ -177,6 +177,13 @@ function closeDetails() {
  renderDetailsVisibility();
  $('show-info').focus();
 }
+function renderIdentity() {
+ const name=escapeHtml(nameFor(selected)), phone=displayPhone(selected);
+ const phoneMarkup=phone&&name===phone?'':`<p class="contact-phone${phone?'':' unavailable'}">${icon('phone')}${escapeHtml(phone || 'Telefone não disponível')}</p>`;
+ $('chat-avatar').innerHTML=avatar(selected);
+ $('chat-identity').innerHTML=`<h2>${name}</h2>${phoneMarkup}`;
+ $('contact-identity').innerHTML=`${avatar(selected)}<strong>${name}</strong>${phoneMarkup}`;
+}
 function renderChat() {
  const panel=$('conversation'),details=$('details');
  if(!selected||!connected()){
@@ -186,14 +193,13 @@ function renderChat() {
   return;
  }
  const person=selected;
- const name=escapeHtml(nameFor(person)), phone=displayPhone(person);
- const phoneMarkup=`<p class="contact-phone${phone?'':' unavailable'}">${icon('phone')}${escapeHtml(phone || 'Telefone não disponível')}</p>`;
- panel.innerHTML=`<header class="chat-top"><button class="btn icon mobile-back" id="back-to-list" aria-label="Voltar às conversas" type="button">${icon('back')}</button>${avatar(person)}<div class="chat-id"><h2>${name}</h2>${phoneMarkup}</div><button class="btn icon contact-toggle" id="show-info" type="button" aria-label="Dados do contato" aria-controls="details" title="Dados do contato">${icon('person')}</button></header>
+ panel.innerHTML=`<header class="chat-top"><button class="btn icon mobile-back" id="back-to-list" aria-label="Voltar às conversas" type="button">${icon('back')}</button><div id="chat-avatar"></div><div class="chat-id" id="chat-identity"></div><button class="btn icon contact-toggle" id="show-info" type="button" aria-label="Dados do contato" aria-controls="details" title="Dados do contato">${icon('person')}</button></header>
  <div class="messages" id="messages" role="log" aria-label="Mensagens"></div>
  <form class="composer" id="composer"><div class="compose-line"><label class="sr" for="draft">Digite uma mensagem</label><textarea id="draft" rows="1" maxlength="2000" placeholder="Digite uma mensagem…"></textarea><button class="btn primary" id="send" type="submit">${icon('send')} Enviar</button></div><p class="compose-note">Enter envia · Shift + Enter quebra a linha</p></form>`;
  details.innerHTML=`<header class="details-head"><h2 class="detail-title" id="details-title">Dados do contato</h2><button class="btn icon" id="close-info" type="button" aria-label="Fechar dados do contato">${icon('close')}</button></header>
- <div class="contact">${avatar(person)}<strong>${name}</strong>${phoneMarkup}</div>
+ <div class="contact" id="contact-identity"></div>
  <dl class="details-channel"><dt>Canal</dt><dd>WhatsApp</dd></dl>`;
+ renderIdentity();
  $('back-to-list').onclick=()=>{
   $('board').classList.remove('active-thread');
   detailsOpen=false;
@@ -237,6 +243,11 @@ async function refresh() {
   connection=data;threads=data.conversations||[];
   if(!connected()&&wasConnected)clearChat();
   else if(requested&&requested===selected?.jid)messages=data.messages||[];
+  const contact=selected?.jid&&threads.find(person=>person.jid===selected.jid);
+  if(contact&&(contact.name!==selected.name||contact.phone!==selected.phone)){
+   Object.assign(selected,{name:contact.name,phone:contact.phone});
+   if($('chat-identity'))renderIdentity();
+  }
   renderConnection();renderList();
   if(wasConnected!==connected())renderChat();else renderMessages();
  }catch(error){if(epoch===chatEpoch){connection.error=error.message;renderConnection();}}
@@ -266,7 +277,7 @@ $('new-form').onsubmit=event=>{
  let phone=new FormData(event.target).get('phone').replace(/\D/g,'');
  if([10,11].includes(phone.length))phone='55'+phone;
  if(!/^55\d{10,11}$/.test(phone)){$('new-error').textContent='Informe um telefone brasileiro com DDD.';return;}
- const existing=threads.find(person=>person.jid===`${phone}@s.whatsapp.net`);
+ const existing=threads.find(person=>phoneFor(person).replace(/\D/g,'')===phone);
  selected=existing||{phone:'+'+phone};messages=[];
  if(compact.matches)detailsOpen=false;
  $('board').classList.add('active-thread');
