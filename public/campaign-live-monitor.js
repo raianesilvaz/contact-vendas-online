@@ -1,8 +1,8 @@
-/* Read-only monitoring. Restored runs never restart or send automatically. */
+/* Restored controls never start sending until the operator chooses Continue. */
 (()=>{
  const host=document.querySelector('#campaignLiveMonitor');if(!host)return;
  const $=s=>host.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const progress=window.ContactCampaignProgress;let runs=[],items=[],busy=false,enabled=false,selected=null,lastRead=null,finishing=null;
+ const progress=window.ContactCampaignProgress;let runs=[],items=[],busy=false,enabled=false,selected=null,lastRead=null,finishing=null,opening=null,userId=null;
  const labels={running:'Em andamento no registro',paused:'Pausada',completed:'Finalizada',cancelled:'Cancelada',canceled:'Cancelada',failed:'Falhou',error:'Erro',pending:'Pendente'};
  function when(v){return v?new Date(v).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'Nenhum envio registrado';}
  function local(){return window.contactCampaignExecution?.get()||null;}
@@ -12,14 +12,19 @@
   return list.map(r=>({...r,stats:progress.summarize(r.items,r.quantity),lastSent:r.items.map(i=>i.sent_at).filter(Boolean).sort().at(-1)}));
  }
  function phase(r){if(r.completionPending)return 'Fila processada · finalizar';if(r.own)return r.status==='completed'?'Envio finalizado':r.status==='cancelled'?'Cancelada':r.status==='paused'?'Pausada nesta aba':r.processing?'Enviando nesta aba':'Aguardando próximo envio';return labels[r.status]||r.status;}
+ function canOpenPaused(r){
+  return r.status==='paused'&&r.created_by===userId&&r.name.startsWith('Régua · ')
+   &&r.stats.waiting>0&&!r.stats.sending&&r.items.length===r.quantity;
+ }
  function explanation(r){
   if(r.syncError)return r.syncError;
   if(r.stats.settled&&['paused','running'].includes(r.status))return 'Todos os destinatários foram processados; o encerramento ainda não foi registrado. Não há mensagem pendente nesta fila.';
   if(r.own&&!['completed','cancelled'].includes(r.status))return r.status==='paused'?'Envio pausado. Use Acompanhar para continuar ou cancelar.':'Mantenha esta aba aberta. O andamento permanece visível mesmo com o painel minimizado.';
+  if(canOpenPaused(r))return 'Envio pausado. Abra os controles para continuar ou cancelar os envios restantes.';
   if(['running','paused'].includes(r.status))return 'Consulta ao status salvo. Esta aba não conduz essa execução; confirme se ela está aberta em outra aba ou sessão. Nada será retomado automaticamente.';
   return 'Consulte os destinatários para conferir os envios e os motivos dos erros.';
  }
- function card(r){const s=r.stats;return `<article class="campaign-live-card"><div class="campaign-live-title"><div><small>${r.own?'EXECUÇÃO DESTA ABA':'ACOMPANHAMENTO'}</small><h3>${esc(r.name)}</h3></div><span class="campaign-live-status is-${esc(r.status)}">${esc(phase(r))}</span></div><div class="campaign-live-counts"><span><b>${s.sent}</b> enviados</span><span class="has-error"><b>${s.errors}</b> erros</span><span><b>${s.waiting}</b> aguardando</span>${s.sending?`<span><b>${s.sending}</b> enviando agora</span>`:''}${s.cancelled?`<span><b>${s.cancelled}</b> cancelados</span>`:''}<strong>${s.processed} / ${s.total} processados</strong></div><progress max="100" value="${s.percent}" aria-label="Progresso de ${esc(r.name)}"></progress><p class="campaign-live-note ${r.syncError?'campaign-live-error':''}">${esc(explanation(r))}</p><div class="campaign-live-bottom"><span>Último envio: ${esc(when(r.lastSent))}</span><span>Intervalo: ${Number(r.interval_seconds)||0}s <b data-campaign-countdown="${esc(r.id)}"></b></span>${r.stats.settled&&['running','paused','pending'].includes(r.status)?`<button type="button" data-finish-run="${esc(r.id)}" ${finishing===r.id?'disabled':''}>${finishing===r.id?'Finalizando...':'Finalizar campanha'}</button>`:''}<button type="button" data-monitor-run="${esc(r.id)}">${r.own?'Acompanhar campanha':'Ver detalhes'}</button></div></article>`;}
+ function card(r){const s=r.stats;return `<article class="campaign-live-card"><div class="campaign-live-title"><div><small>${r.own?'EXECUÇÃO DESTA ABA':'ACOMPANHAMENTO'}</small><h3>${esc(r.name)}</h3></div><span class="campaign-live-status is-${esc(r.status)}">${esc(phase(r))}</span></div><div class="campaign-live-counts"><span><b>${s.sent}</b> enviados</span><span class="has-error"><b>${s.errors}</b> erros</span><span><b>${s.waiting}</b> aguardando</span>${s.sending?`<span><b>${s.sending}</b> enviando agora</span>`:''}${s.cancelled?`<span><b>${s.cancelled}</b> cancelados</span>`:''}<strong>${s.processed} / ${s.total} processados</strong></div><progress max="100" value="${s.percent}" aria-label="Progresso de ${esc(r.name)}"></progress><p class="campaign-live-note ${r.syncError?'campaign-live-error':''}">${esc(explanation(r))}</p><div class="campaign-live-bottom"><span>Último envio: ${esc(when(r.lastSent))}</span><span>Intervalo: ${Number(r.interval_seconds)||0}s <b data-campaign-countdown="${esc(r.id)}"></b></span>${r.stats.settled&&['running','paused','pending'].includes(r.status)?`<button type="button" data-finish-run="${esc(r.id)}" ${finishing===r.id?'disabled':''}>${finishing===r.id?'Finalizando...':'Finalizar campanha'}</button>`:''}<button type="button" data-monitor-run="${esc(r.id)}" ${opening===r.id?'disabled':''}>${r.own?(r.status==='paused'?'Abrir controles':'Acompanhar campanha'):(canOpenPaused(r)?(opening===r.id?'Abrindo...':'Abrir controles'):'Ver detalhes')}</button></div></article>`;}
  function render(){
   const data=reports(),list=$('#campaignLiveCards'),expanded=list.querySelector('details')?.open;
   list.innerHTML=data.length?card(data[0])+(data.length>1?`<details ${expanded?'open':''}><summary>Outras execuções (${data.length-1})</summary>${data.slice(1).map(card).join('')}</details>`:''):'<p class="campaign-live-note">Nenhuma execução encontrada. As campanhas aparecerão aqui quando forem iniciadas.</p>';
@@ -29,7 +34,7 @@
  async function refresh(){
   if(busy||!enabled)return;busy=true;$('#campaignLiveRefresh').disabled=true;
   try{
-   const r=await window.supabaseClient.from('campaign_runs').select('id,status,quantity,interval_seconds,started_at,finished_at,campaign:campaigns(name)').order('started_at',{ascending:false}).limit(12);if(r.error)throw r.error;
+   const r=await window.supabaseClient.from('campaign_runs').select('id,created_by,status,quantity,interval_seconds,started_at,finished_at,campaign:campaigns(name)').order('started_at',{ascending:false}).limit(12);if(r.error)throw r.error;
    const next=[];if(r.data.length){for(let start=0;;start+=1000){const rec=await window.supabaseClient.from('campaign_recipients').select('id,run_id,status,sent_at').in('run_id',r.data.map(x=>x.id)).order('id').range(start,start+999);if(rec.error)throw rec.error;next.push(...rec.data);if(rec.data.length<1000)break;}}
    runs=r.data;items=next;lastRead=new Date();$('#campaignLiveRead').textContent='Atualizado às '+lastRead.toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo'})+' · consulta automática a cada 5s';$('#campaignLiveError').textContent='';render();
    if(selected)await loadDetails(selected);
@@ -46,10 +51,21 @@
    target.innerHTML=all.map(r=>`<div class="collections-run-row"><span class="collections-run-badge is-${esc(r.status)}">${esc(statuses[r.status]||r.status)}</span><span class="collections-run-name">${esc(r.customer_name||'Cliente')}<small>${esc(r.status==='error'?r.error_message||'Erro sem descrição':r.sent_at?when(r.sent_at):'')}</small></span></div>`).join('')||'Nenhum destinatário registrado nesta execução.';
   }catch(e){if(selected===id)target.textContent='Não foi possível consultar os destinatários: '+e.message;}
  }
- host.addEventListener('click',async e=>{const finish=e.target.closest('[data-finish-run]');if(finish){if(finishing)return;finishing=finish.dataset.finishRun;render();try{if(local()?.id===finishing)await window.contactCampaignExecution.finish();else await window.ContactCampaignFinalizer.finish(finishing);await refresh();}catch(error){$('#campaignLiveError').textContent='Não foi possível finalizar: '+error.message;}finally{finishing=null;render();}return;}const button=e.target.closest('[data-monitor-run]');if(!button)return;const id=button.dataset.monitorRun;if(local()?.id===id)window.contactCampaignExecution.open();else loadDetails(id);});
+ host.addEventListener('click',async e=>{const finish=e.target.closest('[data-finish-run]');if(finish){if(finishing)return;finishing=finish.dataset.finishRun;render();try{if(local()?.id===finishing)await window.contactCampaignExecution.finish();else await window.ContactCampaignFinalizer.finish(finishing);await refresh();}catch(error){$('#campaignLiveError').textContent='Não foi possível finalizar: '+error.message;}finally{finishing=null;render();}return;}const button=e.target.closest('[data-monitor-run]');if(!button)return;const id=button.dataset.monitorRun;
+  if(local()?.id===id){window.contactCampaignExecution.open();return;}
+  const report=reports().find(run=>run.id===id);
+  if(!report||!canOpenPaused(report)){loadDetails(id);return;}
+  if(opening)return;
+  opening=id;render();
+  try{
+   await window.contactCampaignExecution.openSaved(id);
+   $('#campaignLiveError').textContent='';
+  }catch(error){$('#campaignLiveError').textContent='Não foi possível abrir os controles: '+error.message;}
+  finally{opening=null;render();}
+ });
  $('#campaignLiveRefresh').onclick=refresh;
  window.addEventListener('contact-campaign-progress',()=>{if(enabled)render();});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});window.addEventListener('focus',refresh);
  setInterval(()=>{if(!document.hidden)refresh();},5000);setInterval(()=>{if(!document.hidden)countdown();},1000);
- Promise.resolve(window.authReady).then(user=>{if(!user||!['admin','financeiro'].includes(user.profile?.role)){host.hidden=true;return;}enabled=true;refresh();});
+ Promise.resolve(window.authReady).then(user=>{if(!user||!['admin','financeiro'].includes(user.profile?.role)){host.hidden=true;return;}userId=user.profile.role==='admin'?user.id:null;enabled=true;refresh();});
 })();
