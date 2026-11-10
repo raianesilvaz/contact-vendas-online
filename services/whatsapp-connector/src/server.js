@@ -9,8 +9,9 @@ import { createHash } from 'node:crypto';
 import { useRemoteAuthState } from './remote-auth-state.js';
 import { useRetryMessageStore, createRetryCounterCache } from './retry-message-store.js';
 import { sendRecoverableText, serialSender } from './reliable-text-send.js';
+import { installPersonalAttendance } from './personal-attendance.js';
 
-const CONNECTOR_VERSION = '20261104-message-recovery-2';
+const CONNECTOR_VERSION = '20261110-individual-attendance';
 
 const PORT = Number(process.env.PORT || 3100);
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -363,6 +364,8 @@ app.post('/api/whatsapp/disconnect', requireFinanceAccess, async (_request, resp
   updateState({ status: 'disconnected', qr: null, phone: null, name: null, error: null });
   response.json(publicState());
 });
+installPersonalAttendance(app, {supabaseUrl:SUPABASE_URL,publishableKey:SUPABASE_KEY,accessToken:SESSION_ACCESS_TOKEN,encryptionSecret:SESSION_ENCRYPTION_KEY,logger});
+
 app.use((error, _request, response, _next) => {
   console.error(error);
   response.status(500).json({ error: 'Erro interno do conector.' });

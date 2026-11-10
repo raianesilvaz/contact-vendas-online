@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atendimentos | CONTACT — Prévia</title>
+<title>Atendimentos | CONTACT</title>
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; form-action 'none'; base-uri 'none'">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -11,6 +11,7 @@
 @media(max-width:1100px){.board{grid-template-columns:minmax(205px,.85fr) minmax(280px,1.5fr) minmax(175px,.7fr)}.details{padding-inline:10px}.chat-top{padding-inline:9px}}@media(max-width:890px){.board{grid-template-columns:minmax(195px,.75fr) minmax(240px,1.5fr)}.details{display:none}.mobile-info{display:inline-flex}.board.info .details{display:block;position:absolute;z-index:2;right:0;top:0;bottom:0;width:min(290px,90%);background:white;box-shadow:-6px 0 26px #17384230}.board{position:relative}}@media(max-width:610px){.head-actions .btn{font-size:10px;padding:5px 6px;gap:4px}.head-actions .btn svg{width:12px;height:12px}.board{display:block}.inbox,.conversation{height:100%;border-right:0}.board:not(.active-thread) .conversation,.board.active-thread .inbox{display:none}.mobile-back{display:inline-flex}.messages{padding:12px 10px}.chat-top{gap:6px}.chat-top .row-actions{gap:5px}.chat-top .btn{font-size:10px;padding-inline:6px}.chat-id h2{font-size:12px}.chat-id p{font-size:10px}.bubble p{font-size:12px}}
 .inbox-head{padding-bottom:4px}.chat-id{flex:1}.status-action{flex-wrap:wrap}#account-info{font-weight:750;color:var(--ink)}#connection-dialog .row-actions{margin-top:14px}
 
+#whatsapp-qr{display:block;max-width:100%;height:auto;margin:12px auto;border:1px solid var(--line);border-radius:10px}
 </style>
 </head>
 <body>
@@ -25,132 +26,178 @@
 <symbol id="check" viewBox="0 0 24 24"><path d="m3 12 4 4 8-8m-4 8 8-8"/></symbol>
 <symbol id="flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3M8 15h8"/></symbol>
 </defs></svg>
-<main class="workspace" aria-label="Conversas de demonstração">
+<main class="workspace" aria-label="Conversas do WhatsApp">
   <div class="head-actions"><button class="btn" id="connection" type="button"><span class="dot" id="connection-dot"></span><span id="connection-label">Conectar meu WhatsApp</span></button><button class="btn primary" id="new-conversation" type="button"><svg><use href="#plus"/></svg> Nova conversa</button></div>
   <div class="board" id="board">
-   <section class="inbox" aria-label="Lista de conversas"><div class="inbox-head"><h2>Conversas</h2><label class="search"><svg><use href="#search"/></svg><span class="sr">Buscar conversa</span><input id="search-input" type="search" placeholder="Buscar nome ou telefone"></label></div><div class="list" id="list"></div><div class="inbox-foot"><svg><use href="#flask"/></svg> Ambiente de demonstração</div></section>
+   <section class="inbox" aria-label="Lista de conversas"><div class="inbox-head"><h2>Conversas</h2><label class="search"><svg><use href="#search"/></svg><span class="sr">Buscar conversa</span><input id="search-input" type="search" placeholder="Buscar nome ou telefone"></label></div><div class="list" id="list"></div><div class="inbox-foot"><svg><use href="#flask"/></svg> WhatsApp individual · Piloto</div></section>
    <section class="conversation" aria-label="Conversa ativa" id="conversation"></section>
    <aside class="details" aria-label="Informações do cliente" id="details"></aside>
   </div>
 </main>
 <dialog class="pop" id="connection-dialog">
- <div class="pop-top"><div><p class="eyebrow">Conexão individual</p><h2>Meu WhatsApp</h2></div><button class="btn icon" type="button" data-dismiss aria-label="Fechar"><svg><use href="#close"/></svg></button></div>
- <p id="account-info"></p><p id="connection-description"></p>
- <div class="row-actions"><button class="btn" type="button" data-dismiss>Voltar</button><button class="btn primary" type="button" id="toggle-connection">Simular conexão</button></div>
+ <div class="pop-top"><div><p class="eyebrow">WhatsApp individual</p><h2>Meu WhatsApp</h2></div><button class="btn icon" type="button" data-dismiss aria-label="Fechar"><svg><use href="#close"/></svg></button></div>
+ <p id="account-info"></p><p id="connection-description"></p><img id="whatsapp-qr" alt="QR Code para vincular seu WhatsApp" width="260" height="260" hidden>
+ <div class="row-actions"><button class="btn" type="button" data-dismiss>Voltar</button><button class="btn primary" type="button" id="toggle-connection">Gerar QR Code</button></div>
 </dialog>
-<dialog class="pop" id="new-dialog"><div class="pop-top"><div><p class="eyebrow">Demonstração</p><h2>Nova conversa</h2></div><button class="btn icon" type="button" data-dismiss aria-label="Fechar"><svg><use href="#close"/></svg></button></div><p>Adicione um contato fictício para testar o atendimento.</p><form id="new-form"><label>Nome <input name="name" required maxlength="60" placeholder="Ex.: Cliente Teste"></label><label>Telefone <input name="phone" type="tel" required maxlength="25" placeholder="(11) 90000-0000"></label><div class="row-actions"><button class="btn" type="button" data-dismiss>Cancelar</button><button class="btn primary" type="submit">Abrir conversa</button></div></form></dialog>
+<dialog class="pop" id="new-dialog"><div class="pop-top"><div><p class="eyebrow">WhatsApp individual</p><h2>Nova conversa</h2></div><button class="btn icon" type="button" data-dismiss aria-label="Fechar"><svg><use href="#close"/></svg></button></div><p>Informe o telefone do contato com DDD.</p><form id="new-form"><label>Telefone <input name="phone" type="tel" required maxlength="25" placeholder="(11) 90000-0000"></label><p id="new-error" role="status"></p><div class="row-actions"><button class="btn" type="button" data-dismiss>Cancelar</button><button class="btn primary" type="submit">Abrir conversa</button></div></form></dialog>
 <div class="toast" id="toast" role="status" hidden></div>
 <script>
 const $ = id => document.getElementById(id);
 const icon = name => `<svg aria-hidden="true"><use href="#${name}"/></svg>`;
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-const sampleConversations = [
- {id:1,name:'Marina Costa',phone:'(11) 90000-0101',color:'teal',topic:'Instalação',contract:'CT-10021',seller:'Luana',unread:0,notes:[],messages:[['in','Olá! Tudo bem? Queria confirmar o horário da minha instalação de amanhã.','10:18'],['out','Oi, Marina! Tudo bem 😊 Vou verificar o agendamento pra você.','10:20'],['out','A visita está prevista para amanhã, das 8h às 12h. A equipe entra em contato antes de chegar.','10:22'],['in','Perfeito! Preciso deixar algum documento separado?','10:24']]},
- {id:2,name:'Rafael Mendes',phone:'(11) 90000-0102',color:'blue',topic:'Plano de internet',contract:'CT-10035',seller:'Isabella',unread:1,notes:['Cliente pediu retorno no período da tarde.'],messages:[['out','Olá, Rafael! Posso tirar suas dúvidas sobre a mudança de plano.','09:48'],['in','Consegue me mandar os detalhes do plano de 600 mega?','09:52']]},
- {id:3,name:'Bianca Almeida',phone:'(11) 90000-0103',color:'rose',topic:'Segunda via',contract:'CT-10042',seller:'Ana',unread:2,notes:[],messages:[['in','Bom dia!','10:21'],['in','Preciso da segunda via da minha fatura, por favor.','10:23']]},
- {id:4,name:'André Ribeiro',phone:'(11) 90000-0104',color:'amber',topic:'Agendamento',contract:'CT-10056',seller:'Noemi',unread:1,notes:[],messages:[['in','Oi, tem como mudar a data de instalação?','09:55']]},
- {id:5,name:'Camila Rocha',phone:'(11) 90000-0105',color:'violet',topic:'Cadastro',contract:'CT-10063',seller:'Rauane',unread:0,notes:['Dados de cadastro conferidos na demonstração.'],messages:[['in','Já consegui enviar os dados. Obrigada pela ajuda!','08:41'],['out','Recebido, Camila! Qualquer coisa, pode chamar.','08:43']]}
-];
-sampleConversations.sort((a,b)=>b.messages.at(-1)[2].localeCompare(a.messages.at(-1)[2]));
-const demoAccount={connected:false,conversations:sampleConversations};
-let activeId=demoAccount.conversations[0]?.id??null, toastTimer;
-const account=()=>demoAccount;
-const conversations=()=>demoAccount.conversations;
+const states = {disconnected:'Conectar meu WhatsApp',connecting:'Conectando…',qr_ready:'Escanear QR Code',connected:'Meu WhatsApp conectado',disconnecting:'Desconectando…',error:'Conectar meu WhatsApp'};
+let connection={status:'disconnected'}, threads=[], selected=null, messages=[], refreshRunning=false, sending=false, changingConnection=false;
+let nextRequest=0, toastTimer, confirmingDisconnect=false;
+const pending = new Map();
 const drafts = new Map();
-const initials = name => name.trim().split(/\s+/).slice(0,2).map(part=>part[0]).join('').toUpperCase();
-const avatar = person => `<span class="avatar ${person.color}" aria-hidden="true">${escapeHtml(initials(person.name))}</span>`;
-const time = () => new Intl.DateTimeFormat('pt-BR',{hour:'2-digit',minute:'2-digit'}).format(new Date());
-const current = () => conversations().find(person=>person.id===activeId);
+function request(action,payload={}) {
+ const id=++nextRequest;
+ return new Promise((resolve,reject)=>{
+  const timer=setTimeout(()=>{pending.delete(id);reject(Error('O conector demorou a responder. Tente novamente.'));},55_000);
+  pending.set(id,{resolve,reject,timer});
+  parent.postMessage({source:'contact-personal-whatsapp',id,action,payload},'*');
+ });
+}
+window.addEventListener('message',event=>{
+ if(event.source!==parent||event.data?.source!=='contact-personal-whatsapp-response')return;
+ const {id,value,error}=event.data, call=pending.get(id);
+ if(!call)return;
+ clearTimeout(call.timer);pending.delete(id);
+ if(error)call.reject(Error(error));else call.resolve(value);
+});
+const connected = () => connection.status==='connected';
+const keyFor = person => person?.jid || person?.phone || '';
+const phoneFor = person => person?.phone || (person?.jid?.endsWith('@s.whatsapp.net') ? '+'+person.jid.split('@')[0] : '');
+const nameFor = person => person?.name || phoneFor(person) || 'Contato do WhatsApp';
+const initials = name => name.replace(/^\+/,'').split(/\s+/).slice(0,2).map(part=>part[0]).join('').toUpperCase();
+const avatar = person => `<span class="avatar" aria-hidden="true">${escapeHtml(initials(nameFor(person)))}</span>`;
+const time = at => at ? new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit'}).format(at) : '';
+const day = at => new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_Paulo',dateStyle:'short'}).format(at);
 function notify(message) {
  const toast=$('toast');toast.textContent=message;toast.hidden=false;
- clearTimeout(toastTimer);toastTimer=setTimeout(()=>{toast.hidden=true},2600);
+ clearTimeout(toastTimer);toastTimer=setTimeout(()=>{toast.hidden=true;},4600);
+}
+function renderConnection() {
+ $('connection-dot').classList.toggle('ready',connected());
+ $('connection-label').textContent=states[connection.status] || states.disconnected;
+ $('new-conversation').disabled=!connected();
+ const button=$('toggle-connection');
+ $('account-info').textContent=connected()?`WhatsApp conectado${connection.phone?' · +'+connection.phone:''}`:states[connection.status]||states.disconnected;
+ $('connection-description').textContent=connection.error||(
+  confirmingDisconnect?'Desconectar remove a sessão e as mensagens guardadas pelo CONTACT neste teste. Suas conversas continuam no aplicativo WhatsApp.':
+  connected()?'As novas mensagens de texto ficam disponíveis nesta lista.':
+  connection.status==='qr_ready'?'No celular, abra WhatsApp → Aparelhos conectados → Conectar um aparelho e escaneie o código.':
+  connection.status==='connecting'?'Aguarde enquanto o conector prepara sua sessão.':
+  'Vincule um WhatsApp para começar. O histórico anterior à conexão não será importado.'
+ );
+ const qr=$('whatsapp-qr');
+ const image=connection.status==='qr_ready'&&/^data:image\/png;base64,[a-zA-Z0-9+/=]+$/.test(connection.qr||'');
+ if(image&&qr.getAttribute('src')!==connection.qr)qr.src=connection.qr;
+ if(!image)qr.removeAttribute('src');
+ qr.hidden=!image;
+ button.textContent=connected()?(confirmingDisconnect?'Confirmar desconexão':'Desconectar meu WhatsApp'):connection.status==='qr_ready'?'Aguardando leitura…':connection.status==='connecting'?'Conectando…':connection.status==='disconnecting'?'Desconectando…':'Gerar QR Code';
+ button.disabled=changingConnection||['connecting','qr_ready','disconnecting'].includes(connection.status);
 }
 function renderList() {
  const query=$('search-input').value.trim().toLocaleLowerCase('pt-BR');
  const digits=query.replace(/\D/g,'');
- const filter=person=>!query || person.name.toLocaleLowerCase('pt-BR').includes(query) || (digits&&person.phone.replace(/\D/g,'').includes(digits));
- $('list').innerHTML=conversations().filter(filter).map(person=>{
-  const last=person.messages.at(-1);
-  return `<button class="thread" type="button" data-id="${person.id}" aria-pressed="${person.id===activeId}">${avatar(person)}<span><strong>${escapeHtml(person.name)}</strong><p>${escapeHtml(last?.[1]||'Nova conversa')}</p></span><span class="thread-time">${escapeHtml(last?.[2]||'')}${person.unread?`<b class="unread" aria-label="${person.unread} não lidas">${person.unread}</b>`:''}</span></button>`;
- }).join('') || '<div class="empty"><strong>Nenhuma conversa</strong>Experimente outro nome ou telefone.</div>';
+ $('list').innerHTML=threads.filter(person=>!query||nameFor(person).toLocaleLowerCase('pt-BR').includes(query)||(digits&&phoneFor(person).includes(digits))).map(person=>
+  `<button class="thread" type="button" data-jid="${escapeHtml(person.jid)}" aria-pressed="${person.jid===selected?.jid}">${avatar(person)}<span><strong>${escapeHtml(nameFor(person))}</strong><p>${escapeHtml(person.body||'Nova conversa')}</p></span><span class="thread-time">${time(person.at)}</span></button>`
+ ).join('')||`<div class="empty"><strong>${connected()?'Nenhuma conversa':'WhatsApp desconectado'}</strong>${connected()?'As novas conversas aparecem aqui.':'Conecte seu número para começar.'}</div>`;
 }
-function renderDetails(person) {
- const panel=$('details');
- if(!person){panel.innerHTML='<h2 class="detail-title">Dados do cliente</h2><p class="detail-copy">Selecione uma conversa.</p>';return;}
- panel.innerHTML=`<div class="pop-top"><h2 class="detail-title">Dados do cliente</h2><button class="btn icon mobile-info" id="close-info" type="button" aria-label="Fechar dados">${icon('close')}</button></div>
- <div class="contact">${avatar(person)}<strong>${escapeHtml(person.name)}</strong><small>${escapeHtml(person.phone)}</small><span class="tag">${escapeHtml(person.topic)}</span></div>
- <div class="detail-block"><h3>Cadastro CONTACT</h3><dl class="field"><div><dt>Contrato</dt><dd>${escapeHtml(person.contract||'Não vinculado')}</dd></div><div><dt>Vendedora</dt><dd>${escapeHtml(person.seller||'Não vinculada')}</dd></div></dl></div>
- <div class="detail-block"><h3>Notas internas</h3><ul class="notes">${person.notes.map(note=>`<li>${escapeHtml(note)}</li>`).join('')}</ul>${person.notes.length?'':'<p class="detail-copy">Nenhuma nota neste atendimento.</p>'}<form class="note-form" id="note-form"><label class="sr" for="note">Adicionar nota interna</label><textarea id="note" required maxlength="350" placeholder="Anote algo para a equipe…"></textarea><button class="btn" type="submit">Salvar nota</button></form></div>`;
- $('close-info').onclick=()=> $('board').classList.remove('info');
- $('note-form').onsubmit=event=>{event.preventDefault();const value=$('note').value.trim();if(!value)return;person.notes.push(value);renderDetails(person);notify('Nota interna salva na prévia.');};
+function renderMessages() {
+ const log=$('messages');if(!log)return;
+ const nearBottom=log.scrollHeight-log.scrollTop-log.clientHeight<45;
+ let lastDay='';
+ const markup=messages.map(message=>{
+  const label=day(message.at), header=label!==lastDay?`<span class="day">${label}</span>`:'';
+  lastDay=label;
+  return `${header}<div class="bubble ${message.direction==='out'?'out':''}"><p>${escapeHtml(message.body)}</p><small>${time(message.at)}${message.direction==='out'?icon('check'):''}</small></div>`;
+ }).join('')||'<div class="empty">A conversa começa quando você escrever uma mensagem.</div>';
+ if(log.innerHTML!==markup){log.innerHTML=markup;if(nearBottom)log.scrollTop=log.scrollHeight;}
 }
 function renderChat() {
- const person=current(), panel=$('conversation');
- renderDetails(person);
- if(!person){panel.innerHTML='<div class="empty"><strong>Selecione uma conversa</strong>Os detalhes do atendimento aparecem aqui.</div>';return;}
- const connected=account().connected;
- panel.innerHTML=`<header class="chat-top"><button class="btn icon mobile-back" id="back-to-list" aria-label="Voltar às conversas" type="button">${icon('back')}</button>${avatar(person)}<div class="chat-id"><h2>${escapeHtml(person.name)}</h2><p>${escapeHtml(person.phone)}</p></div><button class="btn icon mobile-info" id="show-info" type="button" aria-label="Ver dados do cliente">${icon('person')}</button></header>
- <div class="messages" id="messages" role="log" aria-label="Mensagens"><span class="day">Hoje · demonstração</span>${person.messages.map(([direction,body,at])=>`<div class="bubble ${direction==='out'?'out':''}"><p>${escapeHtml(body)}</p><small>${escapeHtml(at)}${direction==='out'?icon('check'):''}</small></div>`).join('')}${person.messages.length?'':'<div class="empty">A conversa começa quando você escrever uma mensagem.</div>'}</div>
- ${connected?`<form class="composer" id="composer"><div class="reply-group"><button type="button" data-reply="Olá! Tudo bem? Como posso ajudar?">Saudação</button><button type="button" data-reply="Vou conferir essas informações e já retorno com a confirmação.">Vou verificar</button></div><div class="compose-line"><label class="sr" for="draft">Digite uma mensagem</label><textarea id="draft" rows="1" maxlength="2000" placeholder="Digite uma mensagem…"></textarea><button class="btn primary" id="send" type="submit">${icon('send')} Enviar</button></div><p class="compose-note">Envio simulado · Enter envia · Shift + Enter quebra a linha</p></form>`:
- `<div class="composer"><div class="status-action"><span>Conecte seu WhatsApp para responder.</span><button class="btn primary" id="connect-from-chat" type="button">Conectar meu WhatsApp</button></div></div>`}`;
+ const panel=$('conversation'),details=$('details');
+ if(!selected||!connected()){
+  panel.innerHTML=`<div class="empty"><strong>${connected()?'Selecione uma conversa':'Conecte seu WhatsApp'}</strong>${connected()?'Escolha uma conversa ou clique em Nova conversa.':'Use o botão acima para vincular seu número.'}</div>`;
+  details.innerHTML='<h2 class="detail-title">Dados do contato</h2><p class="detail-copy">Selecione uma conversa.</p>';
+  return;
+ }
+ const person=selected;
+ panel.innerHTML=`<header class="chat-top"><button class="btn icon mobile-back" id="back-to-list" aria-label="Voltar às conversas" type="button">${icon('back')}</button>${avatar(person)}<div class="chat-id"><h2>${escapeHtml(nameFor(person))}</h2><p>${escapeHtml(phoneFor(person))}</p></div><button class="btn icon mobile-info" id="show-info" type="button" aria-label="Ver dados do contato">${icon('person')}</button></header>
+ <div class="messages" id="messages" role="log" aria-label="Mensagens"></div>
+ <form class="composer" id="composer"><div class="compose-line"><label class="sr" for="draft">Digite uma mensagem</label><textarea id="draft" rows="1" maxlength="2000" placeholder="Digite uma mensagem…"></textarea><button class="btn primary" id="send" type="submit">${icon('send')} Enviar</button></div><p class="compose-note">Enter envia · Shift + Enter quebra a linha</p></form>`;
+ details.innerHTML=`<div class="pop-top"><h2 class="detail-title">Dados do contato</h2><button class="btn icon mobile-info" id="close-info" type="button" aria-label="Fechar dados">${icon('close')}</button></div><div class="contact">${avatar(person)}<strong>${escapeHtml(nameFor(person))}</strong><small>${escapeHtml(phoneFor(person))}</small></div>`;
  $('back-to-list').onclick=()=> $('board').classList.remove('active-thread','info');
  $('show-info').onclick=()=> $('board').classList.toggle('info');
- if(connected){
-  const draft=$('draft'),form=$('composer'),send=$('send');
-  draft.value=drafts.get(person.id)||'';send.disabled=!draft.value.trim();
-  draft.oninput=()=>{drafts.set(person.id,draft.value);send.disabled=!draft.value.trim();};
-  draft.onkeydown=event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();form.requestSubmit();}};
-  form.querySelectorAll('[data-reply]').forEach(button=>button.onclick=()=>{draft.value=button.dataset.reply;draft.oninput();draft.focus();});
-  form.onsubmit=event=>{
-   event.preventDefault();const body=draft.value.trim();if(!body||!account().connected)return;
-   person.messages.push(['out',body,time()]);
-   const list=conversations(), index=list.indexOf(person);
-   list.splice(index,1);list.unshift(person);
-   drafts.delete(person.id);renderList();renderChat();$('draft').focus({preventScroll:true});
-  };
- }else $('connect-from-chat').onclick=openConnection;
- const log=$('messages');log.scrollTop=log.scrollHeight;
+ $('close-info').onclick=()=> $('board').classList.remove('info');
+ const draft=$('draft'),form=$('composer'),send=$('send');
+ draft.value=drafts.get(keyFor(person))||'';send.disabled=sending||!draft.value.trim();
+ draft.oninput=()=>{drafts.set(keyFor(person),draft.value);send.disabled=sending||!draft.value.trim();};
+ draft.onkeydown=event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();form.requestSubmit();}};
+ form.onsubmit=async event=>{
+  event.preventDefault();const body=draft.value.trim();if(!body||sending||!connected())return;
+  sending=true;send.disabled=true;
+  try {
+   const sent=await request('send',{message:body,jid:person.jid,phone:person.phone});
+   drafts.delete(keyFor(person));
+   if(selected===person){selected={...person,jid:sent.jid};messages.push(sent);}
+   threads=[{...person,jid:sent.jid,body:sent.body,at:sent.at},...threads.filter(item=>item.jid!==sent.jid)];
+   renderList();renderChat();
+  }catch(error){notify(error.message);}
+  finally{sending=false;if($('send'))$('send').disabled=!$('draft').value.trim();}
+ };
+ renderMessages();$('messages').scrollTop=$('messages').scrollHeight;
 }
-function openConversation(id) {
- activeId=id;const person=current();if(!person)return;
- person.unread=0;
- $('board').classList.add('active-thread');$('board').classList.remove('info');
- renderList();renderChat();
+async function refresh() {
+ if(refreshRunning||changingConnection)return;
+ refreshRunning=true;
+ const requested=selected?.jid,wasConnected=connected();
+ try{
+  const data=await request('status',{jid:requested});
+  if(changingConnection)return;
+  connection=data;threads=data.conversations||[];
+  if(!connected()){selected=null;messages=[];$('board').classList.remove('active-thread','info');}
+  else if(requested&&requested===selected?.jid)messages=data.messages||[];
+  renderConnection();renderList();
+  if(wasConnected!==connected())renderChat();else renderMessages();
+ }catch(error){connection.error=error.message;renderConnection();}
+ finally{refreshRunning=false;}
 }
-function renderAccount() {
- const profile=account();
- $('connection-dot').classList.toggle('ready',profile.connected);
- $('connection-label').textContent=profile.connected?'Meu WhatsApp conectado':'Conectar meu WhatsApp';
-}
-function openConnection() {
- const profile=account();
- $('account-info').textContent=profile.connected?'Meu WhatsApp · Conectado na prévia':'Meu WhatsApp · Desconectado';
- $('connection-description').textContent=profile.connected?'Você pode testar respostas e novas conversas com dados fictícios.':'Na versão integrada, cada funcionário poderá vincular o próprio WhatsApp por QR Code. Nesta prévia, você pode simular a conexão.';
- $('toggle-connection').textContent=profile.connected?'Desconectar na prévia':'Simular conexão';
- $('connection-dialog').showModal();
-}
-$('toggle-connection').onclick=()=>{
- const profile=account();profile.connected=!profile.connected;
- $('connection-dialog').close();renderAccount();renderChat();
- notify(profile.connected?'Meu WhatsApp conectado na prévia.':'Meu WhatsApp desconectado.');
+function openConnection(){confirmingDisconnect=false;renderConnection();$('connection-dialog').showModal();}
+$('connection').onclick=openConnection;
+$('toggle-connection').onclick=async()=>{
+ if(changingConnection)return;
+ if(connected()&&!confirmingDisconnect){confirmingDisconnect=true;renderConnection();return;}
+ const action=connected()?'disconnect':'connect';
+ changingConnection=true;renderConnection();
+ try {
+  connection=await request(action);confirmingDisconnect=false;
+  if(action==='disconnect'){$('connection-dialog').close();selected=null;messages=[];threads=[];drafts.clear();$('board').classList.remove('active-thread','info');}
+  renderList();renderChat();
+ }catch(error){connection.error=error.message;notify(error.message);}
+ finally{changingConnection=false;renderConnection();refresh();}
+};
+$('new-conversation').onclick=()=>{if(connected()){$('new-error').textContent='';$('new-dialog').showModal();}};
+$('new-form').onsubmit=event=>{
+ event.preventDefault();if(!connected())return;
+ let phone=new FormData(event.target).get('phone').replace(/\D/g,'');
+ if([10,11].includes(phone.length))phone='55'+phone;
+ if(!/^55\d{10,11}$/.test(phone)){$('new-error').textContent='Informe um telefone brasileiro com DDD.';return;}
+ const existing=threads.find(person=>person.jid===`${phone}@s.whatsapp.net`);
+ selected=existing||{phone:'+'+phone};messages=[];$('board').classList.add('active-thread');
+ event.target.reset();$('new-dialog').close();renderList();renderChat();refresh();
 };
 $('search-input').oninput=renderList;
-$('list').onclick=event=>{const item=event.target.closest('[data-id]');if(item)openConversation(Number(item.dataset.id));};
-$('connection').onclick=openConnection;
-$('new-conversation').onclick=()=> account().connected ? $('new-dialog').showModal() : openConnection();
-document.querySelectorAll('[data-dismiss]').forEach(button=>button.onclick=()=>button.closest('dialog').close());
-$('new-form').onsubmit=event=>{
- event.preventDefault();const data=new FormData(event.target),name=data.get('name').trim(),phone=data.get('phone').trim();
- if(!name||phone.replace(/\D/g,'').length<10){notify('Preencha o nome e um telefone de demonstração.');return;}
- const existing=conversations().find(person=>person.phone.replace(/\D/g,'')===phone.replace(/\D/g,''));
- $('search-input').value='';
- if(existing){openConversation(existing.id);}else{
-  const person={id:Date.now(),name,phone,color:'teal',topic:'Novo atendimento',unread:0,notes:[],messages:[]};
-  conversations().unshift(person);openConversation(person.id);
- }
- event.target.reset();$('new-dialog').close();
+$('list').onclick=event=>{
+ const item=event.target.closest('[data-jid]');if(!item)return;
+ selected=threads.find(person=>person.jid===item.dataset.jid)||null;messages=[];
+ $('board').classList.add('active-thread');$('board').classList.remove('info');renderList();renderChat();refresh();
 };
-renderAccount();renderList();renderChat();
+document.querySelectorAll('[data-dismiss]').forEach(button=>button.onclick=()=>button.closest('dialog').close());
+renderConnection();renderList();renderChat();refresh();
+setInterval(()=>{if(!document.hidden)refresh();},5000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
 </script>
 </body>
 </html>
