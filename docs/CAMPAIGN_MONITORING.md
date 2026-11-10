@@ -9,10 +9,13 @@ Cada cartão mostra nome, status, enviados, erros, aguardando, mensagens em
 processamento nesta aba, progresso e último envio. Ver detalhes consulta os nomes,
 status e mensagens de erro dos destinatários. Para a execução desta aba, Acompanhar
 reabre os controles já existentes. Minimizar não pausa; o cartão permanece visível.
+Em uma execução pausada da régua, Abrir controles permite continuar ou cancelar
+com a mesma conta que iniciou o envio, inclusive após recarregar a página.
 
-O remetente continua sendo o navegador. Não há worker de fila em segundo plano
-nesta mudança. Recarregar/fechar a aba perde o processo local; o monitor restaura
-somente a consulta ao banco e nunca inicia, retoma ou reenvia automaticamente.
+O remetente continua sendo o navegador. Abrir os controles consulta a fila salva.
+Continuar reserva a execução pausada, relê os destinatários e processa apenas quem
+ainda aguarda, com a mesma verificação de faturas e envios do dia. O status de
+envio é reservado antes de contatar o WhatsApp. A retomada não é automática.
 Status running persistido não comprova que outra aba esteja enviando. Paused/running
 com todos os destinatários terminais é apresentado como fila processada com
 encerramento não registrado, sem alterar registros históricos automaticamente.
@@ -20,9 +23,9 @@ encerramento não registrado, sem alterar registros históricos automaticamente.
 A última mensagem agora finaliza a execução imediatamente, sem esperar o intervalo
 para uma nova chamada. Há proteção contra processamentos simultâneos nesta aba,
 indicação Enviando antes da requisição e conferência de pausa/cancelamento antes do
-HTTP. Pausar durante uma requisição não impede registrar sua conclusão. Mensagens
-aceitas pelo conector permanecem como enviadas no estado local mesmo se o registro
-no banco falhar; um aviso pede conferência para evitar reenvio indevido.
+HTTP. A pausa é registrada após concluir qualquer requisição em andamento. Se a
+confirmação de um envio falhar, o destinatário fica reservado e a fila para
+para conferência, evitando um reenvio automático.
 
 A confirmação de encerramento usa a RPC finish_processed_campaign, restrita a
 administradores e executada com as permissões/RLS do chamador. Ela confere a

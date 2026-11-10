@@ -38,30 +38,17 @@ async function refreshCampaignAudience(){
 
 function renderLevels(){const q=campaignQueue(),el=document.querySelector('#collectionsCampaignLevels');el.innerHTML=levels.map(([key,title,desc])=>{const total=new Set(q.filter(x=>x.stage.key===key).map(x=>x.sale.id)).size;return '<button type="button" class="collections-level'+(selectedLevel===key?' is-active':'')+'" data-level="'+key+'" aria-pressed="'+String(selectedLevel===key)+'"><span class="collections-level-icon">'+levelIcon(key)+'</span><span class="collections-level-copy"><strong>'+title+'</strong><small>'+desc+'</small></span><span class="collections-level-total"><b>'+total+'</b><small>cliente'+(total===1?'':'s')+'</small></span></button>'}).join('');el.querySelectorAll('[data-level]').forEach(b=>b.onclick=()=>chooseLevel(b.dataset.level))}
 function chooseLevel(key,previous=null){if(!sentReady||sentDay!==brDay()){refreshCampaignAudience();return}selectedLevel=key;document.querySelectorAll('#collectionsCampaignLevels [data-level]').forEach(b=>{b.classList.toggle('is-active',b.dataset.level===key);b.setAttribute('aria-pressed',String(b.dataset.level===key))});const q=campaignQueue(),bySale=new Map();q.filter(x=>x.stage.key===key).forEach(x=>{const old=bySale.get(x.sale.id);if(!old||x.invoice.due_date<old.invoice.due_date)bySale.set(x.sale.id,x)});const rows=[...bySale.values()],el=document.querySelector('#collectionsCampaignSelection');el.hidden=false;el.innerHTML='<div class="collections-selection-head"><div><span class="collections-eyebrow">DESTINATÁRIOS</span><h3>'+safe(levels.find(x=>x[0]===key)?.[1])+'</h3><p>Escolha os clientes que vão receber esta campanha.</p></div><span class="collections-audience-total">'+rows.length+' cliente'+(rows.length===1?'':'s')+'</span></div><div class="collections-selection-bar"><label class="collections-select-all"><input type="checkbox" id="selectAllCollections" '+(rows.length?'checked':'disabled')+'> Selecionar todos</label><span class="collections-selection-count" aria-live="polite" aria-atomic="true"><strong id="collectionsSelectedCount">'+rows.length+'</strong> <span id="collectionsSelectedLabel">'+(rows.length===1?'selecionado':'selecionados')+'</span></span></div><div id="collectionRecipients" class="collections-recipients">'+(rows.length?rows.map((x,i)=>'<label class="collections-person"><input type="checkbox" data-recipient="'+i+'" data-sale-id="'+safe(x.sale.id)+'" checked><span class="collections-person-name">'+safe(x.sale.customer_name)+'</span><span class="collections-person-date"><small>Vencimento</small><strong>'+safe(dateLabel(x.invoice.due_date))+'</strong></span><span class="collections-person-value"><small>Valor da fatura</small><strong>'+safe(currency.format(Number(x.invoice.amount)||0))+'</strong></span></label>').join(''):'<div class="collections-selection-empty">Nenhum cliente nesta prioridade no momento.</div>')+'</div><div class="collections-selection-footer"><p>Nenhum envio será feito sem confirmação.</p><button type="button" id="collectionsPreview" '+(rows.length?'':'disabled')+'>Preparar campanha <span aria-hidden="true">→</span></button></div><div id="collectionsPreviewResult" aria-live="polite"></div>';const boxes=[...el.querySelectorAll('[data-recipient]')],selectedRows=()=>boxes.filter(b=>b.checked).map(b=>rows[Number(b.dataset.recipient)]),count=()=>{const total=selectedRows().length;el.querySelector('#collectionsSelectedCount').textContent=total;el.querySelector('#collectionsSelectedLabel').textContent=total===1?'selecionado':'selecionados';const all=el.querySelector('#selectAllCollections');all.checked=total===boxes.length&&total>0;all.indeterminate=total>0&&total<boxes.length;el.querySelector('#collectionsPreview').disabled=total===0;el.querySelector('#collectionsPreviewResult').replaceChildren()};el.querySelector('#selectAllCollections').onchange=e=>{boxes.forEach(b=>b.checked=e.target.checked);count()};boxes.forEach(b=>{b.onchange=count;if(previous?.has(b.dataset.saleId))b.checked=previous.get(b.dataset.saleId)});count();el.querySelector('#collectionsPreview').onclick=()=>{const chosen=selectedRows(),out=el.querySelector('#collectionsPreviewResult');if(!chosen.length){out.textContent='Selecione pelo menos um cliente.';return}out.innerHTML='<div class="collections-preview-head"><span class="collections-eyebrow">CONFERÊNCIA</span><h4>Prévia das mensagens</h4><p>'+chosen.length+' destinatário'+(chosen.length===1?'':'s')+' selecionado'+(chosen.length===1?'':'s')+'. Confira os textos antes de confirmar o envio.</p></div>'+chosen.slice(0,5).map(x=>'<article class="collections-message-preview"><header><strong>'+safe(x.sale.customer_name)+'</strong><span>Mensagem</span></header><pre>'+safe(window.contactCollections.message(x))+'</pre></article>').join('')+(chosen.length>5?'<p class="collections-preview-note">Exibindo as primeiras 5 mensagens.</p>':'')+'<div class="collections-send-controls"><label class="collections-interval-label"><span>Intervalo entre mensagens</span><select class="collections-interval-select" id="collectionsInterval"><option value="30">30 segundos</option><option value="60" selected>60 segundos</option><option value="90">90 segundos</option><option value="120">120 segundos</option></select></label><button type="button" class="collections-send-confirm" id="collectionsConfirmSend">Confirmar e iniciar envio <span aria-hidden="true">→</span></button></div>';out.querySelector('#collectionsConfirmSend').onclick=()=>startCampaign(selectedRows(),key,Number(out.querySelector('#collectionsInterval').value));out.scrollIntoView({behavior:'smooth',block:'start'})};}
-let activeRun=null,sendTimer=null;const WA='https://contact-whatsapp.onrender.com';function brDay(){return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}async function eligibleNow(row){const s=await window.supabaseClient.from('sales').select('id,status,operator_id').eq('id',row.sale.id).single();if(s.error||!s.data||['cancelada','reprovada'].includes(s.data.status))return false;const all=await window.supabaseClient.from('finance_installments').select('id,status,due_date,amount,cycle').eq('account_id',row.account.id).eq('cycle','original');if(all.error||!all.data)return false;const unpaid=all.data.filter(x=>x.status!=='pago'&&x.due_date).sort((a,b)=>a.due_date.localeCompare(b.due_date));if(!unpaid.length||unpaid[0].id!==row.invoice.id)return false;const delta=Math.round((new Date(unpaid[0].due_date+'T12:00:00Z')-new Date(brDay()+'T12:00:00Z'))/86400000);const stage=delta===3?'reminder':delta===0?'due':delta<=-10?'critical':delta<=-7?'firm':delta<=-3?'second':delta<=-1?'first':null;return stage===row.stage.key} async function alreadySent(saleId){const bounds=dayBounds(brDay());const r=await window.supabaseClient.from('campaign_recipients').select('id').eq('sale_id',saleId).eq('status','sent').gte('sent_at',bounds.start).lt('sent_at',bounds.end).limit(1);if(r.error)throw r.error;return r.data.length>0}function publishRun(){window.dispatchEvent(new Event('contact-campaign-progress'));}
+let activeRun=null,sendTimer=null,openingRun=false;const WA='https://contact-whatsapp.onrender.com';function brDay(){return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}async function eligibleNow(row){const s=await window.supabaseClient.from('sales').select('id,status,operator_id').eq('id',row.sale.id).single();if(s.error||!s.data||['cancelada','reprovada'].includes(s.data.status))return false;const all=await window.supabaseClient.from('finance_installments').select('id,status,due_date,amount,cycle').eq('account_id',row.account.id).eq('cycle','original');if(all.error||!all.data)return false;const unpaid=all.data.filter(x=>x.status!=='pago'&&x.due_date).sort((a,b)=>a.due_date.localeCompare(b.due_date));if(!unpaid.length||unpaid[0].id!==row.invoice.id)return false;const delta=Math.round((new Date(unpaid[0].due_date+'T12:00:00Z')-new Date(brDay()+'T12:00:00Z'))/86400000);const stage=delta===3?'reminder':delta===0?'due':delta<=-10?'critical':delta<=-7?'firm':delta<=-3?'second':delta<=-1?'first':null;return stage===row.stage.key} async function alreadySent(saleId){const bounds=dayBounds(brDay());const r=await window.supabaseClient.from('campaign_recipients').select('id').eq('sale_id',saleId).eq('status','sent').gte('sent_at',bounds.start).lt('sent_at',bounds.end).limit(1);if(r.error)throw r.error;return r.data.length>0}function publishRun(){window.dispatchEvent(new Event('contact-campaign-progress'));}
 function runModal(){
  if(!activeRun)return;
  let o=document.querySelector('#collectionsRunOverlay');if(!o){o=document.createElement('div');o.id='collectionsRunOverlay';o.className='campaign-overlay';document.body.appendChild(o)}
  const state=activeRun,items=state.items||[],stats=window.ContactCampaignProgress.summarize(items);
  const statusUI={sent:['✓','Enviado'],error:['✕','Erro'],waiting:['◷','Aguardando'],sending:['➤','Enviando agora'],cancelled:['—','Cancelado']};
- o.innerHTML='<section class="campaign-modal" role="dialog" aria-label="Acompanhamento da campanha"><header><div><h2>Campanha '+(state.done?(state.completionConfirmed||state.cancelled?'finalizada':'processada — confirmar encerramento'):state.paused?'pausada':'em andamento')+'</h2><p>'+safe(state.name||'Campanha de cobranças')+'</p><div class="collections-run-stats"><span class="collections-run-stat is-sent">✓ '+stats.sent+' enviados</span><span class="collections-run-stat is-error">✕ '+stats.errors+' erros</span><span class="collections-run-stat is-waiting">◷ '+stats.waiting+' aguardando</span><span class="collections-run-stat">➤ '+stats.sending+' enviando</span></div></div></header><div class="prepare-body"><p class="campaign-live-note">O envio é conduzido por esta aba. Você pode minimizar o painel e acompanhar na página; mantenha esta aba aberta até concluir.</p>'+(state.syncError?'<p class="campaign-live-error">'+safe(state.syncError)+'</p>':'')+'<div class="campaign-form-actions">'+(stats.settled&&!state.completionConfirmed&&!state.cancelled?'<button id="collectionsFinish" class="campaign-primary" '+(state.finalizing?'disabled':'')+'>'+(state.finalizing?'Finalizando...':'Finalizar campanha')+'</button>':'')+'<button id="collectionsPause" class="campaign-secondary" '+(state.done?'disabled':'')+'>'+(state.paused?'Continuar':'Pausar')+'</button><button id="collectionsCancel" class="campaign-secondary" '+(state.done?'disabled':'')+'>Cancelar</button><button id="collectionsCloseRun" class="campaign-primary">'+(state.done?'Fechar resumo':'Minimizar painel')+'</button></div><div class="run-log">'+items.map(x=>'<div class="collections-run-row"><span class="collections-run-badge is-'+safe(x.status)+'">'+safe((statusUI[x.status]||['•','Em processamento'])[0])+' '+safe((statusUI[x.status]||['•','Em processamento'])[1])+'</span><span class="collections-run-name">'+safe(x.customer_name)+(x.error_message?'<small class="campaign-live-error">'+safe(x.error_message)+'</small>':'')+'</span></div>').join('')+'</div></div></section>';
+ o.innerHTML='<section class="campaign-modal" role="dialog" aria-label="Acompanhamento da campanha"><header><div><h2>Campanha '+(state.done?(state.completionConfirmed||state.cancelled?'finalizada':'processada — confirmar encerramento'):state.paused?'pausada':'em andamento')+'</h2><p>'+safe(state.name||'Campanha de cobranças')+'</p><div class="collections-run-stats"><span class="collections-run-stat is-sent">✓ '+stats.sent+' enviados</span><span class="collections-run-stat is-error">✕ '+stats.errors+' erros</span><span class="collections-run-stat is-waiting">◷ '+stats.waiting+' aguardando</span><span class="collections-run-stat">➤ '+stats.sending+' enviando</span></div></div></header><div class="prepare-body"><p class="campaign-live-note">O envio é conduzido por esta aba. Você pode minimizar o painel e acompanhar na página; mantenha esta aba aberta até concluir.</p>'+(state.syncError?'<p class="campaign-live-error">'+safe(state.syncError)+'</p>':'')+'<div class="campaign-form-actions">'+(stats.settled&&!state.completionConfirmed&&!state.cancelled?'<button id="collectionsFinish" class="campaign-primary" '+(state.finalizing?'disabled':'')+'>'+(state.finalizing?'Finalizando...':'Finalizar campanha')+'</button>':'')+'<button id="collectionsPause" class="campaign-secondary" '+(state.done||state.changingStatus||state.blocked?'disabled':'')+'>'+(state.changingStatus?'Aguarde...':state.paused?'Continuar':'Pausar')+'</button><button id="collectionsCancel" class="campaign-secondary" '+(state.done||state.changingStatus||state.blocked?'disabled':'')+'>Cancelar</button><button id="collectionsCloseRun" class="campaign-primary">'+(state.done?'Fechar resumo':'Minimizar painel')+'</button></div><div class="run-log">'+items.map(x=>'<div class="collections-run-row"><span class="collections-run-badge is-'+safe(x.status)+'">'+safe((statusUI[x.status]||['•','Em processamento'])[0])+' '+safe((statusUI[x.status]||['•','Em processamento'])[1])+'</span><span class="collections-run-name">'+safe(x.customer_name)+(x.error_message?'<small class="campaign-live-error">'+safe(x.error_message)+'</small>':'')+'</span></div>').join('')+'</div></div></section>';
  o.hidden=!!state.minimized;
  const finishButton=document.querySelector('#collectionsFinish');if(finishButton)finishButton.onclick=()=>completeRun(state);
- document.querySelector('#collectionsPause').onclick=async()=>{
-  if(state.done)return;const previous=state.paused;state.paused=!previous;clearTimeout(sendTimer);state.nextAt=null;
-  const r=await window.supabaseClient.from('campaign_runs').update({status:state.paused?'paused':'running'}).eq('id',state.id).in('status',['running','paused','pending']);
-  if(r.error){state.paused=previous;state.syncError='Não foi possível atualizar a pausa: '+r.error.message;}
-  if(state.done&&!state.cancelled){state.paused=false;state.completionConfirmed=false;await completeRun(state);}
-  runModal();if(!state.paused&&!state.done&&!state.processing)sendTimer=setTimeout(processRun,state.interval*1000);
- };
- document.querySelector('#collectionsCancel').onclick=async()=>{
-  if(state.done||!confirm('Cancelar os envios restantes? Uma mensagem já em envio pode terminar.'))return;
-  clearTimeout(sendTimer);state.nextAt=null;state.done=true;state.cancelled=true;
-  const r=await window.supabaseClient.from('campaign_runs').update({status:'cancelled',finished_at:new Date().toISOString()}).eq('id',state.id);
-  const rec=await window.supabaseClient.from('campaign_recipients').update({status:'cancelled'}).eq('run_id',state.id).eq('status','waiting');
-  if(r.error||rec.error)state.syncError='Não foi possível registrar todo o cancelamento. Os novos envios desta aba foram interrompidos.';
-  state.items.forEach(x=>{if(x.status==='waiting')x.status='cancelled'});runModal();historyLoaded=false;
- };
+ document.querySelector('#collectionsPause').onclick=()=>toggleRunPause(state);
+ document.querySelector('#collectionsCancel').onclick=()=>cancelRun(state);
  document.querySelector('#collectionsCloseRun').onclick=()=>{o.hidden=true;state.minimized=true;publishRun();};
  publishRun();
 }
@@ -76,29 +63,185 @@ async function completeRun(state){
  }catch(e){state.syncError='Fila processada. Não foi possível confirmar o encerramento: '+String(e.message||e);}
  finally{state.finalizing=false;historyLoaded=false;runModal();}
 }
-async function startCampaign(rows,key,interval){if(activeRun&&!activeRun.done){if(!activeRun.processing&&window.ContactCampaignProgress.summarize(activeRun.items).settled){await completeRun(activeRun);}else{activeRun.minimized=false;runModal();return}}const u=await window.authReady;if(u?.profile?.role!=='admin'){alert('Somente administradores podem iniciar campanhas.');return}const valid=[];for(const row of rows){if(!window.contactCollections.cleanPhone(row.sale.phone_1||row.sale.phone_2))continue;if(await eligibleNow(row)&&!await alreadySent(row.sale.id))valid.push(row)}if(!valid.length){alert('Nenhum cliente elegível: verifique pagamentos, telefones ou cobranças já enviadas hoje.');return}if(!confirm('Enviar '+valid.length+' mensagens de '+levels.find(x=>x[0]===key)[1]+' pelo WhatsApp?'))return;const name='Régua · '+levels.find(x=>x[0]===key)[1];let c=await window.supabaseClient.from('campaigns').select('id').eq('name',name).eq('active',true).maybeSingle();if(c.error){alert(c.error.message);return}if(!c.data){c=await window.supabaseClient.from('campaigns').insert({name,audience_type:'overdue',due_day:null,message_template:'Mensagens financeiras por prioridade; texto gerado a partir da fila de cobranças.'}).select('id').single();if(c.error){alert(c.error.message);return}}const run=await window.supabaseClient.from('campaign_runs').insert({campaign_id:c.data.id,status:'running',quantity:valid.length,interval_seconds:interval,message_template:window.contactCollections.message(valid[0]),started_at:new Date().toISOString()}).select('id').single();if(run.error){alert(run.error.message);return}const ins=await window.supabaseClient.from('campaign_recipients').insert(valid.map(x=>({run_id:run.data.id,sale_id:x.sale.id,customer_name:x.sale.customer_name,phone:window.contactCollections.cleanPhone(x.sale.phone_1||x.sale.phone_2),installment_id:x.invoice.id,amount:x.invoice.amount,due_date:x.invoice.due_date,installation_date:x.account.installation_date}))).select();if(ins.error){await window.supabaseClient.from('campaign_runs').update({status:'cancelled',finished_at:new Date().toISOString()}).eq('id',run.data.id);alert(ins.error.message);return}activeRun={id:run.data.id,name,started_at:new Date().toISOString(),items:ins.data,index:0,paused:false,done:false,processing:false,minimized:false,interval,source:new Map(valid.map(x=>[x.sale.id,x]))};runModal();processRun()}async function processRun(){
- if(!activeRun||activeRun.paused||activeRun.done||activeRun.processing)return;
- const state=activeRun;
- if(state.index>=state.items.length){await completeRun(state);return;}
- const item=state.items[state.index++],row=state.source.get(item.sale_id);state.processing=true;state.nextAt=null;item.status='sending';runModal();
- try{
-  if(!await eligibleNow(row))throw Error('Fatura não elegível ou prioridade alterada');
-  if(await alreadySent(item.sale_id))throw Error('Cliente já cobrado hoje');
-  const {data}=await window.supabaseClient.auth.getSession();if(!data.session?.access_token)throw Error('Sessão expirada');
-  if(state.cancelled){item.status='cancelled';state.processing=false;runModal();return;}
-  if(state.paused){item.status='waiting';state.index--;state.processing=false;runModal();return;}
-  const response=await fetch(WA+'/api/whatsapp/send-campaign-message',{method:'POST',headers:{Authorization:'Bearer '+data.session.access_token,'Content-Type':'application/json'},body:JSON.stringify({phone:item.phone,message:window.contactCollections.message(row)})});
-  const result=await response.json();if(!response.ok)throw Error(result.error||'Falha no envio');
-  item.status='sent';item.sent_at=new Date().toISOString();markSentToday(item.sale_id);
-  const saved=await window.supabaseClient.from('campaign_recipients').update({status:'sent',sent_at:item.sent_at,message_id:result.messageId||null}).eq('id',item.id);
-  if(saved.error)state.syncError='Mensagem enviada, mas seu registro falhou. Confira o WhatsApp antes de tentar outro envio.';
- }catch(e){item.status='error';item.error_message=String(e.message||e);const saved=await window.supabaseClient.from('campaign_recipients').update({status:'error',error_message:item.error_message}).eq('id',item.id);if(saved.error)state.syncError='Falha ao registrar um erro de envio. Atualize o acompanhamento antes de novas ações.';}
- state.processing=false;
- // Finish immediately after the last request, even if paused while it was in flight.
- if(!state.done&&window.ContactCampaignProgress.summarize(state.items).settled){await completeRun(state);return;}
- if(!state.paused&&!state.done){state.nextAt=Date.now()+state.interval*1000;sendTimer=setTimeout(processRun,state.interval*1000);}
+async function changeRunStatus(state, from, to, extra = {}) {
+ const result = await window.supabaseClient.from('campaign_runs')
+  .update({status:to,...extra}).eq('id',state.id).eq('created_by',state.ownerId)
+  .eq('status',from).select('id').maybeSingle();
+ if (result.error) throw result.error;
+ if (!result.data) throw Error('O status da campanha mudou em outra aba. Atualize o acompanhamento.');
+}
+
+async function readRunRecipients(state) {
+ const items = [];
+ for (let offset = 0; offset < state.quantity; offset += 1000) {
+  const result = await window.supabaseClient.from('campaign_recipients')
+   .select('id,sale_id,customer_name,phone,status,sent_at,error_message,installment:finance_installments!installment_id(id,account_id,due_date,amount)')
+   .eq('run_id',state.id).order('created_at').order('id').range(offset,offset+999);
+  if (result.error) throw result.error;
+  items.push(...result.data);
+  if (result.data.length < 1000) break;
+ }
+ if (items.length !== state.quantity) throw Error('A lista de destinatários está incompleta.');
+ if (items.some(item=>item.status==='sending')) throw Error('Há um envio sem confirmação. Confira o WhatsApp antes de continuar.');
+ const source = new Map();
+ for (const item of items) {
+  if (item.status!=='waiting'||!item.installment) continue;
+  source.set(item.sale_id,{
+   sale:{id:item.sale_id,customer_name:item.customer_name},
+   account:{id:item.installment.account_id},invoice:item.installment,stage:{key:state.stageKey}
+  });
+ }
+ Object.assign(state,{items,source});
+}
+
+async function openSavedCampaign(id) {
+ if (openingRun || (activeRun && !activeRun.done)) throw Error('Já há uma campanha aberta nesta aba. Abra os controles dela ou use outra aba.');
+ openingRun = true;
+ try {
+  const user = await window.authReady;
+  if (user?.profile?.role!=='admin') throw Error('Somente administradores podem abrir os controles.');
+  const result = await window.supabaseClient.from('campaign_runs')
+   .select('id,created_by,status,quantity,interval_seconds,started_at,campaign:campaigns(name)')
+   .eq('id',id).maybeSingle();
+  if (result.error) throw result.error;
+  const run = result.data;
+  if (run?.status!=='paused'||run.created_by!==user.id) throw Error('Abra a campanha pausada com a conta que iniciou o envio.');
+  const name = run.campaign?.name;
+  const stageKey = levels.find(([,label])=>name===`Régua · ${label}`)?.[0];
+  if (!stageKey) throw Error('Esta execução não pertence à régua de cobranças.');
+  const state = {id:run.id,ownerId:user.id,name,stageKey,started_at:run.started_at,
+   quantity:run.quantity,interval:run.interval_seconds,paused:true};
+  await readRunRecipients(state);
+  activeRun = state;
+  runModal();
+ } finally { openingRun = false; }
+}
+
+function scheduleNext(state) {
+ clearTimeout(sendTimer);
+ state.nextAt = Date.now()+state.interval*1000;
+ sendTimer = setTimeout(processRun,state.interval*1000);
+}
+
+async function toggleRunPause(state) {
+ if (state.done||state.changingStatus||state.blocked) return;
+ state.changingStatus = true;
+ const resuming = state.paused;
+ state.paused = true;
+ state.nextAt = null;
+ state.syncError = '';
+ clearTimeout(sendTimer);
+ runModal();
+ try {
+  if (resuming) {
+   await changeRunStatus(state,'paused','running');
+   try { await readRunRecipients(state); }
+   catch (error) {
+    await changeRunStatus(state,'running','paused');
+    throw error;
+   }
+   state.paused = false;
+  } else {
+   await state.inFlight?.catch(()=>{});
+   if (!state.done) await changeRunStatus(state,'running','paused');
+  }
+  historyLoaded = false;
+ } catch (error) {
+  state.syncError = 'Não foi possível '+(resuming?'continuar':'registrar a pausa')+': '+error.message;
+  if (!resuming) state.blocked = true;
+ } finally {
+  state.changingStatus = false;
+  runModal();
+ }
+ if (resuming&&!state.paused&&!state.done) await processRun();
+}
+
+async function cancelRun(state) {
+ if (state.done||state.changingStatus||state.blocked||!confirm('Cancelar os envios restantes? Uma mensagem já em envio pode terminar.')) return;
+ const previousStatus = state.paused?'paused':'running';
+ state.changingStatus = true;
+ state.paused = true;
+ state.nextAt = null;
+ clearTimeout(sendTimer);
+ runModal();
+ try {
+  await state.inFlight;
+  if (state.done) return;
+  await changeRunStatus(state,previousStatus,'cancelled',{finished_at:new Date().toISOString()});
+  state.done = state.cancelled = true;
+  const rec = await window.supabaseClient.from('campaign_recipients').update({status:'cancelled'}).eq('run_id',state.id).eq('status','waiting');
+  if (rec.error) throw rec.error;
+  state.items.forEach(item=>{if(item.status==='waiting')item.status='cancelled';});
+  historyLoaded = false;
+ } catch (error) {
+  state.syncError = 'Não foi possível registrar todo o cancelamento: '+error.message;
+  state.blocked = !state.done;
+ } finally {state.changingStatus = false;runModal();}
+}
+
+async function startCampaign(rows,key,interval) {
+ if (openingRun) return;
+ openingRun = true;
+ try { await createCampaign(rows,key,interval); }
+ catch (error) { alert('Não foi possível iniciar a campanha: '+error.message); }
+ finally { openingRun = false; }
+}
+async function createCampaign(rows,key,interval){if(activeRun&&!activeRun.done){if(!activeRun.processing&&window.ContactCampaignProgress.summarize(activeRun.items).settled){await completeRun(activeRun);}else{activeRun.minimized=false;runModal();return}}const u=await window.authReady;if(u?.profile?.role!=='admin'){alert('Somente administradores podem iniciar campanhas.');return}const valid=[];for(const row of rows){if(!window.contactCollections.cleanPhone(row.sale.phone_1||row.sale.phone_2))continue;if(await eligibleNow(row)&&!await alreadySent(row.sale.id))valid.push(row)}if(!valid.length){alert('Nenhum cliente elegível: verifique pagamentos, telefones ou cobranças já enviadas hoje.');return}if(!confirm('Enviar '+valid.length+' mensagens de '+levels.find(x=>x[0]===key)[1]+' pelo WhatsApp?'))return;const name='Régua · '+levels.find(x=>x[0]===key)[1];let c=await window.supabaseClient.from('campaigns').select('id').eq('name',name).eq('active',true).maybeSingle();if(c.error){alert(c.error.message);return}if(!c.data){c=await window.supabaseClient.from('campaigns').insert({name,audience_type:'overdue',due_day:null,message_template:'Mensagens financeiras por prioridade; texto gerado a partir da fila de cobranças.'}).select('id').single();if(c.error){alert(c.error.message);return}}const run=await window.supabaseClient.from('campaign_runs').insert({campaign_id:c.data.id,status:'running',quantity:valid.length,interval_seconds:interval,message_template:window.contactCollections.message(valid[0]),started_at:new Date().toISOString()}).select('id').single();if(run.error){alert(run.error.message);return}const ins=await window.supabaseClient.from('campaign_recipients').insert(valid.map(x=>({run_id:run.data.id,sale_id:x.sale.id,customer_name:x.sale.customer_name,phone:window.contactCollections.cleanPhone(x.sale.phone_1||x.sale.phone_2),installment_id:x.invoice.id,amount:x.invoice.amount,due_date:x.invoice.due_date,installation_date:x.account.installation_date}))).select();if(ins.error){await window.supabaseClient.from('campaign_runs').update({status:'cancelled',finished_at:new Date().toISOString()}).eq('id',run.data.id);alert(ins.error.message);return}activeRun={id:run.data.id,ownerId:u.id,name,stageKey:key,quantity:valid.length,started_at:new Date().toISOString(),items:ins.data,paused:false,done:false,processing:false,minimized:false,interval,source:new Map(valid.map(x=>[x.sale.id,x]))};runModal();processRun()}async function updateRecipient(item, expectedStatus, values) {
+ const result = await window.supabaseClient.from('campaign_recipients').update(values)
+  .eq('id',item.id).eq('status',expectedStatus).select('id').maybeSingle();
+ if (result.error) throw result.error;
+ if (!result.data) throw Error('O destinatário já foi atualizado em outra aba.');
+ Object.assign(item,values);
+}
+
+async function sendRecipient(state,item) {
+ const row = state.source.get(item.sale_id);
+ await updateRecipient(item,'waiting',{status:'sending'});
+ runModal();
+ let values;
+ try {
+  if (!row||!await eligibleNow(row)) throw Error('Fatura não elegível ou prioridade alterada');
+  if (await alreadySent(item.sale_id)) throw Error('Cliente já cobrado hoje');
+  const {data} = await window.supabaseClient.auth.getSession();
+  if (!data.session?.access_token) throw Error('Sessão expirada');
+  if (!state.paused&&!state.done) {
+   const response = await fetch(WA+'/api/whatsapp/send-campaign-message',{
+    method:'POST',headers:{Authorization:'Bearer '+data.session.access_token,'Content-Type':'application/json'},
+    body:JSON.stringify({phone:item.phone,message:window.contactCollections.message(row)})
+   });
+   const result = await response.json();
+   if (!response.ok) throw Error(result.error||'Falha no envio');
+   values = {status:'sent',sent_at:new Date().toISOString(),message_id:result.messageId||null};
+  }
+ } catch (error) {
+  values = {status:'error',error_message:String(error.message||error)};
+ }
+ await updateRecipient(item,'sending',values||{status:state.cancelled?'cancelled':'waiting'});
+ if (values?.status==='sent') markSentToday(item.sale_id);
+}
+
+async function processRun() {
+ const state = activeRun;
+ if (!state||state.paused||state.done||state.processing||state.changingStatus||state.blocked) return;
+ const item = state.items.find(x=>x.status==='waiting');
+ if (!item) {await completeRun(state);return;}
+ state.processing = true;
+ state.nextAt = null;
+ state.inFlight = sendRecipient(state,item);
+ try { await state.inFlight; }
+ catch (error) {
+  state.paused = true;
+  state.blocked = true;
+  state.syncError = 'Envio interrompido. Confira o WhatsApp e atualize o acompanhamento: '+error.message;
+  if (!state.changingStatus) {
+   try { await changeRunStatus(state,'running','paused'); }
+   catch { state.syncError += ' O status da pausa não foi confirmado.'; }
+  }
+ } finally {state.processing = false;state.inFlight = null;}
+ if (!state.done&&window.ContactCampaignProgress.summarize(state.items).settled) {await completeRun(state);return;}
+ if (!state.paused&&!state.done) scheduleNext(state);
  runModal();
 }
-window.contactCampaignExecution={get:()=>activeRun,open:()=>{if(activeRun){activeRun.minimized=false;runModal();}},finish:()=>activeRun?completeRun(activeRun):Promise.resolve()};
-window.addEventListener('beforeunload',e=>{if(activeRun&&!activeRun.done&&!activeRun.paused){e.preventDefault();e.returnValue='';}});
+window.contactCampaignExecution={get:()=>activeRun,openSaved:openSavedCampaign,open:()=>{if(activeRun){activeRun.minimized=false;runModal();}},finish:()=>activeRun?completeRun(activeRun):Promise.resolve()};
+window.addEventListener('beforeunload',e=>{if(activeRun&&!activeRun.done&&(!activeRun.paused||activeRun.changingStatus||activeRun.processing)){e.preventDefault();e.returnValue='';}});
  window.addEventListener('contact-collections-updated',refreshCampaignAudience);window.addEventListener('focus',()=>{if(!panels.campanhas.hidden)refreshCampaignAudience()});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!panels.campanhas.hidden)refreshCampaignAudience()});setInterval(()=>{if(!document.hidden&&!panels.campanhas.hidden)refreshCampaignAudience()},60000);tabs.forEach(b=>b.addEventListener('click',()=>{const key=b.dataset.collectionsTab;tabs.forEach(t=>{t.classList.toggle('active',t===b);t.setAttribute('aria-selected',String(t===b))});Object.entries(panels).forEach(([k,p])=>p.hidden=k!==key);if(key==='campanhas')refreshCampaignAudience();if(key==='historico'&&!historyLoaded)history()}));})();
