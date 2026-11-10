@@ -5,6 +5,7 @@
     status.textContent = 'Entre no CONTACT e depois reabra este link para testar a tela.';
     login.hidden = false;
   };
+  const connector = 'https://contact-whatsapp.onrender.com';
   const methods = {status:'GET',connect:'POST',disconnect:'POST',send:'POST'};
   const session = () => window.supabaseClient.auth.getSession();
 
@@ -31,10 +32,10 @@
         const {data} = await session();
         const accessToken = data.session?.access_token;
         if (!accessToken) return reply({error:'Sua sessão expirou. Entre novamente no CONTACT.'});
-        const url=new URL(`/api/atendimentos-teste/whatsapp/${action}`,location.origin);
+        const url=new URL(`/api/whatsapp/personal/${action}`,connector);
         if (action==='status'&&typeof payload?.jid==='string') url.searchParams.set('jid',payload.jid.slice(0,60));
         const body=action==='send'?JSON.stringify({message:payload?.message,jid:payload?.jid,phone:payload?.phone}):undefined;
-        const res=await fetch(url,{method:methods[action],headers:{Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json'},body,cache:'no-store'});
+        const res=await fetch(url,{method:methods[action],headers:{Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json'},body,cache:'no-store',redirect:'error'});
         const value=await res.json();
         return res.ok?reply({value}):reply({error:value.error||'Não foi possível concluir esta operação.'});
       } catch {
