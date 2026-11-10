@@ -47,7 +47,7 @@ const icon = name => `<svg aria-hidden="true"><use href="#${name}"/></svg>`;
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const states = {disconnected:'Conectar meu WhatsApp',connecting:'Conectando…',qr_ready:'Escanear QR Code',connected:'Meu WhatsApp conectado',disconnecting:'Desconectando…',error:'Conectar meu WhatsApp'};
 let connection={status:'disconnected'}, threads=[], selected=null, messages=[], refreshRunning=false, sending=false, changingConnection=false;
-let nextRequest=0, toastTimer, confirmingDisconnect=false;
+let nextRequest=0, chatEpoch=0, toastTimer, confirmingDisconnect=false;
 const pending = new Map();
 const drafts = new Map();
 function request(action,payload={}) {
@@ -84,11 +84,11 @@ function renderConnection() {
  const button=$('toggle-connection');
  $('account-info').textContent=connected()?`WhatsApp conectado${connection.phone?' · +'+connection.phone:''}`:states[connection.status]||states.disconnected;
  $('connection-description').textContent=connection.error||(
-  confirmingDisconnect?'Desconectar remove a sessão e as mensagens guardadas pelo CONTACT neste teste. Suas conversas continuam no aplicativo WhatsApp.':
-  connected()?'As novas mensagens de texto ficam disponíveis nesta lista.':
+  confirmingDisconnect?'O CONTACT limpa a sessão, as conversas carregadas e os rascunhos. O histórico continua no seu WhatsApp.':
+  connected()?'O histórico recente e as novas mensagens de texto ficam disponíveis enquanto durar a conexão.':
   connection.status==='qr_ready'?'No celular, abra WhatsApp → Aparelhos conectados → Conectar um aparelho e escaneie o código.':
   connection.status==='connecting'?'Aguarde enquanto o conector prepara sua sessão.':
-  'Vincule um WhatsApp para começar. O histórico anterior à conexão não será importado.'
+  'Vincule seu WhatsApp para carregar as conversas recentes disponíveis.'
  );
  const qr=$('whatsapp-qr');
  const image=connection.status==='qr_ready'&&/^data:image\/png;base64,[a-zA-Z0-9+/=]+$/.test(connection.qr||'');
@@ -98,19 +98,27 @@ function renderConnection() {
  button.textContent=connected()?(confirmingDisconnect?'Confirmar desconexão':'Desconectar meu WhatsApp'):connection.status==='qr_ready'?'Aguardando leitura…':connection.status==='connecting'?'Conectando…':connection.status==='disconnecting'?'Desconectando…':'Gerar QR Code';
  button.disabled=changingConnection||['connecting','qr_ready','disconnecting'].includes(connection.status);
 }
+function clearChat() {
+ chatEpoch++;
+ selected=null;messages=[];threads=[];drafts.clear();
+ $('search-input').value='';
+ $('new-form').reset();$('new-error').textContent='';
+ $('new-dialog').close();
+ $('board').classList.remove('active-thread','info');
+}
 function renderList() {
  const query=$('search-input').value.trim().toLocaleLowerCase('pt-BR');
  const digits=query.replace(/\D/g,'');
  $('list').innerHTML=threads.filter(person=>!query||nameFor(person).toLocaleLowerCase('pt-BR').includes(query)||(digits&&phoneFor(person).includes(digits))).map(person=>
   `<button class="thread" type="button" data-jid="${escapeHtml(person.jid)}" aria-pressed="${person.jid===selected?.jid}">${avatar(person)}<span><strong>${escapeHtml(nameFor(person))}</strong><p>${escapeHtml(person.body||'Nova conversa')}</p></span><span class="thread-time">${time(person.at)}</span></button>`
- ).join('')||`<div class="empty"><strong>${connected()?'Nenhuma conversa':'WhatsApp desconectado'}</strong>${connected()?'As novas conversas aparecem aqui.':'Conecte seu número para começar.'}</div>`;
+ ).join('')||`<div class="empty"><strong>${connected()?'Nenhuma conversa':'WhatsApp desconectado'}</strong>${connected()?'As conversas aparecem conforme o WhatsApp sincroniza.':'Conecte seu número para começar.'}</div>`;
 }
 function renderMessages() {
  const log=$('messages');if(!log)return;
  const nearBottom=log.scrollHeight-log.scrollTop-log.clientHeight<45;
  let lastDay='';
  const markup=messages.map(message=>{
-  const label=day(message.at), header=label!==lastDay?`<span class="day">${label}</span>`:'';
+  const label=message.at?day(message.at):'', header=label!==lastDay&&label?`<span class="day">${label}</span>`:'';
   lastDay=label;
   return `${header}<div class="bubble ${message.direction==='out'?'out':''}"><p>${escapeHtml(message.body)}</p><small>${time(message.at)}${message.direction==='out'?icon('check'):''}</small></div>`;
  }).join('')||'<div class="empty">A conversa começa quando você escrever uma mensagem.</div>';
@@ -137,14 +145,15 @@ function renderChat() {
  draft.onkeydown=event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();form.requestSubmit();}};
  form.onsubmit=async event=>{
   event.preventDefault();const body=draft.value.trim();if(!body||sending||!connected())return;
-  sending=true;send.disabled=true;
+  sending=true;send.disabled=true;const epoch=chatEpoch;
   try {
    const sent=await request('send',{message:body,jid:person.jid,phone:person.phone});
+   if(epoch!==chatEpoch)return;
    drafts.delete(keyFor(person));
    if(selected===person){selected={...person,jid:sent.jid};messages.push(sent);}
    threads=[{...person,jid:sent.jid,body:sent.body,at:sent.at},...threads.filter(item=>item.jid!==sent.jid)];
    renderList();renderChat();
-  }catch(error){notify(error.message);}
+  }catch(error){if(epoch===chatEpoch)notify(error.message);}
   finally{sending=false;if($('send'))$('send').disabled=!$('draft').value.trim();}
  };
  renderMessages();$('messages').scrollTop=$('messages').scrollHeight;
@@ -152,16 +161,16 @@ function renderChat() {
 async function refresh() {
  if(refreshRunning||changingConnection)return;
  refreshRunning=true;
- const requested=selected?.jid,wasConnected=connected();
+ const requested=selected?.jid,wasConnected=connected(),epoch=chatEpoch;
  try{
   const data=await request('status',{jid:requested});
-  if(changingConnection)return;
+  if(changingConnection||epoch!==chatEpoch)return;
   connection=data;threads=data.conversations||[];
-  if(!connected()){selected=null;messages=[];$('board').classList.remove('active-thread','info');}
+  if(!connected()&&wasConnected)clearChat();
   else if(requested&&requested===selected?.jid)messages=data.messages||[];
   renderConnection();renderList();
   if(wasConnected!==connected())renderChat();else renderMessages();
- }catch(error){connection.error=error.message;renderConnection();}
+ }catch(error){if(epoch===chatEpoch){connection.error=error.message;renderConnection();}}
  finally{refreshRunning=false;}
 }
 function openConnection(){confirmingDisconnect=false;renderConnection();$('connection-dialog').showModal();}
@@ -170,12 +179,16 @@ $('toggle-connection').onclick=async()=>{
  if(changingConnection)return;
  if(connected()&&!confirmingDisconnect){confirmingDisconnect=true;renderConnection();return;}
  const action=connected()?'disconnect':'connect';
- changingConnection=true;renderConnection();
+ changingConnection=true;
+ if(action==='disconnect'){
+  connection={status:'disconnecting'};clearChat();renderList();renderChat();
+ }
+ renderConnection();
  try {
   connection=await request(action);confirmingDisconnect=false;
-  if(action==='disconnect'){$('connection-dialog').close();selected=null;messages=[];threads=[];drafts.clear();$('board').classList.remove('active-thread','info');}
+  if(action==='disconnect')$('connection-dialog').close();
   renderList();renderChat();
- }catch(error){connection.error=error.message;notify(error.message);}
+ }catch(error){connection={status:'error',error:error.message};notify(error.message);}
  finally{changingConnection=false;renderConnection();refresh();}
 };
 $('new-conversation').onclick=()=>{if(connected()){$('new-error').textContent='';$('new-dialog').showModal();}};

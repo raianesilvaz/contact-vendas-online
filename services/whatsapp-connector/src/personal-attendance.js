@@ -1,30 +1,62 @@
-import { createHash } from 'node:crypto';
-import makeWASocket, { DisconnectReason, fetchLatestBaileysVersion, jidNormalizedUser } from '@whiskeysockets/baileys';
+import makeWASocket, { DisconnectReason, fetchLatestBaileysVersion, initAuthCreds, jidNormalizedUser, proto } from '@whiskeysockets/baileys';
 import QRCode from 'qrcode';
-import { useRemoteAuthState, encryptSession, decryptSession } from './remote-auth-state.js';
-import { sessionRpc } from './remote-session-rpc.js';
-import { useRetryMessageStore, createRetryCounterCache } from './retry-message-store.js';
+import { createRetryMessageStore, createRetryCounterCache } from './retry-message-store.js';
 import { sendRecoverableText, serialSender } from './reliable-text-send.js';
 import { openPersonalInbox } from './personal-chat-store.js';
 
 const roles = new Set(['admin','vendedora','financeiro']);
 const privateJid = jid => typeof jid === 'string' && /^\d+(?::\d+)?@(s\.whatsapp\.net|lid)$/.test(jid);
-const sessionKey = id => `atendimento-individual-${id}`;
+const sessionIdFormat = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
+const historyTypes = proto.Message.HistorySyncNotification.HistorySyncType;
+const initialHistory = new Set([historyTypes.INITIAL_BOOTSTRAP, historyTypes.RECENT]);
+const timestamp = value => {
+  const seconds = Number(value);
+  return seconds > 0 && seconds <= 8.64e12 ? seconds * 1000 : 0;
+};
+
+function memoryAuth() {
+  const keys = new Map();
+  let active = true;
+  const state = {
+    creds: initAuthCreds(),
+    keys: {
+      async get(type, ids) {
+        const values = keys.get(type);
+        return Object.fromEntries(ids.flatMap(id => {
+          const value = values?.get(id);
+          if (!value) return [];
+          return [[id, type === 'app-state-sync-key' ? proto.Message.AppStateSyncKeyData.fromObject(value) : value]];
+        }));
+      },
+      async set(data) {
+        if (!active) return;
+        for (const [type, items] of Object.entries(data)) {
+          const values = keys.get(type) || new Map();
+          for (const [id, value] of Object.entries(items)) {
+            if (value) values.set(id, value);
+            else values.delete(id);
+          }
+          if (values.size) keys.set(type, values);
+          else keys.delete(type);
+        }
+      }
+    }
+  };
+  return { state, clear() { active = false; keys.clear(); } };
+}
 const stateFor = slot => ({status:slot?.status || 'disconnected', qr:slot?.qr || null, phone:slot?.phone || null, error:slot?.error || null});
-const clean = message => {
+const clean = (message, fallbackTime) => {
   const { key, message:content } = message;
   if (!key?.id || !privateJid(key.remoteJid) || !content) return null;
   const body = (content.conversation || content.extendedTextMessage?.text || '').trim().slice(0,4000);
   if (!body) return null;
-  const seconds = Number(message.messageTimestamp ?? 0);
   return { id:String(key.id), jid:jidNormalizedUser(key.remoteJid), body, direction:key.fromMe?'out':'in',
-    at:Number.isFinite(seconds)&&seconds>0?seconds*1000:Date.now(),
+    at:timestamp(message.messageTimestamp)||fallbackTime,
     name:key.fromMe?'':String(message.pushName||'').trim().slice(0,100) };
 };
 
-export function installPersonalAttendance(app, config, { makeSocket = makeWASocket, getVersion = fetchLatestBaileysVersion } = {}) {
+export function installPersonalAttendance(app, config, { makeSocket = makeWASocket, getVersion = fetchLatestBaileysVersion, idleMs = 10 * 60_000 } = {}) {
   const slots = new Map();
-  const rpc = sessionRpc(config);
   const fetchApi = config.fetchImpl || fetch;
   const base = '/api/whatsapp/personal';
   let versionRequest;
@@ -40,7 +72,11 @@ export function installPersonalAttendance(app, config, { makeSocket = makeWASock
       if ([401,403].includes(identity.status)) return response.status(401).json({error:'Sua sessão expirou.'});
       if (!identity.ok) throw Error('identity');
       const user = await identity.json();
-      if (!/^[0-9a-f-]{36}$/i.test(user.id||'')) return response.status(401).json({error:'Sessão inválida.'});
+      // Read the session claim only after Supabase has verified the bearer token.
+      const claims = JSON.parse(Buffer.from(token.split('.')[1] || '', 'base64url').toString() || '{}');
+      if (!sessionIdFormat.test(user.id) || claims.sub !== user.id || !sessionIdFormat.test(claims.session_id)) {
+        return response.status(401).json({error:'Sessão inválida.'});
+      }
       const url = new URL(`${config.supabaseUrl}/rest/v1/profiles`);
       url.search = new URLSearchParams({id:`eq.${user.id}`,select:'role,active',limit:'1'});
       const result = await fetchApi(url,{headers,signal:AbortSignal.timeout(8000)});
@@ -48,92 +84,80 @@ export function installPersonalAttendance(app, config, { makeSocket = makeWASock
       const [profile] = await result.json();
       if (!profile?.active || !roles.has(profile.role)) return response.status(403).json({error:'Seu perfil não tem acesso a Atendimentos.'});
       request.attendanceOwner = user.id;
+      request.attendanceSession = claims.session_id;
       return next();
     } catch {
       return response.status(503).json({error:'Não foi possível verificar o acesso. Tente novamente.'});
     }
   }
 
-  async function readDocument(id) {
-    const result = await rpc('contact_get_whatsapp_connector_session',{p_session_id:id});
-    if (!result.ok) throw Error('Armazenamento indisponível.');
-    const data = await result.json();
-    return data ? decryptSession(Buffer.from(data,'base64'),config.encryptionSecret) : null;
-  }
-  async function writeDocument(id, value) {
-    const payload = encryptSession(value,config.encryptionSecret).toString('base64');
-    const result = await rpc('contact_put_whatsapp_connector_session',{p_session_id:id,p_payload:payload});
-    if (!result.ok) throw Error('Não foi possível salvar as mensagens.');
-  }
-  async function deleteDocument(id) {
-    const result = await rpc('contact_delete_whatsapp_connector_session',{p_session_id:id});
-    if (!result.ok) throw Error('Não foi possível apagar os dados da conexão.');
-  }
-  const slotFor = id => {
-    if (!slots.has(id)) slots.set(id,{id,status:'disconnected',generation:0,retries:0,enqueue:serialSender()});
-    return slots.get(id);
-  };
+  function disconnect(slot) {
+    if (!slot) return;
+    if (slot.closing) return slot.closing;
+    clearTimeout(slot.timer);
+    clearTimeout(slot.pairingTimer);
+    clearTimeout(slot.lease);
+    const socket = slot.socket;
+    slot.socket = null;
+    slot.qr = null;
+    slot.phone = null;
+    slot.error = null;
+    slot.status = 'disconnecting';
+    slot.inbox.clear();
+    slot.auth.clear();
+    slot.recovery.clear();
+    slot.retryCounters.flushAll();
 
-  async function disconnect(slot) {
-    slot.generation++;
-    clearTimeout(slot.timer); clearTimeout(slot.pairingTimer);
-    const socket=slot.socket;
-    slot.socket=null; slot.qr=null; slot.phone=null; slot.error=null; slot.status='disconnecting';
-    try {
-      // Wait for any connection setup and pending writes before deleting data.
-      await slot.starting?.catch(()=>{});
-      await slot.enqueue(async()=>{});
-      if (socket?.user) await Promise.race([socket.logout().catch(()=>{}), new Promise(resolve=>{const timer=setTimeout(resolve,5000);timer.unref();})]);
-      try {socket?.end(undefined);} catch {}
-      await slot.inbox?.flush().catch(()=>{});
-      await slot.store?.clear();
-      await slot.recovery?.clear();
-      await Promise.all([deleteDocument(sessionKey(slot.id)),deleteDocument(`${sessionKey(slot.id)}-message-retry`),deleteDocument(`${sessionKey(slot.id)}-inbox`)]);
-      slot.store=null;slot.recovery=null;slot.inbox=null;slot.status='disconnected';
-    } catch {
-      slot.status='error';slot.error='A sessão foi interrompida, mas a limpeza falhou. Tente desconectar novamente.';
-      slot.cleanupPending=true;
-      return;
-    }
-    slot.cleanupPending=false;
+    slot.closing = (async () => {
+      let timeout;
+      try {
+        if (socket?.user) {
+          await Promise.race([
+            socket.logout(),
+            new Promise(resolve => { timeout = setTimeout(resolve, 2500); timeout.unref(); })
+          ]);
+        }
+      } catch {
+        // The device may already have been unlinked in WhatsApp.
+      } finally {
+        clearTimeout(timeout);
+        try { socket?.end(undefined); } catch {}
+      }
+    })().finally(() => { slots.delete(slot.id); });
+    return slot.closing;
   }
 
-  function start(slot, pair) {
-    if (slot.starting || slot.socket || slot.status==='disconnecting' || slot.cleanupPending) return;
-    if ([...slots.values()].filter(other=>other!==slot&&(other.socket||other.starting||other.status==='connecting')).length>=8) {
-      slot.status='error';slot.error='O piloto está com oito conexões ativas. Tente mais tarde.';return;
-    }
-    const generation=++slot.generation;
-    const current=()=>slot.generation===generation;
-    const id=sessionKey(slot.id);
-    slot.status='connecting';slot.error=null;
-    slot.starting=(async()=>{
-      const store=slot.store||await useRemoteAuthState({...config,sessionId:id});
+  function start(slot) {
+    slot.status = 'connecting';
+    slot.error = null;
+    const current = () => slots.get(slot.id) === slot && !slot.closing;
+    baileysVersion().then(version => {
       if (!current()) return;
-      if (!pair&&!(store.state.creds.registered||store.state.creds.me?.id)) {slot.status='disconnected';return;}
-      slot.store=store;
-      const identity=createHash('sha256').update(store.state.creds.signedIdentityKey.public).digest('hex');
-      const inbox=slot.inbox||await openPersonalInbox({identity,read:()=>readDocument(`${id}-inbox`),write:document=>writeDocument(`${id}-inbox`,document)});
-      const recovery=slot.recovery||await useRetryMessageStore({...config,identity,sessionId:id});
-      const version=await baileysVersion();
-      if (!current()) return;
-      slot.inbox=inbox;slot.recovery=recovery;
-      slot.retryCounters ||= createRetryCounterCache();
-      const socket=makeSocket({version,auth:store.state,logger:config.logger,printQRInTerminal:false,
+      const { auth, inbox, recovery, retryCounters } = slot;
+      const socket = makeSocket({version,auth:auth.state,logger:config.logger,printQRInTerminal:false,
         browser:['CONTACT Atendimento individual','Chrome','1.0.0'],markOnlineOnConnect:false,
-        syncFullHistory:false,shouldSyncHistoryMessage:()=>false,generateHighQualityLinkPreview:false,
-        getMessage:async key=>recovery.get(key),msgRetryCounterCache:slot.retryCounters,maxMsgRetryCount:5});
-      slot.socket=socket;
-      const live=()=>current()&&slot.socket===socket;
-      socket.ev.on('creds.update',()=>{
-        if (live()) store.saveCreds().catch(()=>{if(live())slot.error='Não foi possível confirmar o salvamento da sessão.';});
+        syncFullHistory:false,shouldSyncHistoryMessage:message=>initialHistory.has(message.syncType),
+        generateHighQualityLinkPreview:false,
+        getMessage:async key=>recovery.get(key),msgRetryCounterCache:retryCounters,maxMsgRetryCount:5});
+      slot.socket = socket;
+      const live = () => current() && slot.socket === socket;
+      socket.ev.on('messaging-history.set', ({ chats = [], contacts = [], messages = [] }) => {
+        if (!live()) return;
+        const names = new Map(contacts.filter(contact => privateJid(contact.id))
+          .map(contact => [jidNormalizedUser(contact.id), contact.name || contact.notify]));
+        inbox.addChats(chats.filter(chat => privateJid(chat.id)).map(chat => {
+          const jid = jidNormalizedUser(chat.id);
+          return { jid, name: String(chat.displayName || chat.name || names.get(jid) || '').slice(0, 100),
+            at: timestamp(chat.lastMsgTimestamp || chat.conversationTimestamp) };
+        }));
+        inbox.save(messages.map(message => clean(message, 0)).filter(Boolean));
       });
-      socket.ev.on('messages.upsert',({type,messages=[]})=>{
-        if (!live()||slot.status!=='connected'||type!=='notify') return;
-        const batch=messages.map(clean).filter(Boolean);
-        if(batch.length) inbox.save(batch).catch(()=>{if(live())slot.error='Uma mensagem não pôde ser salva. Confira seu WhatsApp.';});
+      socket.ev.on('messages.upsert', ({ type, messages = [] }) => {
+        if (!live() || !['notify', 'append'].includes(type)) return;
+        const now = Date.now();
+        inbox.save(messages.map(message => clean(message, now)).filter(Boolean));
       });
-      socket.ev.on('connection.update',async ({connection,qr,lastDisconnect})=>{
+      socket.ev.on('connection.update', async ({connection,qr,lastDisconnect})=>{
         if(!live())return;
         if(qr){
           try {
@@ -141,59 +165,87 @@ export function installPersonalAttendance(app, config, { makeSocket = makeWASock
             if(live()&&slot.status!=='connected'){slot.qr=data;slot.status='qr_ready';}
           } catch {if(live())slot.error='Não foi possível gerar o QR Code.';}
         }
+        if(!live())return;
         if(connection==='open'){
-          try {await store.saveCreds();}
-          catch {if(live())slot.error='A conexão foi aberta, mas a sessão não pôde ser salva.';}
-          if(!live())return;
           clearTimeout(slot.pairingTimer);
           slot.phone=String(socket.user?.id||'').split('@')[0].split(':')[0]||null;
           slot.qr=null;slot.status='connected';slot.retries=0;
         }
-        if(connection==='close'&&live()){
+        if(connection==='close'){
           slot.socket=null;slot.qr=null;slot.phone=null;
           clearTimeout(slot.pairingTimer);
           const code=lastDisconnect?.error?.output?.statusCode;
-          if(code===DisconnectReason.loggedOut){await disconnect(slot);return;}
-          const registered=store.state.creds.registered||store.state.creds.me?.id;
-          if(registered&&slot.retries<4&&code!==DisconnectReason.connectionReplaced){
+          const registered=auth.state.creds.registered||auth.state.creds.me?.id;
+          if(registered&&slot.retries<4&&code!==DisconnectReason.connectionReplaced&&code!==DisconnectReason.loggedOut){
             slot.status='connecting';slot.retries++;
-            slot.timer=setTimeout(()=>{if(current())start(slot,false);},2000*slot.retries);
-          }else{slot.status='error';slot.error='Conexão interrompida. Clique em Conectar meu WhatsApp para tentar novamente.';}
+            slot.timer=setTimeout(()=>{if(current())start(slot);},2000*slot.retries);
+          }else{
+            await disconnect(slot);
+          }
         }
       });
       slot.pairingTimer=setTimeout(()=>{
-        if(!live()||slot.status==='connected')return;
-        slot.socket=null;slot.qr=null;slot.status='error';slot.error='O QR Code expirou. Abra uma nova conexão.';
-        try{socket.end(undefined);}catch{}
+        if(live()&&slot.status!=='connected') void disconnect(slot);
       },120_000);
-    })().catch(()=>{
-      if(current()){slot.status='error';slot.error='Não foi possível iniciar a conexão individual. Tente novamente.';}
-    }).finally(()=>{slot.starting=null;});
+      slot.pairingTimer.unref();
+    }).catch(()=>{
+      if(current()) {
+        slot.status='error';
+        slot.error='Não foi possível iniciar a conexão individual. Tente novamente.';
+      }
+    });
   }
 
+  const ownSlot = request => {
+    const slot = slots.get(request.attendanceOwner);
+    return slot?.session === request.attendanceSession ? slot : undefined;
+  };
+
   app.get(`${base}/status`,authorize,(request,response)=>{
-    const slot=slotFor(request.attendanceOwner);
-    if(!slot.checked){slot.checked=true;start(slot,false);}
-    const connected=slot.status==='connected',jid=request.query.jid;
+    const slot=ownSlot(request);
+    if (slot?.status !== 'disconnecting') slot?.lease.refresh();
+    const connected=slot?.status==='connected',jid=request.query.jid;
     response.json({...stateFor(slot),conversations:connected?slot.inbox.conversations():[],
       messages:connected&&privateJid(jid)?slot.inbox.messages(jid):[]});
   });
-  app.post(`${base}/connect`,authorize,(request,response)=>{
-    const slot=slotFor(request.attendanceOwner);
-    slot.checked=true;slot.retries=0;start(slot,true);
+  app.post(`${base}/connect`,authorize,async (request,response)=>{
+    const id = request.attendanceOwner;
+    let slot = slots.get(id);
+    if (slot && (slot.session !== request.attendanceSession || slot.status === 'error' || slot.closing)) {
+      await disconnect(slot);
+      slot = slots.get(id);
+    }
+    if (slot && slot.session !== request.attendanceSession) {
+      return response.status(409).json({error:'Já existe uma tentativa de conexão neste usuário.'});
+    }
+    if (!slot) {
+      if (slots.size >= 8) return response.status(409).json({error:'O piloto está com oito conexões ativas. Tente mais tarde.'});
+      slot = {id,session:request.attendanceSession,retries:0,enqueue:serialSender(),
+        auth:memoryAuth(),inbox:openPersonalInbox(),recovery:createRetryMessageStore(),retryCounters:createRetryCounterCache()};
+      slots.set(id,slot);
+      const active = slot;
+      slot.lease = setTimeout(() => { void disconnect(active); }, idleMs);
+      slot.lease.unref();
+      start(slot);
+    }
+    slot.lease.refresh();
     response.status(202).json(stateFor(slot));
   });
   app.post(`${base}/disconnect`,authorize,async (request,response)=>{
-    const slot=slotFor(request.attendanceOwner);
-    if(slot.status!=='disconnecting')await disconnect(slot);
-    response.status(slot.cleanupPending?503:200).json(stateFor(slot));
+    await disconnect(ownSlot(request));
+    response.json(stateFor());
+  });
+  app.post(`${base}/signout`,authorize,async (request,response)=>{
+    await disconnect(slots.get(request.attendanceOwner));
+    response.json(stateFor());
   });
   app.post(`${base}/send`,authorize,async (request,response)=>{
-    const slot=slotFor(request.attendanceOwner);
+    const slot=ownSlot(request);
     const body=typeof request.body?.message==='string'?request.body.message.trim():'';
     if(!body||body.length>2000)return response.status(400).json({error:'Informe uma mensagem de até 2.000 caracteres.'});
-    if(!slot.socket||slot.status!=='connected')return response.status(409).json({error:'Conecte seu WhatsApp para enviar.'});
+    if(!slot?.socket||slot.status!=='connected')return response.status(409).json({error:'Conecte seu WhatsApp para enviar.'});
     if(slot.sending)return response.status(429).json({error:'Aguarde a confirmação do envio anterior.'});
+    slot.lease.refresh();
     slot.sending=true;
     try {
       const sent=await slot.enqueue(async()=>{
@@ -211,8 +263,8 @@ export function installPersonalAttendance(app, config, { makeSocket = makeWASock
         if(slot.socket!==socket||slot.status!=='connected')throw Object.assign(Error('A conexão foi interrompida.'),{statusCode:409});
         const result=await sendRecoverableText(socket,slot.recovery,jid,body,undefined,aliases);
         const message={id:result.key.id,jid,body,direction:'out',at:Date.now(),name:''};
-        try {await slot.inbox.save([message]);}
-        catch {slot.error='A mensagem foi enviada, mas o registro não foi confirmado.';}
+        if (slot.socket !== socket && slot.closing) throw Object.assign(Error('A conexão foi encerrada.'),{statusCode:409});
+        slot.inbox.save([message]);
         return message;
       });
       return response.json(sent);
