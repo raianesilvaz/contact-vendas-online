@@ -32,10 +32,14 @@
     for (const [label, phone] of [['Telefone 1', phone1], ['Telefone 2', phone2]]) {
       const link = document.createElement('a');
       const url = new URL(href);
-      url.pathname = `/${phone}`;
+      if (url.protocol === 'whatsapp:') {
+        url.searchParams.set('phone', phone);
+      } else {
+        url.pathname = `/${phone}`;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+      }
       link.href = url.href;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
       link.textContent = `${label}: ${displayPhone(phone)}`;
       link.addEventListener('click', () => dialog.close());
       options.appendChild(link);
