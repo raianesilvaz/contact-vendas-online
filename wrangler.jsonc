@@ -11,7 +11,8 @@
     "binding": "ASSETS",
     "run_worker_first": [
       "/",
-      "/api/atendimentos-teste"
+      "/api/atendimentos-teste",
+      "/api/atendimentos-teste/whatsapp/*"
     ]
   },
   "observability": {
