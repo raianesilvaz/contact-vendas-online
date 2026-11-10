@@ -1,20 +1,17 @@
+.attendance-test-main {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+.attendance-test-main > .topbar { flex-shrink: 0; }
 .attendance-test-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
   max-width: 1440px;
-  padding: 24px 30px 20px;
-}
-.attendance-test-heading {
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-.attendance-test-badge {
-  padding: 5px 9px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 700;
+  min-height: 0;
+  padding: 14px 24px 12px;
 }
 .attendance-test-notice {
   padding: 16px 20px;
@@ -26,15 +23,12 @@
 .attendance-test-notice a { color: var(--orange-dark); font-weight: 700; }
 .attendance-test-frame {
   display: block;
+  flex: 1;
   width: 100%;
-  height: calc(100dvh - 198px);
-  min-height: 490px;
+  min-height: 0;
   border: 0;
 }
 .attendance-test-frame[hidden] { display: none; }
 @media (max-width: 600px) {
-  .attendance-test-content { padding: 16px 12px; }
-  .attendance-test-heading { display: flex; }
-  .attendance-test-heading p { font-size: 12px; }
-  .attendance-test-frame { height: calc(100dvh - 164px); min-height: 430px; }
+  .attendance-test-content { padding: 10px 12px; }
 }
