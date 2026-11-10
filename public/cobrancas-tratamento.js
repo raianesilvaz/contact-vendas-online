@@ -8,10 +8,11 @@ function openWhatsApp() {
   const { cleanPhone } = window.contactCollections;
   const phone1 = cleanPhone(phone_1);
   const phone2 = cleanPhone(phone_2);
-  if (window.showCollectionWhatsAppChoice(phone1, phone2)) return;
+  const appLink = 'whatsapp://send';
+  if (window.showCollectionWhatsAppChoice(phone1, phone2, appLink)) return;
   const phone = phone1 || phone2;
   if (phone) {
-    window.open(`https://wa.me/${phone}`, '_blank', 'noopener,noreferrer');
+    window.location.href = `${appLink}?phone=${phone}`;
   } else {
     toast('Nenhum telefone cadastrado para este cliente.');
   }
