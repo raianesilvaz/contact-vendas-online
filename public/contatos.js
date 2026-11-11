@@ -14,7 +14,7 @@
   const timeZone = 'America/Sao_Paulo';
   const isoDate = new Intl.DateTimeFormat('en-CA', { timeZone, year:'numeric', month:'2-digit', day:'2-digit' });
   const dateLabel = day => day ? day.split('-').reverse().join('/') : 'Data não informada';
-  const filters = ['contactSearch', 'contactStatus', 'contactStart', 'contactEnd'].map(byId);
+  const filters = ['contactSearch', 'contactStatus', 'contactStart', 'contactEnd', 'contactTreatmentFilter'].map(byId);
   const treatmentLabels = {
     venda:'Venda', inviabilidade:'Inviabilidade', sem_interacao:'Sem interação',
     restricao_cpf:'Restrição CPF', clicou_sem_querer:'Clicou sem querer',
@@ -33,6 +33,8 @@
   let detail = null;
   let contacts = [];
   let page = 1;
+  let filterRevision = 0;
+  let treatmentIndexRequest;
 
   function phoneNumber(value) {
     const text = String(value ?? '').trim();
@@ -102,12 +104,46 @@
     return `<span class="status-badge ${tone}"><i></i>${safe(statusLabels[status] || 'Situação não informada')}</span>`;
   }
 
-  function render() {
-    const [term, status, start, end] = filters.map(field => field.value.trim());
+  async function render() {
+    const revision = ++filterRevision;
+    const filter = byId('contactTreatmentFilter').value;
+    if (!filter) {
+      renderList();
+      return;
+    }
+
+    if (!treatmentIndexRequest) {
+      byId('contactsCount').textContent = 'Carregando status de atendimento…';
+      byId('contactRows').replaceChildren();
+      byId('contactsPager').hidden = true;
+      pageRevision++;
+      treatmentIndexRequest = loadTreatmentIndex();
+    }
+    const request = treatmentIndexRequest;
+    try {
+      const index = await request;
+      if (revision === filterRevision) renderList(index);
+    } catch {
+      if (request === treatmentIndexRequest) treatmentIndexRequest = null;
+      if (revision !== filterRevision) return;
+      byId('contactsCount').textContent = 'Não foi possível carregar os status. Selecione o filtro novamente para tentar.';
+      byId('contactRows').replaceChildren();
+      byId('contactsPager').hidden = true;
+      pageRevision++;
+    }
+  }
+
+  function renderList(treatmentIndex) {
+    const [term, status, start, end, treatmentFilter] = filters.map(field => field.value.trim());
     const phoneTerm = /^[+\d\s().-]+$/.test(term) ? digits(term) : '';
     const matches = contacts.flatMap((contact,index) => {
       if (term && !normalize(contact.title).includes(normalize(term)) &&
           !(phoneTerm && contact.phones.some(phone => digits(phone).includes(phoneTerm)))) return [];
+      if (treatmentIndex) {
+        const phones = treatmentPhones(contact);
+        const status = latestTreatmentStatus(phones, treatmentIndex);
+        if (!phones.length || (treatmentFilter === 'sem_status' ? status : status !== treatmentFilter)) return [];
+      }
       if (contact.lead) {
         return !start && !end && (!status || status === 'sem_venda')
           ? [{ contact,index,sales:[],statuses:['sem_venda'] }]
@@ -141,6 +177,30 @@
     void renderTreatmentSummaries();
   }
 
+  async function loadTreatmentIndex() {
+    const index = new Map();
+    let cursor;
+    for (;;) {
+      let query = window.supabaseClient.from('contact_treatment_summaries')
+        .select('phone,id,status,created_at').not('status', 'is', null).order('phone').limit(500);
+      if (cursor) query = query.gt('phone', cursor);
+      const {data,error} = await query;
+      if (error) throw error;
+      for (const event of data) index.set(event.phone, event);
+      if (data.length < 500) return index;
+      cursor = data.at(-1).phone;
+    }
+  }
+
+  function latestTreatmentStatus(phones, index) {
+    let latest;
+    for (const phone of phones) {
+      const event = index.get(phone);
+      if (event && (!latest || newestFirst(event, latest) < 0)) latest = event;
+    }
+    return latest?.status || '';
+  }
+
   async function renderTreatmentSummaries() {
     const revision = ++pageRevision;
     const rows = [...byId('contactRows').querySelectorAll('[data-contact-index]')];
@@ -162,9 +222,10 @@
     }
     if (revision !== pageRevision) return;
     events.sort(newestFirst);
+    const statusIndex = new Map(events.filter(event => event.status).map(event => [event.phone, event]));
     rows.forEach((row,index) => {
       const linked = phonesByRow[index];
-      const status = events.find(event => event.status && linked.includes(event.phone))?.status || '';
+      const status = latestTreatmentStatus(linked, statusIndex);
       const badge = row.querySelector('[data-treatment-status]');
       badge.dataset.tone = linked.length && !failed ? status : 'neutral';
       badge.textContent =
@@ -264,6 +325,14 @@
   const treatmentSelect = byId('contactTreatmentStatus');
   for (const [value, label] of Object.entries(treatmentLabels)) {
     treatmentSelect.add(new Option(label, value));
+    byId('contactTreatmentFilter').add(new Option(label, value));
+  }
+
+  const legacyFilters = document.createElement('optgroup');
+  legacyFilters.label = 'Status anteriores';
+  byId('contactTreatmentFilter').append(legacyFilters);
+  for (const [value, label] of Object.entries(previousTreatmentLabels)) {
+    legacyFilters.append(new Option(label, value));
   }
 
   byId('contactTreatmentForm').onsubmit = async event => {
@@ -290,7 +359,9 @@
       const {error} = await window.supabaseClient.from('contact_treatments')
         .upsert(session.retry, {onConflict:'id',ignoreDuplicates:true});
       if (error) throw error;
-      void renderTreatmentSummaries();
+      treatmentIndexRequest = null;
+      if (byId('contactTreatmentFilter').value) void render();
+      else void renderTreatmentSummaries();
       if (detail === session) await openTreatment(session.contact, 'Atendimento salvo.');
     } catch {
       if (detail === session) {
@@ -305,7 +376,11 @@
     detail = null;
   });
 
-  for (const filter of filters) filter.addEventListener('input', () => { page = 1; render(); });
+  for (const filter of filters) filter.addEventListener('input', () => {
+    if (filter.id === 'contactTreatmentFilter') treatmentIndexRequest = null;
+    page = 1;
+    void render();
+  });
   byId('contactClear').onclick = () => {
     filters.forEach(filter => { filter.value = ''; });
     page = 1;

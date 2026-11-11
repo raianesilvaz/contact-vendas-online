@@ -2,7 +2,7 @@
 .contacts-content .page-heading h1{font-size:28px;line-height:1.2;font-weight:700}
 .contacts-content .page-heading p{font-size:14px;line-height:1.45}
 .contacts-filters,.contacts-list{background:var(--card,#fff);border:1px solid var(--line);border-radius:12px}
-.contacts-filters{display:grid;grid-template-columns:minmax(200px,2fr) minmax(175px,1fr) repeat(2,minmax(140px,1fr)) auto;gap:12px;align-items:end;padding:16px;margin-bottom:16px}
+.contacts-filters{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr) minmax(0,1.25fr) repeat(2,minmax(0,.9fr)) auto;gap:12px;align-items:end;padding:16px;margin-bottom:16px}
 .contacts-filters label{display:grid;gap:6px;color:var(--ink);font-size:12px;line-height:1.4;font-weight:600}
 .contacts-filters input,.contacts-filters select{height:40px;min-width:0;width:100%;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--card,#fff);color:var(--ink);font:inherit;font-size:14px}
 .contacts-filters .contact-date-trigger.contact-date-trigger{font-size:14px}
