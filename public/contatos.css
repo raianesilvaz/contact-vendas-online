@@ -148,3 +148,19 @@
 .contact-city-suggestions[hidden]{display:none}
 .contact-city-option{display:block;width:100%;padding:9px 11px;border:0;border-radius:6px;background:#fff;color:#1d2939;font:500 12px 'DM Sans',sans-serif;text-align:left;cursor:pointer}
 .contact-city-option:hover,.contact-city-option.is-active{background:#e8f6f4;color:#007a78}
+
+/* Exclusão segura de contatos cadastrados manualmente */
+.contact-delete-area{padding:16px 0 2px;display:flex;justify-content:flex-end}
+.contact-delete-button{border:1px solid #f2b8b5;border-radius:8px;background:#fff5f4;color:#b42318;padding:9px 13px;font:700 12px 'DM Sans',sans-serif;cursor:pointer}
+.contact-delete-button[hidden]{display:none}
+.contact-delete-button:hover{background:#fee4e2}
+.contact-delete-dialog{width:min(400px,calc(100vw - 32px));border:1px solid #dce4eb;border-radius:14px;padding:24px;background:#fff;color:#1d2939;box-shadow:0 22px 70px #10202838;font-family:'DM Sans',sans-serif}
+.contact-delete-dialog::backdrop{background:#10202870}
+.contact-delete-dialog h2{margin:0 0 10px;font-size:19px}
+.contact-delete-dialog p{font-size:13px;line-height:1.5;color:#667085}
+#contactDeleteFeedback{color:#b42318}
+.contact-delete-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:20px}
+.contact-delete-actions button{padding:9px 13px;border-radius:8px;font:700 12px 'DM Sans',sans-serif;cursor:pointer}
+.contact-delete-actions form button{background:#fff;color:#475467;border:1px solid #d0d5dd}
+#contactDeleteConfirm{background:#b42318;color:#fff;border:1px solid #b42318}
+#contactDeleteConfirm:disabled{opacity:.6;cursor:wait}
