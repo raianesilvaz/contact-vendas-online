@@ -12,10 +12,34 @@
       ? 'https://api.whatsapp.com/send?phone=' + number + '&text=' + encodeURIComponent(whatsappMessage)
       : '';
   }
-  function phoneWithWhatsapp(phone) {
-    const link = whatsappLink(phone);
-    return '<span class="contacts-phone-line"><span class="contacts-number">' + safe(phone) + '</span>' +
-      (link ? '<a class="contacts-whatsapp" href="' + safe(link) + '" target="_blank" rel="noopener noreferrer" aria-label="Abrir WhatsApp para ' + safe(phone) + '" title="Abrir no WhatsApp"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M20.52 3.48A11.88 11.88 0 0 0 12.05 0C5.45 0 .07 5.37.06 11.98c0 2.11.55 4.17 1.61 5.99L0 24l6.19-1.62a11.9 11.9 0 0 0 5.86 1.49h.01c6.6 0 11.98-5.38 11.99-11.99a11.9 11.9 0 0 0-3.53-8.4ZM12.06 21.85a9.85 9.85 0 0 1-5.03-1.38l-.36-.21-3.73.98.99-3.64-.24-.38a9.88 9.88 0 0 1-1.52-5.24C2.18 6.49 6.57 2.1 12.06 2.1c2.64 0 5.12 1.03 6.99 2.9a9.83 9.83 0 0 1 2.9 7c-.01 5.48-4.41 9.85-9.89 9.85Zm5.42-7.39c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.23-.65.08-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.14-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.49s1.07 2.89 1.22 3.09c.15.2 2.11 3.22 5.11 4.52.71.31 1.27.49 1.71.63.72.23 1.37.2 1.89.12.58-.09 1.76-.72 2.01-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z"/></svg></a>' : '') + '</span>';
+  const whatsappIcon = "<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M20.52 3.48A11.88 11.88 0 0 0 12.05 0C5.45 0 .07 5.37.06 11.98c0 2.11.55 4.17 1.61 5.99L0 24l6.19-1.62a11.9 11.9 0 0 0 5.86 1.49h.01c6.6 0 11.98-5.38 11.99-11.99a11.9 11.9 0 0 0-3.53-8.4ZM12.06 21.85a9.85 9.85 0 0 1-5.03-1.38l-.36-.21-3.73.98.99-3.64-.24-.38a9.88 9.88 0 0 1-1.52-5.24C2.18 6.49 6.57 2.1 12.06 2.1c2.64 0 5.12 1.03 6.99 2.9a9.83 9.83 0 0 1 2.9 7c-.01 5.48-4.41 9.85-9.89 9.85Zm5.42-7.39c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.23-.65.08-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.14-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.49s1.07 2.89 1.22 3.09c.15.2 2.11 3.22 5.11 4.52.71.31 1.27.49 1.71.63.72.23 1.37.2 1.89.12.58-.09 1.76-.72 2.01-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z\"/></svg>";
+  function contactPhonesCell(contact) {
+    const numbers = contact.phones.filter(phone => whatsappLink(phone));
+    const phones = contact.phones.map(phone => '<span class="contacts-number">' + safe(phone) + '</span>').join('') || 'Telefone não informado';
+    return '<span class="contacts-phone-cell"><span class="contacts-phone-numbers">' + phones + '</span>' +
+      (numbers.length ? '<button type="button" class="contacts-whatsapp whatsapp-contact-link" data-whatsapp-contact aria-label="Chamar contato no WhatsApp" title="Chamar no WhatsApp">' + whatsappIcon + '</button>' : '') + '</span>';
+  }
+  function openContactWhatsapp(contact) {
+    const numbers = [...new Map(contact.phones.filter(phone => whatsappLink(phone)).map(phone => [digits(phone),phone])).values()];
+    if (!numbers.length) return;
+    if (numbers.length === 1) {
+      window.open(whatsappLink(numbers[0]), '_blank', 'noopener,noreferrer');
+      return;
+    }
+    const dialog = byId('contactWhatsappDialog');
+    byId('contactWhatsappName').textContent = contact.title;
+    byId('contactWhatsappNumbers').replaceChildren(...numbers.map((phone,index) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'contact-whatsapp-option';
+      button.textContent = 'Telefone ' + (index+1) + ' · ' + phone;
+      button.addEventListener('click', () => {
+        dialog.close();
+        window.open(whatsappLink(phone), '_blank', 'noopener,noreferrer');
+      });
+      return button;
+    }));
+    dialog.showModal();
   }
 
   const statusLabels = {
@@ -181,7 +205,7 @@
       const initials = contact.name.split(/\s+/).slice(0,2).map(part => part[0]).join('').toUpperCase();
       return `<div class="contacts-row" role="button" tabindex="0" data-contact-index="${index}" aria-label="Abrir contato ${safe(contact.title)}">
         <span class="contacts-person"><span class="avatar" aria-hidden="true">${safe(initials || '#')}</span><span><strong>${safe(contact.title)}</strong>${contact.city ? `<span class="contacts-label contacts-city">${safe(contact.city)}</span>` : ''}</span></span>
-        <span><span class="contacts-label">Telefones</span>${contact.phones.map(phoneWithWhatsapp).join('') || 'Telefone não informado'}</span>
+        <span><span class="contacts-label">Telefones</span>${contactPhonesCell(contact)}</span>
         <span class="contacts-statuses">
           <span><span class="contacts-label">${contact.lead ? 'Vendas no período' : `Vendas no período · ${sales.length}`}</span><span class="contacts-sale-badges">${contact.lead ? statusBadge('sem_venda') : statuses.map(statusBadge).join('')}</span></span>
           <span class="contacts-treatment"><span class="contacts-label">Atendimento</span><strong class="contacts-treatment-badge" data-treatment-status>Carregando…</strong><span data-treatment-note class="contacts-treatment-note" hidden></span></span>
@@ -414,7 +438,12 @@
     }
   });
   byId('contactRows').onclick = event => {
-    if (event.target.closest('.contacts-whatsapp')) return;
+    const whatsapp = event.target.closest('[data-whatsapp-contact]');
+    if (whatsapp) {
+      const row = whatsapp.closest('[data-contact-index]');
+      if (row) openContactWhatsapp(contacts[Number(row.dataset.contactIndex)]);
+      return;
+    }
     const row = event.target.closest('[data-contact-index]');
     if (!row) return;
     const contact = contacts[Number(row.dataset.contactIndex)];
