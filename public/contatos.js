@@ -6,6 +6,7 @@
   const digits = value => String(value ?? '').replace(/\D/g, '');
   const normalize = value => value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
   const statusLabels = {
+    sem_venda:'Sem venda',
     conectado:'Conectada', reprovada:'Reprovada', cancelada:'Cancelada',
     pendente:'Aguardando análise', em_analise:'Em análise', aguardando_hp:'Aguardando HP',
     pendente_aceite:'Aceite pendente', pendente_instalacao:'Pendente de instalação'
@@ -84,6 +85,11 @@
     const matches = contacts.flatMap((contact,index) => {
       if (term && !normalize(contact.title).includes(normalize(term)) &&
           !(phoneTerm && contact.phones.some(phone => digits(phone).includes(phoneTerm)))) return [];
+      if (contact.lead) {
+        return !start && !end && (!status || status === 'sem_venda')
+          ? [{ contact,index,sales:[],statuses:['sem_venda'] }]
+          : [];
+      }
       const sales = contact.sales.filter(sale => (!start || sale.day >= start) && (!end || sale.day && sale.day <= end));
       const statuses = [...new Set(sales.map(sale => sale.status))];
       if (!sales.length) return [];
@@ -91,7 +97,7 @@
       if (status && status !== 'ambas' && !statuses.includes(status)) return [];
       return [{ contact,index,sales,statuses }];
     });
-    matches.sort((a,b) => b.sales[0].day.localeCompare(a.sales[0].day));
+    matches.sort((a,b) => (b.sales[0]?.day || '').localeCompare(a.sales[0]?.day || ''));
     const pages = Math.max(1, Math.ceil(matches.length/pageSize));
     page = Math.min(page,pages);
     byId('contactsCount').textContent = matches.length + (matches.length === 1 ? ' contato encontrado' : ' contatos encontrados');
@@ -104,11 +110,34 @@
       return `<button type="button" class="contacts-row" data-contact-index="${index}" aria-label="Abrir contato ${safe(contact.title)}">
         <span class="contacts-person"><span class="avatar" aria-hidden="true">${safe(initials || '#')}</span><span><strong>${safe(contact.title)}</strong>${contact.city ? `<span class="contacts-label contacts-city">${safe(contact.city)}</span>` : ''}</span></span>
         <span><span class="contacts-label">Telefones</span>${contact.phones.map(phone => `<span class="contacts-number">${safe(phone)}</span>`).join('') || 'Telefone não informado'}</span>
-        <span><span class="contacts-label">Vendas no período · ${sales.length}</span>${statuses.map(statusBadge).join('')}</span>
-        <span><span class="contacts-label">Venda mais recente no período</span>${dateLabel(sales[0].day)}<span class="contacts-label contacts-seller">Vendedora da última venda</span><strong>${safe(contact.seller || 'Não informada')}</strong></span>
+        <span>${contact.lead ? statusBadge('sem_venda') : `<span class="contacts-label">Vendas no período · ${sales.length}</span>${statuses.map(statusBadge).join('')}`}</span>
+        <span>${contact.lead ? '' : `<span class="contacts-label">Venda mais recente no período</span>${dateLabel(sales[0].day)}<span class="contacts-label contacts-seller">Vendedora da última venda</span><strong>${safe(contact.seller || 'Não informada')}</strong>`}</span>
         <span class="contacts-arrow" aria-hidden="true">›</span>
       </button>`;
     }).join('') || '<p class="contacts-empty">Nenhum contato encontrado com esses filtros.</p>';
+  }
+
+  async function loadPages(table, columns, key, sellerId) {
+    const records = [];
+    let cursor;
+    for (;;) {
+      let query = window.supabaseClient.from(table).select(columns).order(key).limit(500);
+      if (sellerId) query = query.eq('seller_id', sellerId);
+      if (cursor) query = query.gt(key, cursor);
+      const {data,error} = await query;
+      if (error) throw error;
+      records.push(...data);
+      if (data.length < 500) return records;
+      cursor = data.at(-1)[key];
+    }
+  }
+
+  function organizeLeads(leads, customers) {
+    const customerPhones = new Set(customers.flatMap(contact => contact.phones.map(digits)));
+    return leads.filter(lead => !customerPhones.has(lead.phone)).map(lead => {
+      const phone = phoneLabel('+' + lead.phone);
+      return { lead:true, name:'', title:phone, city:lead.city, phones:[phone], seller:'', sales:[] };
+    });
   }
 
   async function load() {
@@ -117,21 +146,15 @@
       const user = await window.authReady;
       if (!user || !['admin','vendedora','financeiro'].includes(user.profile?.role)) return;
       status.textContent = 'Carregando contatos…';
-      const sales = [];
-      let lastId;
-      for (;;) {
-        let query = window.supabaseClient.from('sales')
-          .select('id,cpf,customer_name,phone_1,phone_2,status,created_at,full_address,operators(name),seller:profiles!sales_seller_id_fkey(full_name)')
-          .order('id').limit(500);
-        if (user.profile.role === 'vendedora') query = query.eq('seller_id',user.id);
-        if (lastId) query = query.gt('id',lastId);
-        const {data,error} = await query;
-        if (error) throw error;
-        sales.push(...data);
-        if (data.length < 500) break;
-        lastId = data.at(-1).id;
-      }
-      contacts = organizeSales(sales);
+      const seller = user.profile.role === 'vendedora';
+      const [sales, leads] = await Promise.all([
+        loadPages('sales', 'id,cpf,customer_name,phone_1,phone_2,status,created_at,full_address,operators(name),seller:profiles!sales_seller_id_fkey(full_name)', 'id', seller ? user.id : undefined),
+        seller ? [] : loadPages('contact_leads', 'phone,city', 'phone')
+      ]);
+      const customers = organizeSales(sales);
+      contacts = [...customers, ...organizeLeads(leads, customers)];
+      byId('contactLeadOption').hidden = seller;
+      byId('contactLeadOption').disabled = seller;
       render();
       byId('contactsSummary').textContent = contacts.length + (contacts.length === 1 ? ' contato no total' : ' contatos no total');
       status.hidden = true;
@@ -155,9 +178,10 @@
     const contact = contacts[Number(row.dataset.contactIndex)];
     byId('contactName').textContent = contact.title;
     byId('contactCity').textContent = contact.city || 'Não informada';
+    byId('contactSeller').parentElement.hidden = Boolean(contact.lead);
     byId('contactSeller').textContent = contact.seller || 'Não informada';
     byId('contactPhones').innerHTML = contact.phones.map(phone => `<li>${safe(phone)}</li>`).join('') || '<li>Telefone não informado</li>';
-    byId('contactSales').innerHTML = contact.sales.map(sale => `<li class="contacts-sale"><span>${safe(sale.operator)} · ${dateLabel(sale.day)}</span>${statusBadge(sale.status)}</li>`).join('');
+    byId('contactSales').innerHTML = contact.sales.map(sale => `<li class="contacts-sale"><span>${safe(sale.operator)} · ${dateLabel(sale.day)}</span>${statusBadge(sale.status)}</li>`).join('') || '<li>Sem venda registrada.</li>';
     byId('contactDetail').showModal();
   };
   byId('menuButton').onclick = () => byId('sidebar').classList.toggle('open');

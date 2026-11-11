@@ -34,8 +34,8 @@
       <div id="contactsDirectory" hidden>
         <section class="contacts-filters" aria-label="Filtros de contatos">
           <label>Buscar contato<input id="contactSearch" type="search" placeholder="Nome ou telefone"></label>
-          <label>Situação da venda<select id="contactStatus">
-            <option value="">Todas</option><option value="conectado">Aprovadas (conectadas)</option><option value="reprovada">Reprovadas</option><option value="ambas">Aprovadas e reprovadas</option>
+          <label>Situação<select id="contactStatus">
+            <option value="">Todas</option><option id="contactLeadOption" value="sem_venda" hidden disabled>Sem venda</option><option value="conectado">Aprovadas (conectadas)</option><option value="reprovada">Reprovadas</option><option value="ambas">Aprovadas e reprovadas</option>
           </select></label>
           <label>Vendas a partir de<input id="contactStart" type="date"></label>
           <label>Vendas até<input id="contactEnd" type="date"></label>
@@ -62,6 +62,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-config.js"></script>
   <script src="auth-access-v2.js?v=20261111-contatos-admin"></script>
-  <script src="contatos.js?v=20261111-cidade-direta"></script>
+  <script src="contatos.js?v=20261111-sem-venda"></script>
 </body>
 </html>
