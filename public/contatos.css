@@ -122,3 +122,15 @@
 /* Ícone único, no padrão das demais telas do CONTACT */
 .contacts-phone-cell .contacts-whatsapp{background:#e9f8ef;color:#1f9d5a;border-radius:7px}
 .contacts-phone-cell .contacts-whatsapp:hover{background:#d8f3e3;color:#168348;transform:translateY(-1px)}
+
+.contacts-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.contact-new-dialog{width:min(450px,calc(100vw - 30px));border:1px solid #dce4eb;border-radius:14px;padding:24px;background:#fff;color:#1d2939;box-shadow:0 22px 70px #10202838;font-family:'DM Sans',sans-serif}
+.contact-new-dialog::backdrop{background:#10202870}
+.contact-new-dialog h2{margin:0 0 5px;font-size:20px}
+.contact-new-dialog>p{margin:0 0 18px;color:#667085;font-size:13px}
+.contact-new-form{display:grid;gap:12px}
+.contact-new-form label{display:grid;gap:5px;font-size:12px;font-weight:700}
+.contact-new-form input,.contact-new-form select{width:100%;min-height:38px;padding:8px 10px;border:1px solid #d5dfe8;border-radius:8px;background:#fff;color:#1d2939;font:inherit;font-size:13px}
+.contact-new-actions{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:6px}
+.contact-new-actions>button:first-child{border:0;background:transparent;color:#667085;cursor:pointer}
+#newContactFeedback{font-size:12px;color:#b42318;margin:0}
