@@ -328,7 +328,7 @@
       const sellerSelect = byId('newContactSeller');
       sellerSelect.replaceChildren(new Option('Selecione a vendedora',''));
       for (const item of (sellers.data || []).filter(item => item.role === 'vendedora' || item.role === 'admin')) sellerSelect.add(new Option(item.full_name,item.id));
-      if (seller) { sellerSelect.value=user.id; sellerSelect.disabled=true; }
+      if (seller) { sellerSelect.value=user.id; sellerSelect.dataset.ownerId=user.id; sellerSelect.disabled=true; }
       else sellerSelect.disabled=false;
       byId('contactLeadOption').hidden = seller;
       byId('contactLeadOption').disabled = seller;
@@ -377,7 +377,7 @@
 
   const newContactStatus = byId('newContactStatus');
   for (const [value,label] of Object.entries(treatmentLabels)) newContactStatus.add(new Option(label,value));
-  byId('newContactOpen').onclick = () => { byId('newContactForm').reset(); byId('newContactFeedback').textContent=''; byId('newContactDialog').showModal(); };
+  byId('newContactOpen').onclick = () => { byId('newContactForm').reset(); if (byId('newContactSeller').disabled) byId('newContactSeller').value = byId('newContactSeller').dataset.ownerId || ''; byId('newContactFeedback').textContent=''; byId('newContactDialog').showModal(); };
   byId('newContactForm').onsubmit = async event => {
     event.preventDefault();
     const form = byId('newContactForm');
@@ -480,7 +480,7 @@
     const contact = contacts[Number(row.dataset.contactIndex)];
     byId('contactName').textContent = contact.title;
     byId('contactCity').textContent = contact.city || 'Não informada';
-    byId('contactSeller').parentElement.hidden = Boolean(contact.lead);
+    byId('contactSeller').parentElement.hidden = Boolean(contact.lead && !contact.manual);
     byId('contactSeller').textContent = contact.seller || 'Não informada';
     byId('contactPhones').innerHTML = contact.phones.map(phone => `<li>${safe(phone)}</li>`).join('') || '<li>Telefone não informado</li>';
     byId('contactSales').innerHTML = contact.sales.map(sale => `<li class="contacts-sale"><span>${safe(sale.operator)} · ${dateLabel(sale.day)}</span>${statusBadge(sale.status)}</li>`).join('') || '<li>Sem venda registrada.</li>';
