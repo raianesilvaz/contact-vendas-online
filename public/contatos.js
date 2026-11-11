@@ -528,8 +528,13 @@
     const status = byId('contactTreatmentStatus').value || session.status;
     const note = byId('contactTreatmentNote').value.trim();
     const feedback = byId('contactTreatmentFeedback');
-    if ((status !== session.status && !Object.hasOwn(treatmentLabels,status)) || (status === session.status && !note)) {
-      feedback.textContent = 'Altere o status ou escreva uma observação.';
+    const assignSection = byId('contactAssignSection');
+    const assignSelect = byId('contactAssignSeller');
+    const contact = session.contact;
+    const newSellerId = !assignSection.hidden ? (assignSelect.value || null) : null;
+    const sellerChanged = !assignSection.hidden && (newSellerId || '') !== (contact.sellerId || '');
+    if ((status !== session.status && !Object.hasOwn(treatmentLabels,status)) || (status === session.status && !note && !sellerChanged)) {
+      feedback.textContent = 'Altere o status, a vendedora ou escreva uma observação.';
       return;
     }
     const changedStatus = status === session.status ? null : status;
@@ -538,12 +543,21 @@
     }
     const statusField = byId('contactTreatmentStatus');
     const noteField = byId('contactTreatmentNote');
-    button.disabled = statusField.disabled = noteField.disabled = true;
+    button.disabled = statusField.disabled = noteField.disabled = assignSelect.disabled = true;
     feedback.textContent = 'Salvando…';
     try {
-      const {error} = await window.supabaseClient.from('contact_treatments')
-        .upsert(session.retry, {onConflict:'id',ignoreDuplicates:true});
-      if (error) throw error;
+      if (sellerChanged) {
+        if (currentUser?.profile?.role === 'vendedora' && (contact.sellerId || newSellerId !== currentUser.id)) throw Error('Atribuição não permitida');
+        const {data,error} = await window.supabaseClient.from('contact_leads').update({seller_id:newSellerId}).eq('phone',session.phone).select('seller_id');
+        if (error || !data?.length) throw Error('Falha ao atribuir vendedora');
+        contact.sellerId = newSellerId || '';
+        contact.seller = assignSelect.selectedOptions[0]?.textContent || '';
+      }
+      if (changedStatus || note) {
+        const {error} = await window.supabaseClient.from('contact_treatments')
+          .upsert(session.retry, {onConflict:'id',ignoreDuplicates:true});
+        if (error) throw error;
+      }
       treatmentIndexRequest = null;
       if (byId('contactTreatmentFilter').value) void render();
       else void renderTreatmentSummaries();
@@ -552,37 +566,9 @@
       if (detail === session) {
         feedback.textContent = 'Não foi possível confirmar o salvamento. Tente novamente.';
         button.disabled = statusField.disabled = noteField.disabled = false;
+        assignSelect.disabled = currentUser?.profile?.role !== 'admin' && Boolean(contact.sellerId);
       }
     }
-  };
-
-  byId('contactAssignSave').onclick = async () => {
-    const contact = selectedContact;
-    const select = byId('contactAssignSeller');
-    const feedback = byId('contactAssignFeedback');
-    const button = byId('contactAssignSave');
-    if (!contact?.lead || contact.manual || contact.sales.length || button.disabled) return;
-    const sellerId = select.value || null;
-    if (currentUser?.profile?.role === 'vendedora' && sellerId !== currentUser.id) {
-      feedback.textContent = 'Você só pode assumir contatos para seu próprio atendimento.'; return;
-    }
-    button.disabled = true;
-    feedback.textContent = 'Salvando responsável…';
-    try {
-      const phone = treatmentPhones(contact)[0];
-      if (!phone) throw Error('Telefone inválido');
-      const {data,error} = await window.supabaseClient.from('contact_leads').update({seller_id:sellerId}).eq('phone',phone).select('phone,seller_id');
-      if (error) throw error;
-      if (!data?.length) throw Error('Sem permissão para atribuir');
-      contact.sellerId = sellerId || '';
-      contact.seller = select.selectedOptions[0]?.textContent || '';
-      feedback.textContent = 'Vendedora atualizada com sucesso.';
-      if (currentUser?.profile?.role === 'vendedora') {select.disabled=true;button.hidden=true;}
-      page=1;
-      void render();
-    } catch {
-      feedback.textContent = 'Não foi possível salvar a vendedora. Tente novamente.';
-    } finally {button.disabled=false;}
   };
 
   byId('contactDelete').onclick = () => {
@@ -652,13 +638,11 @@
     const assignSection = byId('contactAssignSection');
     const assignSelect = byId('contactAssignSeller');
     const assignFeedback = byId('contactAssignFeedback');
-    const assignButton = byId('contactAssignSave');
     const assignable = Boolean(contact.lead && !contact.manual && !contact.sales.length);
     assignSection.hidden = !assignable;
     if (assignable) {
       assignSelect.value = contact.sellerId || '';
       assignSelect.disabled = currentUser?.profile?.role !== 'admin' && Boolean(contact.sellerId);
-      assignButton.hidden = assignSelect.disabled;
       assignFeedback.textContent = '';
     }
     byId('contactDelete').hidden = !(contact.manual && (currentUser?.profile?.role === 'admin' || (currentUser?.profile?.role === 'vendedora' && contact.createdBy === currentUser.id && contact.sellerId === currentUser.id)));
