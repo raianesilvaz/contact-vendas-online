@@ -388,7 +388,7 @@
     const city = byId('newContactCity').value.trim();
     const seller_id = byId('newContactSeller').value;
     const status = newContactStatus.value;
-    if (!/^55[1-9]\\d{9,10}$/.test(phone) || !city || !seller_id || !Object.hasOwn(treatmentLabels,status)) {
+    if (!/^55[1-9]\d{9,10}$/.test(phone) || !city || !seller_id || !Object.hasOwn(treatmentLabels,status)) {
       feedback.textContent='Preencha cidade, telefone válido, vendedora e status.'; return;
     }
     submit.disabled=true;
