@@ -102,7 +102,7 @@
     byId('contactRows').innerHTML = matches.slice((page-1)*pageSize,page*pageSize).map(({contact,index,sales,statuses}) => {
       const initials = contact.name.split(/\s+/).slice(0,2).map(part => part[0]).join('').toUpperCase();
       return `<button type="button" class="contacts-row" data-contact-index="${index}" aria-label="Abrir contato ${safe(contact.title)}">
-        <span class="contacts-person"><span class="avatar" aria-hidden="true">${safe(initials || '#')}</span><span><strong>${safe(contact.title)}</strong><span class="contacts-label contacts-city">Cidade · ${safe(contact.city || 'Não informada')}</span></span></span>
+        <span class="contacts-person"><span class="avatar" aria-hidden="true">${safe(initials || '#')}</span><span><strong>${safe(contact.title)}</strong>${contact.city ? `<span class="contacts-label contacts-city">${safe(contact.city)}</span>` : ''}</span></span>
         <span><span class="contacts-label">Telefones</span>${contact.phones.map(phone => `<span class="contacts-number">${safe(phone)}</span>`).join('') || 'Telefone não informado'}</span>
         <span><span class="contacts-label">Vendas no período · ${sales.length}</span>${statuses.map(statusBadge).join('')}</span>
         <span><span class="contacts-label">Venda mais recente no período</span>${dateLabel(sales[0].day)}<span class="contacts-label contacts-seller">Vendedora da última venda</span><strong>${safe(contact.seller || 'Não informada')}</strong></span>
