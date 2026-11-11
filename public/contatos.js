@@ -30,14 +30,33 @@
     return phone.replace(/^\+55(\d{2})(\d{4,5})(\d{4})$/, '+55 ($1) $2-$3');
   }
 
+  const stateCode = '(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)';
+  const labeledState = new RegExp(String.raw`\b(?:estado|uf)\s*:?\s*${stateCode}\b`, 'i');
+  const endingState = new RegExp(String.raw`(?:\s*[/–-]\s*|\s+\(?)${stateCode}\)?$`, 'i');
+  const cityName = /^[\p{L}][\p{L} .’'-]*$/u;
+
+  function addressCity(address) {
+    const text = String(address ?? '').trim();
+    const labeled = text.match(/(?:^|[,;\n])\s*cidade\s*:?\s*([^,;\n]+)/i);
+    const location = (labeled?.[1] || text).replace(/\s*(?:[,;–-]\s*)?(?:CEP\s*:?\s*)?\d{5}-?\d{3}\s*$/i, '').trim();
+    const suffix = location.match(endingState);
+    if (!labeled && !suffix) return '';
+    const cityPart = suffix ? location.slice(0, suffix.index).trim() : location;
+    const city = labeled ? cityPart : cityPart.split(/[,;\n]|\s+[–-]\s+/).at(-1).trim();
+    if (!cityName.test(city)) return '';
+    const state = suffix?.[1] || text.match(labeledState)?.[1];
+    return state ? city + '/' + state.toUpperCase() : city;
+  }
+
   function organizeSales(sales) {
     const groups = new Map();
     for (const sale of sales.sort((a,b) => (b.created_at || '').localeCompare(a.created_at || ''))) {
       const cpf = digits(sale.cpf);
       const key = cpf.length === 11 ? 'cpf:' + cpf : 'sale:' + sale.id;
-      if (!groups.has(key)) groups.set(key, { name:'', phones:new Set(), sales:[] });
+      if (!groups.has(key)) groups.set(key, { name:'', city:'', seller:sale.seller?.full_name?.trim() || '', phones:new Set(), sales:[] });
       const contact = groups.get(key);
       contact.name ||= sale.customer_name?.trim() || '';
+      contact.city ||= addressCity(sale.full_address);
       for (const value of [sale.phone_1, sale.phone_2]) {
         const phone = phoneNumber(value);
         if (phone) contact.phones.add(phone);
@@ -83,10 +102,10 @@
     byId('contactRows').innerHTML = matches.slice((page-1)*pageSize,page*pageSize).map(({contact,index,sales,statuses}) => {
       const initials = contact.name.split(/\s+/).slice(0,2).map(part => part[0]).join('').toUpperCase();
       return `<button type="button" class="contacts-row" data-contact-index="${index}" aria-label="Abrir contato ${safe(contact.title)}">
-        <span class="contacts-person"><span class="avatar" aria-hidden="true">${safe(initials || '#')}</span><strong>${safe(contact.title)}</strong></span>
+        <span class="contacts-person"><span class="avatar" aria-hidden="true">${safe(initials || '#')}</span><span><strong>${safe(contact.title)}</strong><span class="contacts-label contacts-city">Cidade · ${safe(contact.city || 'Não informada')}</span></span></span>
         <span><span class="contacts-label">Telefones</span>${contact.phones.map(phone => `<span class="contacts-number">${safe(phone)}</span>`).join('') || 'Telefone não informado'}</span>
         <span><span class="contacts-label">Vendas no período · ${sales.length}</span>${statuses.map(statusBadge).join('')}</span>
-        <span><span class="contacts-label">Venda mais recente no período</span>${dateLabel(sales[0].day)}</span>
+        <span><span class="contacts-label">Venda mais recente no período</span>${dateLabel(sales[0].day)}<span class="contacts-label contacts-seller">Vendedora da última venda</span><strong>${safe(contact.seller || 'Não informada')}</strong></span>
         <span class="contacts-arrow" aria-hidden="true">›</span>
       </button>`;
     }).join('') || '<p class="contacts-empty">Nenhum contato encontrado com esses filtros.</p>';
@@ -102,7 +121,7 @@
       let lastId;
       for (;;) {
         let query = window.supabaseClient.from('sales')
-          .select('id,cpf,customer_name,phone_1,phone_2,status,created_at,operators(name)')
+          .select('id,cpf,customer_name,phone_1,phone_2,status,created_at,full_address,operators(name),seller:profiles!sales_seller_id_fkey(full_name)')
           .order('id').limit(500);
         if (user.profile.role === 'vendedora') query = query.eq('seller_id',user.id);
         if (lastId) query = query.gt('id',lastId);
@@ -135,6 +154,8 @@
     if (!row) return;
     const contact = contacts[Number(row.dataset.contactIndex)];
     byId('contactName').textContent = contact.title;
+    byId('contactCity').textContent = contact.city || 'Não informada';
+    byId('contactSeller').textContent = contact.seller || 'Não informada';
     byId('contactPhones').innerHTML = contact.phones.map(phone => `<li>${safe(phone)}</li>`).join('') || '<li>Telefone não informado</li>';
     byId('contactSales').innerHTML = contact.sales.map(sale => `<li class="contacts-sale"><span>${safe(sale.operator)} · ${dateLabel(sale.day)}</span>${statusBadge(sale.status)}</li>`).join('');
     byId('contactDetail').showModal();
