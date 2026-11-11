@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css?v=20261028-beta-contact-1">
   <link rel="stylesheet" href="/sidebar-collapse.css?v=20261028-footer-grid-1">
-  <link rel="stylesheet" href="/contatos.css?v=20261111-tipografia">
+  <link rel="stylesheet" href="/contatos.css?v=20261111-filtro-status">
 </head>
 <body>
   <aside class="sidebar" id="sidebar">
@@ -36,6 +36,10 @@
           <label>Buscar contato<input id="contactSearch" type="search" placeholder="Nome ou telefone"></label>
           <label>Situação<select id="contactStatus">
             <option value="">Todas</option><option id="contactLeadOption" value="sem_venda" hidden disabled>Sem venda</option><option value="conectado">Aprovadas (conectadas)</option><option value="reprovada">Reprovadas</option><option value="ambas">Aprovadas e reprovadas</option>
+          </select></label>
+          <label>Status do atendimento<select id="contactTreatmentFilter">
+            <option value="">Todos os status</option>
+            <option value="sem_status">Sem status</option>
           </select></label>
           <label>Vendas a partir de<input id="contactStart" type="date"></label>
           <label>Vendas até<input id="contactEnd" type="date"></label>
@@ -89,6 +93,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-config.js"></script>
   <script src="auth-access-v2.js?v=20261111-contatos-admin"></script>
-  <script src="contatos.js?v=20261111-status-planilha"></script>
+  <script src="contatos.js?v=20261111-filtro-status"></script>
 </body>
 </html>
