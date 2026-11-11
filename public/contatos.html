@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css?v=20261028-beta-contact-1">
   <link rel="stylesheet" href="/sidebar-collapse.css?v=20261028-footer-grid-1">
-  <link rel="stylesheet" href="/cobrancas-phone-choice.css?v=20261005"><link rel="stylesheet" href="/bko-whatsapp-shortcut.css?v=20260903-1"><link rel="stylesheet" href="/contatos.css?v=20261111-whatsapp-cobrancas-3">
+  <link rel="stylesheet" href="/cobrancas-phone-choice.css?v=20261005"><link rel="stylesheet" href="/bko-whatsapp-shortcut.css?v=20260903-1"><link rel="stylesheet" href="/contatos.css?v=20261111-new-contact-5">
 </head>
 <body>
   <aside class="sidebar" id="sidebar">
@@ -29,7 +29,7 @@
   <main aria-label="Contatos">
     <header class="topbar"><button class="menu-button" id="menuButton" aria-label="Abrir menu">☰</button><div class="topbar-title"><span>Operação</span><b>/</b><strong>Contatos</strong></div><div class="profile"><div class="avatar" data-user-initials>--</div><span data-user-name>Carregando...</span></div></header>
     <div class="content contacts-content">
-      <div class="page-heading"><div><h1>Contatos</h1><p id="contactsSummary">Clientes cadastrados em vendas</p></div></div>
+      <div class="page-heading contacts-heading"><div><h1>Contatos</h1><p id="contactsSummary">Clientes cadastrados em vendas</p></div><button type="button" class="contacts-primary" id="newContactOpen">+ Novo contato</button></div>
       <p id="contactsStatus" role="status">Verificando acesso…</p>
       <div id="contactsDirectory" hidden>
         <section class="contacts-filters" aria-label="Filtros de contatos">
@@ -56,6 +56,19 @@
         </section>
       </div>
     </div>
+    <dialog class="contact-new-dialog" id="newContactDialog" aria-labelledby="newContactTitle">
+      <h2 id="newContactTitle">Novo contato</h2>
+      <p>Cadastre um contato para acompanhamento comercial.</p>
+      <form id="newContactForm" class="contact-new-form">
+        <label>Nome (opcional)<input id="newContactName" maxlength="150" placeholder="Nome do contato"></label>
+        <label>Cidade *<input id="newContactCity" maxlength="120" required placeholder="Cidade/UF"></label>
+        <label>Telefone *<input id="newContactPhone" type="tel" required inputmode="tel" placeholder="(DDD) 99999-9999"></label>
+        <label>Vendedora responsável *<select id="newContactSeller" required></select></label>
+        <label>Status do atendimento *<select id="newContactStatus" required><option value="">Selecione um status</option></select></label>
+        <p id="newContactFeedback" role="status"></p>
+        <div class="contact-new-actions"><button type="button" onclick="document.getElementById('newContactDialog').close()">Cancelar</button><button type="submit" class="contacts-primary" id="newContactSave">Salvar contato</button></div>
+      </form>
+    </dialog>
     <dialog class="collection-phone-choice" id="contactWhatsappDialog" aria-labelledby="contactWhatsappTitle">
       <h2 id="contactWhatsappTitle">Escolha o telefone</h2>
       <p>O WhatsApp será aberto para o número escolhido.</p>
@@ -99,6 +112,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-config.js"></script>
   <script src="auth-access-v2.js?v=20261111-contatos-admin"></script>
-  <script src="contatos.js?v=20261111-whatsapp-app-4"></script>
+  <script src="contatos.js?v=20261111-new-contact-5"></script>
 </body>
 </html>
