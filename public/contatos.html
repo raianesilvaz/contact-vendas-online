@@ -39,7 +39,14 @@
     #contactDetail #contactDelete{font:700 12px 'DM Sans',sans-serif;padding:9px 13px;border:1px solid #f2b8b5;border-radius:8px;background:#fff5f4;color:#b42318;cursor:pointer}
     #contactDetail #contactDelete[hidden]{display:none}
   </style>
-</head>
+<style>
+  #contactAssignSection[hidden],#contactAssignSave[hidden]{display:none}
+  .contact-assign-section{display:grid;gap:8px;padding:10px 0;border-bottom:1px solid #e2e8ed}
+  .contact-assign-section label{display:grid;gap:6px}
+  .contact-assign-section select{width:100%;min-height:36px;border:1px solid #d2dce5;border-radius:8px;background:#fff;padding:8px;color:#1b2c3b;font:500 12px 'DM Sans',sans-serif}
+  .contact-assign-section .contacts-primary{width:auto;justify-self:end;min-height:33px;padding:7px 12px}
+  #contactAssignFeedback{font-size:11px;margin:0;color:#008b84}
+</style></head>
 <body>
   <aside class="sidebar" id="sidebar">
     <div class="brand"><span class="brand-mark">C</span><span class="brand-name">CONTACT</span></div><nav aria-label="Menu principal"><a class="nav-item" href="painel.html"><span>◫</span><span>Painel</span></a>
@@ -121,6 +128,13 @@
                 <option id="contactTreatmentPlaceholder" value="" disabled hidden>Selecione um status</option>
               </select>
             </label>
+            <div id="contactAssignSection" class="contact-assign-section" hidden>
+              <label>Vendedora responsável
+                <select id="contactAssignSeller"><option value="">Sem vendedora</option></select>
+              </label>
+              <button type="button" class="contacts-primary" id="contactAssignSave">Salvar vendedora</button>
+              <p id="contactAssignFeedback" role="status"></p>
+            </div>
             <label>Nova observação
               <textarea id="contactTreatmentNote" maxlength="2000" rows="3" placeholder="Registre o que foi combinado com o cliente"></textarea>
             </label>
@@ -147,6 +161,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-config.js"></script>
   <script src="auth-access-v2.js?v=20261111-contatos-admin"></script>
-  <script src="contatos.js?v=20261111-seller-filter-options-14"></script>
+  <script src="contatos.js?v=20261111-assign-seller-15"></script>
 </body>
 </html>
