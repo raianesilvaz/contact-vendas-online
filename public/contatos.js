@@ -332,7 +332,22 @@
       const sellerFilter = byId('contactSellerFilter');
       const selectedSeller = sellerFilter.value;
       sellerFilter.replaceChildren(new Option('Todas as vendedoras',''),new Option('Sem vendedora','__unassigned'));
-      for (const item of (sellers.data || []).filter(item => item.role === 'vendedora' || item.role === 'admin').sort((a,b)=>a.full_name.localeCompare(b.full_name,'pt-BR'))) sellerFilter.add(new Option(item.full_name,item.id));
+      // A lista deve incluir vendedoras cadastradas e responsáveis pelas vendas,
+      // mesmo quando uma das fontes não retorna o perfil completo.
+      const sellerOptions = new Map();
+      for (const item of sellers.data || []) {
+        if (item.role === 'vendedora' && item.full_name?.trim()) sellerOptions.set(item.id,item.full_name.trim());
+      }
+      for (const sale of sales) {
+        const id = sale.seller_id;
+        const name = sale.seller?.full_name?.trim() || sellerNames.get(id)?.trim();
+        if (id && name) sellerOptions.set(id,name);
+      }
+      for (const item of manual) {
+        const name = sellerNames.get(item.seller_id)?.trim();
+        if (item.seller_id && name) sellerOptions.set(item.seller_id,name);
+      }
+      for (const [id,name] of [...sellerOptions].sort((a,b)=>a[1].localeCompare(b[1],'pt-BR'))) sellerFilter.add(new Option(name,id));
       if ([...sellerFilter.options].some(option=>option.value===selectedSeller)) sellerFilter.value=selectedSeller;
 
       const manualContacts = manual.map(item => ({lead:true,manual:true,manualId:item.id,createdBy:item.created_by,sellerId:item.seller_id,createdAt:item.created_at || '',name:item.name || '',title:item.name || phoneLabel('+' + item.phone),city:item.city,phones:[phoneLabel('+' + item.phone)],seller:sellerNames.get(item.seller_id) || '',manualStatus:item.status,sales:[]}));
