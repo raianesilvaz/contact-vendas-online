@@ -16,6 +16,13 @@
   const dateLabel = day => day ? day.split('-').reverse().join('/') : 'Data não informada';
   const filters = ['contactSearch', 'contactStatus', 'contactStart', 'contactEnd'].map(byId);
   const treatmentLabels = {
+    venda:'Venda', inviabilidade:'Inviabilidade', sem_interacao:'Sem interação',
+    restricao_cpf:'Restrição CPF', clicou_sem_querer:'Clicou sem querer',
+    debitos_com_operadora:'Débitos com operadora', chance_venda_retorno:'Chance de venda - retorno',
+    cliente:'Cliente', em_contato:'Em contato',
+    contratou_outra_operadora:'Contratou com outra operadora', inv_total:'Inv. total'
+  };
+  const previousTreatmentLabels = {
     a_tratar:'A tratar', em_atendimento:'Em atendimento', aguardando_retorno:'Aguardando retorno',
     encerrado_sem_venda:'Encerrado sem venda', nao_contatar:'Não contatar'
   };
@@ -157,11 +164,11 @@
     events.sort(newestFirst);
     rows.forEach((row,index) => {
       const linked = phonesByRow[index];
-      const status = events.find(event => event.status && linked.includes(event.phone))?.status || 'a_tratar';
+      const status = events.find(event => event.status && linked.includes(event.phone))?.status || '';
       const badge = row.querySelector('[data-treatment-status]');
       badge.dataset.tone = linked.length && !failed ? status : 'neutral';
       badge.textContent =
-        !linked.length ? 'Telefone indisponível' : failed ? 'Indisponível' : treatmentLabels[status];
+        !linked.length ? 'Telefone indisponível' : failed ? 'Indisponível' : treatmentLabels[status] || previousTreatmentLabels[status] || 'Sem status';
       const note = row.querySelector('[data-treatment-note]');
       note.textContent = failed ? '' : events.find(event => event.note && linked.includes(event.phone))?.note || '';
       note.hidden = !note.textContent;
@@ -235,9 +242,11 @@
       const events = await loadPages('contact_treatments', 'id,phone,status,note,author_name,created_at', 'id', undefined, phones);
       if (revision !== detailRevision) return;
       events.sort(newestFirst);
-      const currentStatus = events.find(event => event.status)?.status || 'a_tratar';
+      const currentStatus = events.find(event => event.status)?.status || '';
       detail = {contact,phone:phones[0],status:currentStatus,retry:null};
-      byId('contactTreatmentStatus').value = currentStatus;
+      const isNewStatus = Object.hasOwn(treatmentLabels, currentStatus);
+      byId('contactTreatmentPlaceholder').textContent = previousTreatmentLabels[currentStatus] || 'Selecione um status';
+      byId('contactTreatmentStatus').value = isNewStatus ? currentStatus : '';
       byId('contactTreatmentNote').value = '';
       byId('contactTreatmentSave').disabled = false;
       byId('contactTreatmentStatus').disabled = false;
@@ -252,15 +261,20 @@
     }
   }
 
+  const treatmentSelect = byId('contactTreatmentStatus');
+  for (const [value, label] of Object.entries(treatmentLabels)) {
+    treatmentSelect.add(new Option(label, value));
+  }
+
   byId('contactTreatmentForm').onsubmit = async event => {
     event.preventDefault();
     const session = detail;
     const button = byId('contactTreatmentSave');
     if (!session || button.disabled) return;
-    const status = byId('contactTreatmentStatus').value;
+    const status = byId('contactTreatmentStatus').value || session.status;
     const note = byId('contactTreatmentNote').value.trim();
     const feedback = byId('contactTreatmentFeedback');
-    if (!Object.hasOwn(treatmentLabels,status) || (status === session.status && !note)) {
+    if ((status !== session.status && !Object.hasOwn(treatmentLabels,status)) || (status === session.status && !note)) {
       feedback.textContent = 'Altere o status ou escreva uma observação.';
       return;
     }
