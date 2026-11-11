@@ -15,16 +15,32 @@
   const isoDate = new Intl.DateTimeFormat('en-CA', { timeZone, year:'numeric', month:'2-digit', day:'2-digit' });
   const dateLabel = day => day ? day.split('-').reverse().join('/') : 'Data não informada';
   const filters = ['contactSearch', 'contactStatus', 'contactStart', 'contactEnd'].map(byId);
+  const treatmentLabels = {
+    a_tratar:'A tratar', em_atendimento:'Em atendimento', aguardando_retorno:'Aguardando retorno',
+    encerrado_sem_venda:'Encerrado sem venda', nao_contatar:'Não contatar'
+  };
+  const treatmentDate = new Intl.DateTimeFormat('pt-BR', { timeZone, dateStyle:'short', timeStyle:'short' });
   const pageSize = 25;
+  let pageRevision = 0;
+  let detailRevision = 0;
+  let detail = null;
   let contacts = [];
   let page = 1;
 
   function phoneNumber(value) {
     const text = String(value ?? '').trim();
-    const number = digits(text);
+    const number = digits(text).replace(/^0(?=[1-9]\d{9,10}$)/, '');
     if (!/^[+\d\s().-]+$/.test(text) || !number) return text;
     if (number.length === 10 || number.length === 11) return '+55' + number;
     return '+' + number;
+  }
+
+  function treatmentPhones(contact) {
+    return [...new Set(contact.phones.flatMap(value => {
+      if (!/^[+\d\s().-]+$/.test(value)) return [];
+      const number = digits(value).replace(/^550(?=[1-9]\d{9,10}$)/, '55');
+      return /^55[1-9]\d{9,10}$/.test(number) ? [number] : [];
+    }))];
   }
 
   function phoneLabel(phone) {
@@ -111,18 +127,56 @@
         <span class="contacts-person"><span class="avatar" aria-hidden="true">${safe(initials || '#')}</span><span><strong>${safe(contact.title)}</strong>${contact.city ? `<span class="contacts-label contacts-city">${safe(contact.city)}</span>` : ''}</span></span>
         <span><span class="contacts-label">Telefones</span>${contact.phones.map(phone => `<span class="contacts-number">${safe(phone)}</span>`).join('') || 'Telefone não informado'}</span>
         <span>${contact.lead ? statusBadge('sem_venda') : `<span class="contacts-label">Vendas no período · ${sales.length}</span>${statuses.map(statusBadge).join('')}`}</span>
-        <span>${contact.lead ? '' : `<span class="contacts-label">Venda mais recente no período</span>${dateLabel(sales[0].day)}<span class="contacts-label contacts-seller">Vendedora da última venda</span><strong>${safe(contact.seller || 'Não informada')}</strong>`}</span>
+        <span class="contacts-treatment"><span class="contacts-label">Atendimento</span><strong data-treatment-status>Carregando…</strong><span data-treatment-note class="contacts-treatment-note" hidden></span>${contact.lead ? '' : `<span class="contacts-label contacts-seller">Venda mais recente no período</span>${dateLabel(sales[0].day)}<span class="contacts-label contacts-seller">Vendedora da última venda</span><strong>${safe(contact.seller || 'Não informada')}</strong>`}</span>
         <span class="contacts-arrow" aria-hidden="true">›</span>
       </button>`;
     }).join('') || '<p class="contacts-empty">Nenhum contato encontrado com esses filtros.</p>';
+    void renderTreatmentSummaries();
   }
 
-  async function loadPages(table, columns, key, sellerId) {
+  async function renderTreatmentSummaries() {
+    const revision = ++pageRevision;
+    const rows = [...byId('contactRows').querySelectorAll('[data-contact-index]')];
+    const phonesByRow = rows.map(row => treatmentPhones(contacts[Number(row.dataset.contactIndex)]));
+    const phones = [...new Set(phonesByRow.flat())];
+    let events = [];
+    let failed = false;
+    if (phones.length) {
+      try {
+        for (let start = 0; start < phones.length; start += 150) {
+          const {data,error} = await window.supabaseClient.from('contact_treatment_summaries')
+            .select('phone,id,status,note,created_at').in('phone', phones.slice(start,start+150));
+          if (error) throw error;
+          events.push(...data);
+        }
+      } catch {
+        failed = true;
+      }
+    }
+    if (revision !== pageRevision) return;
+    events.sort(newestFirst);
+    rows.forEach((row,index) => {
+      const linked = phonesByRow[index];
+      const status = events.find(event => event.status && linked.includes(event.phone))?.status || 'a_tratar';
+      row.querySelector('[data-treatment-status]').textContent =
+        !linked.length ? 'Telefone indisponível' : failed ? 'Indisponível' : treatmentLabels[status];
+      const note = row.querySelector('[data-treatment-note]');
+      note.textContent = failed ? '' : events.find(event => event.note && linked.includes(event.phone))?.note || '';
+      note.hidden = !note.textContent;
+    });
+  }
+
+  function newestFirst(a,b) {
+    return b.created_at.localeCompare(a.created_at) || b.id.localeCompare(a.id);
+  }
+
+  async function loadPages(table, columns, key, sellerId, phones) {
     const records = [];
     let cursor;
     for (;;) {
       let query = window.supabaseClient.from(table).select(columns).order(key).limit(500);
       if (sellerId) query = query.eq('seller_id', sellerId);
+      if (phones) query = query.in('phone', phones);
       if (cursor) query = query.gt(key, cursor);
       const {data,error} = await query;
       if (error) throw error;
@@ -164,6 +218,77 @@
     }
   }
 
+  async function openTreatment(contact, message = '') {
+    const revision = ++detailRevision;
+    detail = null;
+    const phones = treatmentPhones(contact);
+    const form = byId('contactTreatmentForm');
+    const feedback = byId('contactTreatmentFeedback');
+    const history = byId('contactTreatmentHistory');
+    form.hidden = true;
+    history.replaceChildren();
+    feedback.textContent = phones.length ? 'Carregando atendimento…' : 'Cadastre um telefone válido para registrar o atendimento.';
+    if (!phones.length) return;
+    try {
+      const events = await loadPages('contact_treatments', 'id,phone,status,note,author_name,created_at', 'id', undefined, phones);
+      if (revision !== detailRevision) return;
+      events.sort(newestFirst);
+      const currentStatus = events.find(event => event.status)?.status || 'a_tratar';
+      detail = {contact,phone:phones[0],status:currentStatus,retry:null};
+      byId('contactTreatmentStatus').value = currentStatus;
+      byId('contactTreatmentNote').value = '';
+      byId('contactTreatmentSave').disabled = false;
+      byId('contactTreatmentStatus').disabled = false;
+      byId('contactTreatmentNote').disabled = false;
+      history.innerHTML = events.filter(event => event.note).map(event =>
+        `<li><small>${safe(event.author_name)} · ${safe(treatmentDate.format(new Date(event.created_at)))}</small><p>${safe(event.note)}</p></li>`
+      ).join('') || '<li>Nenhuma observação registrada.</li>';
+      feedback.textContent = message;
+      form.hidden = false;
+    } catch {
+      if (revision === detailRevision) feedback.textContent = 'Não foi possível carregar o atendimento. Feche a ficha e tente novamente.';
+    }
+  }
+
+  byId('contactTreatmentForm').onsubmit = async event => {
+    event.preventDefault();
+    const session = detail;
+    const button = byId('contactTreatmentSave');
+    if (!session || button.disabled) return;
+    const status = byId('contactTreatmentStatus').value;
+    const note = byId('contactTreatmentNote').value.trim();
+    const feedback = byId('contactTreatmentFeedback');
+    if (!Object.hasOwn(treatmentLabels,status) || (status === session.status && !note)) {
+      feedback.textContent = 'Altere o status ou escreva uma observação.';
+      return;
+    }
+    const changedStatus = status === session.status ? null : status;
+    if (!session.retry || session.retry.status !== changedStatus || session.retry.note !== (note || null)) {
+      session.retry = {id:crypto.randomUUID(), phone:session.phone, status:changedStatus, note:note || null};
+    }
+    const statusField = byId('contactTreatmentStatus');
+    const noteField = byId('contactTreatmentNote');
+    button.disabled = statusField.disabled = noteField.disabled = true;
+    feedback.textContent = 'Salvando…';
+    try {
+      const {error} = await window.supabaseClient.from('contact_treatments')
+        .upsert(session.retry, {onConflict:'id',ignoreDuplicates:true});
+      if (error) throw error;
+      void renderTreatmentSummaries();
+      if (detail === session) await openTreatment(session.contact, 'Atendimento salvo.');
+    } catch {
+      if (detail === session) {
+        feedback.textContent = 'Não foi possível confirmar o salvamento. Tente novamente.';
+        button.disabled = statusField.disabled = noteField.disabled = false;
+      }
+    }
+  };
+
+  byId('contactDetail').addEventListener('close', () => {
+    detailRevision++;
+    detail = null;
+  });
+
   for (const filter of filters) filter.addEventListener('input', () => { page = 1; render(); });
   byId('contactClear').onclick = () => {
     filters.forEach(filter => { filter.value = ''; });
@@ -183,6 +308,7 @@
     byId('contactPhones').innerHTML = contact.phones.map(phone => `<li>${safe(phone)}</li>`).join('') || '<li>Telefone não informado</li>';
     byId('contactSales').innerHTML = contact.sales.map(sale => `<li class="contacts-sale"><span>${safe(sale.operator)} · ${dateLabel(sale.day)}</span>${statusBadge(sale.status)}</li>`).join('') || '<li>Sem venda registrada.</li>';
     byId('contactDetail').showModal();
+    void openTreatment(contact);
   };
   byId('menuButton').onclick = () => byId('sidebar').classList.toggle('open');
   load();

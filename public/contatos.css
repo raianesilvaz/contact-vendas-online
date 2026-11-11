@@ -31,3 +31,16 @@
 .contacts-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0 0}
 .contacts-meta dt{color:var(--muted);font-size:11px}
 .contacts-meta dd{margin:4px 0 0;font-weight:600;overflow-wrap:anywhere}
+
+.contacts-treatment{min-width:0}
+.contacts-treatment-note{display:block;color:var(--muted);margin-top:4px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.contacts-treatment-form{display:grid;gap:10px}
+.contacts-treatment-form[hidden]{display:none}
+.contacts-treatment-form label{display:grid;gap:5px;font-weight:600;font-size:12px}
+.contacts-treatment-form select,.contacts-treatment-form textarea{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:var(--card,#fff);font:inherit}
+.contacts-treatment-form textarea{resize:vertical}
+.contacts-treatment-form button{justify-self:start}
+.contacts-treatment-form button:disabled{opacity:.6;cursor:default}
+#contactTreatmentFeedback{color:var(--muted);font-size:12px}
+#contactTreatmentHistory p{white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0}
+#contactTreatmentHistory small{color:var(--muted)}
