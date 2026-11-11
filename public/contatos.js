@@ -308,7 +308,7 @@
     const customerPhones = new Set(customers.flatMap(contact => contact.phones.map(digits)));
     return leads.filter(lead => !customerPhones.has(lead.phone)).map(lead => {
       const phone = phoneLabel('+' + lead.phone);
-      return { lead:true, name:'', title:phone, city:lead.city, phones:[phone], seller:'', sales:[] };
+      return { lead:true, name:'', title:phone, city:lead.city, phones:[phone], sellerId:lead.seller_id || '', seller:'', sales:[] };
     });
   }
 
@@ -322,7 +322,7 @@
       const seller = user.profile.role === 'vendedora';
       const [sales, leads, manual] = await Promise.all([
         loadPages('sales', 'id,cpf,customer_name,phone_1,phone_2,status,created_at,full_address,seller_id,operators(name),seller:profiles!sales_seller_id_fkey(full_name)', 'id', seller ? user.id : undefined),
-        loadPages('contact_leads', 'phone,city', 'phone'),
+        loadPages('contact_leads', 'phone,city,seller_id', 'phone'),
         loadPages('contact_manual', 'id,name,phone,city,seller_id,status,created_by,created_at', 'id', seller ? user.id : undefined)
       ]);
       const customers = organizeSales(sales);
@@ -352,9 +352,14 @@
 
       const manualContacts = manual.map(item => ({lead:true,manual:true,manualId:item.id,createdBy:item.created_by,sellerId:item.seller_id,createdAt:item.created_at || '',name:item.name || '',title:item.name || phoneLabel('+' + item.phone),city:item.city,phones:[phoneLabel('+' + item.phone)],seller:sellerNames.get(item.seller_id) || '',manualStatus:item.status,sales:[]}));
       contacts = [...customers, ...organizeLeads(leads, customers), ...manualContacts];
+      for (const contact of contacts) if (contact.sellerId) contact.seller = sellerNames.get(contact.sellerId) || contact.seller || '';
       const sellerSelect = byId('newContactSeller');
       sellerSelect.replaceChildren(new Option('Selecione a vendedora',''));
       for (const item of (sellers.data || []).filter(item => item.role === 'vendedora' || item.role === 'admin')) sellerSelect.add(new Option(item.full_name,item.id));
+      const assignSelect = byId('contactAssignSeller');
+      assignSelect.replaceChildren(new Option('Sem vendedora',''));
+      for (const item of (sellers.data || []).filter(item=>item.role==='vendedora' && item.full_name?.trim()).sort((a,b)=>a.full_name.localeCompare(b.full_name,'pt-BR'))) assignSelect.add(new Option(item.full_name,item.id));
+      if (seller && ![...assignSelect.options].some(option=>option.value===user.id)) assignSelect.add(new Option(user.profile.full_name || 'Meu usuário',user.id));
       if (seller) { sellerSelect.value=user.id; sellerSelect.dataset.ownerId=user.id; sellerSelect.disabled=true; }
       else sellerSelect.disabled=false;
       byId('contactLeadOption').hidden = false;
@@ -551,6 +556,35 @@
     }
   };
 
+  byId('contactAssignSave').onclick = async () => {
+    const contact = selectedContact;
+    const select = byId('contactAssignSeller');
+    const feedback = byId('contactAssignFeedback');
+    const button = byId('contactAssignSave');
+    if (!contact?.lead || contact.manual || contact.sales.length || button.disabled) return;
+    const sellerId = select.value || null;
+    if (currentUser?.profile?.role === 'vendedora' && sellerId !== currentUser.id) {
+      feedback.textContent = 'Você só pode assumir contatos para seu próprio atendimento.'; return;
+    }
+    button.disabled = true;
+    feedback.textContent = 'Salvando responsável…';
+    try {
+      const phone = treatmentPhones(contact)[0];
+      if (!phone) throw Error('Telefone inválido');
+      const {data,error} = await window.supabaseClient.from('contact_leads').update({seller_id:sellerId}).eq('phone',phone).select('phone,seller_id');
+      if (error) throw error;
+      if (!data?.length) throw Error('Sem permissão para atribuir');
+      contact.sellerId = sellerId || '';
+      contact.seller = select.selectedOptions[0]?.textContent || '';
+      feedback.textContent = 'Vendedora atualizada com sucesso.';
+      if (currentUser?.profile?.role === 'vendedora') {select.disabled=true;button.hidden=true;}
+      page=1;
+      void render();
+    } catch {
+      feedback.textContent = 'Não foi possível salvar a vendedora. Tente novamente.';
+    } finally {button.disabled=false;}
+  };
+
   byId('contactDelete').onclick = () => {
     const contact = selectedContact;
     if (!contact?.manualId || byId('contactDelete').hidden) return;
@@ -615,6 +649,18 @@
     if (!row) return;
     const contact = contacts[Number(row.dataset.contactIndex)];
     selectedContact = contact;
+    const assignSection = byId('contactAssignSection');
+    const assignSelect = byId('contactAssignSeller');
+    const assignFeedback = byId('contactAssignFeedback');
+    const assignButton = byId('contactAssignSave');
+    const assignable = Boolean(contact.lead && !contact.manual && !contact.sales.length);
+    assignSection.hidden = !assignable;
+    if (assignable) {
+      assignSelect.value = contact.sellerId || '';
+      assignSelect.disabled = currentUser?.profile?.role !== 'admin' && Boolean(contact.sellerId);
+      assignButton.hidden = assignSelect.disabled;
+      assignFeedback.textContent = '';
+    }
     byId('contactDelete').hidden = !(contact.manual && (currentUser?.profile?.role === 'admin' || (currentUser?.profile?.role === 'vendedora' && contact.createdBy === currentUser.id && contact.sellerId === currentUser.id)));
     byId('contactName').textContent = contact.title;
     byId('contactCity').textContent = contact.city || 'Não informada';
