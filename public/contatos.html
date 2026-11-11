@@ -46,6 +46,11 @@
   .contact-assign-section select{width:100%;min-height:36px;border:1px solid #d2dce5;border-radius:8px;background:#fff;padding:8px;color:#1b2c3b;font:500 12px 'DM Sans',sans-serif}
   .contact-assign-section .contacts-primary{width:auto;justify-self:end;min-height:33px;padding:7px 12px}
   #contactAssignFeedback{font-size:11px;margin:0;color:#008b84}
+</style><style>
+  /* Ficha de atendimento compacta, com um único botão de salvamento */
+  #contactAssignSection.contact-assign-section{gap:4px;padding:3px 0 4px;border-bottom:0}
+  #contactAssignSection #contactAssignFeedback:empty{display:none}
+  #contactTreatmentForm{gap:9px}
 </style></head>
 <body>
   <aside class="sidebar" id="sidebar">
@@ -132,7 +137,6 @@
               <label>Vendedora responsável
                 <select id="contactAssignSeller"><option value="">Sem vendedora</option></select>
               </label>
-              <button type="button" class="contacts-primary" id="contactAssignSave">Salvar vendedora</button>
               <p id="contactAssignFeedback" role="status"></p>
             </div>
             <label>Nova observação
@@ -161,6 +165,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-config.js"></script>
   <script src="auth-access-v2.js?v=20261111-contatos-admin"></script>
-  <script src="contatos.js?v=20261111-assign-seller-15"></script>
+  <script src="contatos.js?v=20261111-unified-save-17"></script>
 </body>
 </html>
