@@ -169,8 +169,14 @@
       return `<button type="button" class="contacts-row" data-contact-index="${index}" aria-label="Abrir contato ${safe(contact.title)}">
         <span class="contacts-person"><span class="avatar" aria-hidden="true">${safe(initials || '#')}</span><span><strong>${safe(contact.title)}</strong>${contact.city ? `<span class="contacts-label contacts-city">${safe(contact.city)}</span>` : ''}</span></span>
         <span><span class="contacts-label">Telefones</span>${contact.phones.map(phone => `<span class="contacts-number">${safe(phone)}</span>`).join('') || 'Telefone não informado'}</span>
-        <span>${contact.lead ? statusBadge('sem_venda') : `<span class="contacts-label">Vendas no período · ${sales.length}</span>${statuses.map(statusBadge).join('')}`}</span>
-        <span class="contacts-treatment"><span class="contacts-label">Atendimento</span><strong class="contacts-treatment-badge" data-treatment-status>Carregando…</strong><span data-treatment-note class="contacts-treatment-note" hidden></span>${contact.lead ? '' : `<span class="contacts-label contacts-seller">Venda mais recente no período</span>${dateLabel(sales[0].day)}<span class="contacts-label contacts-seller">Vendedora da última venda</span><strong>${safe(contact.seller || 'Não informada')}</strong>`}</span>
+        <span class="contacts-statuses">
+          <span><span class="contacts-label">${contact.lead ? 'Vendas no período' : `Vendas no período · ${sales.length}`}</span><span class="contacts-sale-badges">${contact.lead ? statusBadge('sem_venda') : statuses.map(statusBadge).join('')}</span></span>
+          <span class="contacts-treatment"><span class="contacts-label">Atendimento</span><strong class="contacts-treatment-badge" data-treatment-status>Carregando…</strong><span data-treatment-note class="contacts-treatment-note" hidden></span></span>
+        </span>
+        ${contact.lead ? '' : `<span class="contacts-sale-info">
+          <span><span class="contacts-label">Última venda no período</span>${sales[0].day ? `<time datetime="${safe(sales[0].day)}">${dateLabel(sales[0].day)}</time>` : dateLabel('')}</span>
+          <span><span class="contacts-label">Vendedora da última venda</span><strong>${safe(contact.seller || 'Não informada')}</strong></span>
+        </span>`}
         <span class="contacts-arrow" aria-hidden="true">›</span>
       </button>`;
     }).join('') || '<p class="contacts-empty">Nenhum contato encontrado com esses filtros.</p>';
