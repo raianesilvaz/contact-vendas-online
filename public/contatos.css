@@ -114,8 +114,15 @@
 #contactTreatmentHistory p{white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0}
 #contactTreatmentHistory small{color:var(--muted);font-size:12px}
 
-/* Acesso direto ao WhatsApp sem ampliar a altura das linhas */
-.contacts-phone-line{display:flex;align-items:center;gap:5px;min-width:0}
-.contacts-phone-line .contacts-number{display:inline;min-width:0}
-.contacts-whatsapp{display:inline-flex;align-items:center;justify-content:center;flex:none;width:18px;height:18px;border-radius:5px;background:#e0f7e9;color:#087b44;font-size:12px;font-weight:700;text-decoration:none;line-height:1}
-.contacts-whatsapp:hover,.contacts-whatsapp:focus-visible{background:#25d366;color:#fff;outline-offset:2px}
+.contacts-phone-cell{display:flex;align-items:center;gap:7px;min-width:0}
+.contacts-phone-numbers{display:grid;min-width:0}
+.contacts-phone-cell .contacts-whatsapp{width:23px;height:23px;flex:0 0 23px;padding:0;border:0;cursor:pointer}
+.contacts-phone-cell .contacts-whatsapp svg{width:14px;height:14px;display:block;fill:currentColor}
+.contact-whatsapp-dialog{width:min(380px,calc(100% - 32px));max-width:100%;padding:22px;border:1px solid var(--line);border-radius:14px;background:var(--card,#fff);color:var(--ink);box-shadow:0 18px 55px #122a3840}
+.contact-whatsapp-dialog::backdrop{background:#132a3966}
+.contact-whatsapp-dialog h2{font-size:18px;margin:0 0 6px}
+.contact-whatsapp-dialog p{font-size:13px;color:var(--muted);margin:0 0 14px}
+.contact-whatsapp-options{display:grid;gap:9px}
+.contact-whatsapp-option{border:1px solid var(--line);border-radius:9px;padding:12px;background:var(--card,#fff);color:var(--ink);font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.contact-whatsapp-option:hover{border-color:#1f9d5a;background:#e9f8ef;color:#146d3c}
+.contact-whatsapp-cancel{margin-top:14px;border:0;background:transparent;color:var(--muted);cursor:pointer;font:inherit}
