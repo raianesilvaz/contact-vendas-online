@@ -134,3 +134,10 @@
 .contact-new-actions{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:6px}
 .contact-new-actions>button:first-child{border:0;background:transparent;color:#667085;cursor:pointer}
 #newContactFeedback{font-size:12px;color:#b42318;margin:0}
+
+/* Botões de cadastro no padrão visual CONTACT */
+.contacts-heading #newContactOpen,.contact-new-actions #newContactSave{display:inline-flex;align-items:center;justify-content:center;gap:7px;width:auto;min-height:36px;padding:9px 15px;border:1px solid var(--contacts-accent,#008f8d);border-radius:9px;background:var(--contacts-accent,#008f8d);color:#fff;font:700 12px/1.25 'DM Sans',sans-serif;letter-spacing:0;white-space:nowrap;cursor:pointer;box-shadow:none;transition:background .15s ease,border-color .15s ease}
+.contacts-heading #newContactOpen:hover,.contact-new-actions #newContactSave:hover:not(:disabled){background:#007a78;border-color:#007a78}
+.contacts-heading #newContactOpen:focus-visible,.contact-new-actions #newContactSave:focus-visible{outline:2px solid #008f8d;outline-offset:3px}
+.contact-new-actions #newContactSave:disabled{opacity:.55;cursor:wait}
+@media(max-width:520px){.contacts-heading{align-items:flex-start}.contacts-heading #newContactOpen{padding:9px 11px;font-size:11px}}
