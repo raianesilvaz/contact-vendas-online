@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css?v=20261028-beta-contact-1">
   <link rel="stylesheet" href="/sidebar-collapse.css?v=20261028-footer-grid-1">
-  <link rel="stylesheet" href="/contatos.css?v=20261111-cidade">
+  <link rel="stylesheet" href="/contatos.css?v=20261111-tratamento">
 </head>
 <body>
   <aside class="sidebar" id="sidebar">
@@ -57,11 +57,30 @@
       <dl class="contacts-meta"><div><dt>Cidade</dt><dd id="contactCity"></dd></div><div><dt>Vendedora da última venda</dt><dd id="contactSeller"></dd></div></dl>
       <h3>Telefones</h3><ul id="contactPhones"></ul>
       <h3>Histórico de vendas</h3><ul id="contactSales"></ul>
+      <h3>Atendimento</h3>
+      <p id="contactTreatmentFeedback" role="status"></p>
+      <form id="contactTreatmentForm" class="contacts-treatment-form" hidden>
+        <label>Status do atendimento
+          <select id="contactTreatmentStatus">
+            <option value="a_tratar">A tratar</option>
+            <option value="em_atendimento">Em atendimento</option>
+            <option value="aguardando_retorno">Aguardando retorno</option>
+            <option value="encerrado_sem_venda">Encerrado sem venda</option>
+            <option value="nao_contatar">Não contatar</option>
+          </select>
+        </label>
+        <label>Nova observação
+          <textarea id="contactTreatmentNote" maxlength="2000" rows="3" placeholder="Registre o que foi combinado com o cliente"></textarea>
+        </label>
+        <button type="submit" id="contactTreatmentSave">Salvar atendimento</button>
+      </form>
+      <h3>Histórico de observações</h3>
+      <ul id="contactTreatmentHistory"></ul>
     </dialog>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-config.js"></script>
   <script src="auth-access-v2.js?v=20261111-contatos-admin"></script>
-  <script src="contatos.js?v=20261111-sem-venda"></script>
+  <script src="contatos.js?v=20261111-tratamento"></script>
 </body>
 </html>
