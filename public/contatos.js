@@ -429,6 +429,31 @@
   });
   cityInput.addEventListener('blur',()=>setTimeout(closeCityOptions,120));
 
+  // Máscara de telefone brasileiro aplicada durante a digitação.
+  const newContactPhone = byId('newContactPhone');
+  function formatNewContactPhone(value) {
+    let number = digits(value).slice(0,13);
+    if (number.startsWith('55') && number.length > 11) number = number.slice(2);
+    number = number.slice(0,11);
+    if (!number) return '';
+    if (number.length < 3) return '(' + number;
+    const ddd = '(' + number.slice(0,2) + ') ';
+    const local = number.slice(2);
+    if (local.length <= 4) return ddd + local;
+    return ddd + local.slice(0,local.length > 8 ? 5 : 4) + '-' + local.slice(local.length > 8 ? 5 : 4);
+  }
+  newContactPhone.addEventListener('input', () => {
+    const before = newContactPhone.selectionStart;
+    const digitsBefore = digits(newContactPhone.value.slice(0,before)).length;
+    newContactPhone.value = formatNewContactPhone(newContactPhone.value);
+    let position = 0, seen = 0;
+    while (position < newContactPhone.value.length && seen < digitsBefore) {
+      if (/\\d/.test(newContactPhone.value[position])) seen++;
+      position++;
+    }
+    newContactPhone.setSelectionRange(position,position);
+  });
+
   const newContactStatus = byId('newContactStatus');
   for (const [value,label] of Object.entries(treatmentLabels)) newContactStatus.add(new Option(label,value));
   byId('newContactOpen').onclick = () => { byId('newContactForm').reset(); citySelected=''; closeCityOptions(); if (byId('newContactSeller').disabled) byId('newContactSeller').value = byId('newContactSeller').dataset.ownerId || ''; byId('newContactFeedback').textContent=''; byId('newContactDialog').showModal(); };
