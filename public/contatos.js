@@ -96,7 +96,7 @@
     const status = byId('contactsStatus');
     try {
       const user = await window.authReady;
-      if (!user || !['vendedora','financeiro'].includes(user.profile?.role)) return;
+      if (!user || !['admin','vendedora','financeiro'].includes(user.profile?.role)) return;
       status.textContent = 'Carregando contatos…';
       const sales = [];
       let lastId;

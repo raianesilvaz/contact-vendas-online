@@ -15,6 +15,8 @@ Sistema interno de cadastro, acompanhamento e tratamento de vendas da CONTACT. O
 
 ## Perfis atuais
 
+**Regra de acesso:** o perfil `admin` tem acesso a todas as telas e funcionalidades do CONTACT. Ao criar ou restringir um recurso por perfil, inclua `admin` no menu, no acesso direto e nas permissões do backend aplicáveis.
+
 ### Administrador / BKO
 - Acesso à fila BKO.
 - Pode tratar vendas e alterar classificação/status.
