@@ -52,6 +52,16 @@
 
 .contacts-treatment{min-width:0}
 .contacts-treatment-badge{display:inline-block;border-radius:999px;padding:3px 8px;background:#eef2f6;color:#42566a;font-size:11px;line-height:1.4}
+.contacts-treatment-badge[data-tone="venda"]{background:#dff4e8;color:#096040}
+.contacts-treatment-badge[data-tone="inviabilidade"]{background:#fbe4e4;color:#921b24}
+.contacts-treatment-badge[data-tone="sem_interacao"]{background:#ffe8d0;color:#824000}
+.contacts-treatment-badge[data-tone="restricao_cpf"]{background:#eee2f8;color:#5b2d84}
+.contacts-treatment-badge[data-tone="clicou_sem_querer"]{background:#f0e5f8;color:#634080}
+.contacts-treatment-badge[data-tone="debitos_com_operadora"]{background:#e0edff;color:#15477c}
+.contacts-treatment-badge[data-tone="chance_venda_retorno"]{background:#e6f3d7;color:#27602f}
+.contacts-treatment-badge[data-tone="cliente"]{background:#f6e8d8;color:#713b08}
+.contacts-treatment-badge[data-tone="contratou_outra_operadora"]{background:#fff1c9;color:#69470a}
+.contacts-treatment-badge[data-tone="inv_total"]{background:#ffe0de;color:#8d1c16}
 .contacts-treatment-badge[data-tone="em_atendimento"]{background:#dff4ee;color:#06675c}
 .contacts-treatment-badge[data-tone="aguardando_retorno"]{background:#fff1d8;color:#774807}
 .contacts-treatment-badge[data-tone="encerrado_sem_venda"]{background:#eceefa;color:#4d4a86}
