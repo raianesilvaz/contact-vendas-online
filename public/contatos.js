@@ -20,25 +20,20 @@
       (numbers.length ? '<button type="button" class="contacts-whatsapp whatsapp-contact-link" data-whatsapp-contact aria-label="Chamar contato no WhatsApp" title="Chamar no WhatsApp">' + whatsappIcon + '</button>' : '') + '</span>';
   }
   function openContactWhatsapp(contact) {
-    const numbers = [...new Map(contact.phones.filter(phone => whatsappLink(phone)).map(phone => [digits(phone),phone])).values()];
+    const numbers = [...new Map(contact.phones.filter(phone => whatsappLink(phone)).map(phone => [digits(phone), phone])).values()];
     if (!numbers.length) return;
-    if (numbers.length === 1) {
-      window.open(whatsappLink(numbers[0]), '_blank', 'noopener,noreferrer');
-      return;
-    }
     const dialog = byId('contactWhatsappDialog');
-    byId('contactWhatsappName').textContent = contact.title;
-    byId('contactWhatsappNumbers').replaceChildren(...numbers.map((phone,index) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'contact-whatsapp-option';
-      button.textContent = 'Telefone ' + (index+1) + ' · ' + phone;
-      button.addEventListener('click', () => {
-        dialog.close();
-        window.open(whatsappLink(phone), '_blank', 'noopener,noreferrer');
-      });
-      return button;
-    }));
+    const options = byId('contactWhatsappNumbers');
+    options.replaceChildren();
+    numbers.forEach((phone, index) => {
+      const link = document.createElement('a');
+      link.href = whatsappLink(phone);
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = 'Telefone ' + (index + 1) + ': ' + phone.replace(/^\\+55 /, '');
+      link.addEventListener('click', () => dialog.close());
+      options.appendChild(link);
+    });
     dialog.showModal();
   }
 
