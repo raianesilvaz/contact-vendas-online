@@ -231,7 +231,7 @@
   // Todo contato originado de uma venda recebe Venda como status padrão.
   // Um atendimento classificado manualmente mantém sua classificação.
   function effectiveTreatmentStatus(contact, manualStatus) {
-    return manualStatus || (contact.sales?.length ? 'venda' : '');
+    return manualStatus || contact.manualStatus || (contact.sales?.length ? 'venda' : '');
   }
 
   function latestTreatmentStatus(phones, index) {
@@ -314,12 +314,22 @@
       if (!user || !['admin','vendedora','financeiro'].includes(user.profile?.role)) return;
       status.textContent = 'Carregando contatos…';
       const seller = user.profile.role === 'vendedora';
-      const [sales, leads] = await Promise.all([
+      const [sales, leads, manual] = await Promise.all([
         loadPages('sales', 'id,cpf,customer_name,phone_1,phone_2,status,created_at,full_address,operators(name),seller:profiles!sales_seller_id_fkey(full_name)', 'id', seller ? user.id : undefined),
-        seller ? [] : loadPages('contact_leads', 'phone,city', 'phone')
+        seller ? [] : loadPages('contact_leads', 'phone,city', 'phone'),
+        loadPages('contact_manual', 'id,name,phone,city,seller_id,status,created_at', 'id', seller ? user.id : undefined)
       ]);
       const customers = organizeSales(sales);
-      contacts = [...customers, ...organizeLeads(leads, customers)];
+      const sellers = await window.supabaseClient.from('profiles').select('id,full_name,role,active').eq('active',true);
+      if (sellers.error) throw sellers.error;
+      const sellerNames = new Map((sellers.data || []).map(item => [item.id,item.full_name]));
+      const manualContacts = manual.map(item => ({lead:true,manual:true,name:item.name || '',title:item.name || phoneLabel('+' + item.phone),city:item.city,phones:[phoneLabel('+' + item.phone)],seller:sellerNames.get(item.seller_id) || '',manualStatus:item.status,sales:[]}));
+      contacts = [...customers, ...organizeLeads(leads, customers), ...manualContacts];
+      const sellerSelect = byId('newContactSeller');
+      sellerSelect.replaceChildren(new Option('Selecione a vendedora',''));
+      for (const item of (sellers.data || []).filter(item => item.role === 'vendedora' || item.role === 'admin')) sellerSelect.add(new Option(item.full_name,item.id));
+      if (seller) { sellerSelect.value=user.id; sellerSelect.disabled=true; }
+      else sellerSelect.disabled=false;
       byId('contactLeadOption').hidden = seller;
       byId('contactLeadOption').disabled = seller;
       render();
@@ -364,6 +374,34 @@
       if (revision === detailRevision) feedback.textContent = 'Não foi possível carregar o atendimento. Feche a ficha e tente novamente.';
     }
   }
+
+  const newContactStatus = byId('newContactStatus');
+  for (const [value,label] of Object.entries(treatmentLabels)) newContactStatus.add(new Option(label,value));
+  byId('newContactOpen').onclick = () => { byId('newContactForm').reset(); byId('newContactFeedback').textContent=''; byId('newContactDialog').showModal(); };
+  byId('newContactForm').onsubmit = async event => {
+    event.preventDefault();
+    const form = byId('newContactForm');
+    const submit = byId('newContactSave');
+    const feedback = byId('newContactFeedback');
+    const raw = digits(byId('newContactPhone').value);
+    const phone = raw.length===10 || raw.length===11 ? '55'+raw : raw;
+    const city = byId('newContactCity').value.trim();
+    const seller_id = byId('newContactSeller').value;
+    const status = newContactStatus.value;
+    if (!/^55[1-9]\\d{9,10}$/.test(phone) || !city || !seller_id || !Object.hasOwn(treatmentLabels,status)) {
+      feedback.textContent='Preencha cidade, telefone válido, vendedora e status.'; return;
+    }
+    submit.disabled=true;
+    feedback.textContent='Salvando contato…';
+    try {
+      const {error}=await window.supabaseClient.from('contact_manual').insert({name:byId('newContactName').value.trim() || null,city,phone,seller_id,status});
+      if(error) throw error;
+      byId('newContactDialog').close();
+      await load();
+    } catch(error) {
+      feedback.textContent=error.code==='23505' ? 'Este telefone já foi cadastrado manualmente.' : 'Não foi possível salvar o contato. Confira os dados e tente novamente.';
+    } finally {submit.disabled=false;}
+  };
 
   const treatmentSelect = byId('contactTreatmentStatus');
   for (const [value, label] of Object.entries(treatmentLabels)) {
