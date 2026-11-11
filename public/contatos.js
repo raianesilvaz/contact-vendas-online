@@ -44,7 +44,7 @@
   const timeZone = 'America/Sao_Paulo';
   const isoDate = new Intl.DateTimeFormat('en-CA', { timeZone, year:'numeric', month:'2-digit', day:'2-digit' });
   const dateLabel = day => day ? day.split('-').reverse().join('/') : 'Data não informada';
-  const filters = ['contactSearch', 'contactStatus', 'contactStart', 'contactEnd', 'contactTreatmentFilter'].map(byId);
+  const filters = ['contactSearch', 'contactStatus', 'contactStart', 'contactEnd', 'contactTreatmentFilter', 'contactSellerFilter'].map(byId);
   const treatmentLabels = {
     venda:'Venda', inviabilidade:'Inviabilidade', sem_interacao:'Sem interação',
     restricao_cpf:'Restrição CPF', clicou_sem_querer:'Clicou sem querer',
@@ -111,7 +111,7 @@
     for (const sale of sales.sort((a,b) => (b.created_at || '').localeCompare(a.created_at || ''))) {
       const cpf = digits(sale.cpf);
       const key = cpf.length === 11 ? 'cpf:' + cpf : 'sale:' + sale.id;
-      if (!groups.has(key)) groups.set(key, { name:'', city:'', seller:sale.seller?.full_name?.trim() || '', phones:new Set(), sales:[] });
+      if (!groups.has(key)) groups.set(key, { name:'', city:'', seller:sale.seller?.full_name?.trim() || '',sellerId:sale.seller_id || '', phones:new Set(), sales:[] });
       const contact = groups.get(key);
       contact.name ||= sale.customer_name?.trim() || '';
       contact.city ||= addressCity(sale.full_address);
@@ -167,9 +167,10 @@
   }
 
   function renderList(treatmentIndex) {
-    const [term, status, start, end, treatmentFilter] = filters.map(field => field.value.trim());
+    const [term, status, start, end, treatmentFilter, sellerFilter] = filters.map(field => field.value.trim());
     const phoneTerm = /^[+\d\s().-]+$/.test(term) ? digits(term) : '';
     const matches = contacts.flatMap((contact,index) => {
+      if (sellerFilter && (sellerFilter === '__unassigned' ? Boolean(contact.sellerId || contact.seller) : contact.sellerId !== sellerFilter)) return [];
       if (term && !normalize(contact.title).includes(normalize(term)) &&
           !(phoneTerm && contact.phones.some(phone => digits(phone).includes(phoneTerm)))) return [];
       if (treatmentIndex) {
@@ -320,7 +321,7 @@
       status.textContent = 'Carregando contatos…';
       const seller = user.profile.role === 'vendedora';
       const [sales, leads, manual] = await Promise.all([
-        loadPages('sales', 'id,cpf,customer_name,phone_1,phone_2,status,created_at,full_address,operators(name),seller:profiles!sales_seller_id_fkey(full_name)', 'id', seller ? user.id : undefined),
+        loadPages('sales', 'id,cpf,customer_name,phone_1,phone_2,status,created_at,full_address,seller_id,operators(name),seller:profiles!sales_seller_id_fkey(full_name)', 'id', seller ? user.id : undefined),
         loadPages('contact_leads', 'phone,city', 'phone'),
         loadPages('contact_manual', 'id,name,phone,city,seller_id,status,created_by,created_at', 'id', seller ? user.id : undefined)
       ]);
@@ -328,6 +329,12 @@
       const sellers = await window.supabaseClient.from('profiles').select('id,full_name,role,active').eq('active',true);
       if (sellers.error) throw sellers.error;
       const sellerNames = new Map((sellers.data || []).map(item => [item.id,item.full_name]));
+      const sellerFilter = byId('contactSellerFilter');
+      const selectedSeller = sellerFilter.value;
+      sellerFilter.replaceChildren(new Option('Todas as vendedoras',''),new Option('Sem vendedora','__unassigned'));
+      for (const item of (sellers.data || []).filter(item => item.role === 'vendedora' || item.role === 'admin').sort((a,b)=>a.full_name.localeCompare(b.full_name,'pt-BR'))) sellerFilter.add(new Option(item.full_name,item.id));
+      if ([...sellerFilter.options].some(option=>option.value===selectedSeller)) sellerFilter.value=selectedSeller;
+
       const manualContacts = manual.map(item => ({lead:true,manual:true,manualId:item.id,createdBy:item.created_by,sellerId:item.seller_id,createdAt:item.created_at || '',name:item.name || '',title:item.name || phoneLabel('+' + item.phone),city:item.city,phones:[phoneLabel('+' + item.phone)],seller:sellerNames.get(item.seller_id) || '',manualStatus:item.status,sales:[]}));
       contacts = [...customers, ...organizeLeads(leads, customers), ...manualContacts];
       const sellerSelect = byId('newContactSeller');
