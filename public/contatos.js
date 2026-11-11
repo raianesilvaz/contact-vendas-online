@@ -375,9 +375,63 @@
     }
   }
 
+  const cityInput = byId('newContactCity');
+  const cityOptions = byId('newContactCitySuggestions');
+  let cityCatalog = null;
+  let cityMatches = [];
+  let citySelected = '';
+  let cityActive = -1;
+  const cityNormalize = value => String(value || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().trim();
+  async function loadCities() {
+    if (cityCatalog) return cityCatalog;
+    const response = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios?view=nivelado');
+    if (!response.ok) throw Error('Municípios indisponíveis');
+    const items = await response.json();
+    cityCatalog = items.map(item => ({label:item['municipio-nome'] + '/' + item['UF-sigla'],name:cityNormalize(item['municipio-nome']),uf:item['UF-sigla']}));
+    return cityCatalog;
+  }
+  function closeCityOptions() {
+    cityOptions.hidden=true;
+    cityInput.setAttribute('aria-expanded','false');
+    cityActive=-1;
+  }
+  function chooseCity(item) {
+    citySelected=item.label;
+    cityInput.value=item.label;
+    closeCityOptions();
+  }
+  function showCityOptions() {
+    const term=cityNormalize(cityInput.value);
+    citySelected=citySelected===cityInput.value ? citySelected : '';
+    cityMatches=term.length>=2 && cityCatalog ? cityCatalog.filter(item => item.name.startsWith(term) || cityNormalize(item.label).startsWith(term)).slice(0,9) : [];
+    cityOptions.replaceChildren(...cityMatches.map((item,index) => {
+      const option=document.createElement('button');
+      option.type='button';option.className='contact-city-option';option.setAttribute('role','option');
+      option.textContent=item.label;
+      option.addEventListener('mousedown',event=>event.preventDefault());
+      option.addEventListener('click',()=>chooseCity(item));
+      return option;
+    }));
+    cityOptions.hidden=!cityMatches.length;
+    cityInput.setAttribute('aria-expanded',String(Boolean(cityMatches.length)));
+  }
+  cityInput.addEventListener('input',async()=>{
+    if (!cityCatalog && cityInput.value.trim().length>=2) {
+      try {await loadCities();} catch {cityOptions.hidden=true;return;}
+    }
+    showCityOptions();
+  });
+  cityInput.addEventListener('keydown',event=>{
+    if (event.key==='Escape') {closeCityOptions();return;}
+    if (event.key==='Tab' && cityMatches.length===1 && !cityOptions.hidden) {chooseCity(cityMatches[0]);return;}
+    if (event.key==='ArrowDown' && !cityOptions.hidden) {event.preventDefault();cityActive=(cityActive+1)%cityMatches.length;cityOptions.querySelectorAll('button').forEach((button,index)=>button.classList.toggle('is-active',index===cityActive));return;}
+    if (event.key==='Enter' && !cityOptions.hidden && cityMatches.length) {event.preventDefault();chooseCity(cityMatches[cityActive>=0?cityActive:0]);}
+  });
+  cityInput.addEventListener('blur',()=>setTimeout(closeCityOptions,120));
+
   const newContactStatus = byId('newContactStatus');
   for (const [value,label] of Object.entries(treatmentLabels)) newContactStatus.add(new Option(label,value));
-  byId('newContactOpen').onclick = () => { byId('newContactForm').reset(); if (byId('newContactSeller').disabled) byId('newContactSeller').value = byId('newContactSeller').dataset.ownerId || ''; byId('newContactFeedback').textContent=''; byId('newContactDialog').showModal(); };
+  byId('newContactOpen').onclick = () => { byId('newContactForm').reset(); citySelected=''; closeCityOptions(); if (byId('newContactSeller').disabled) byId('newContactSeller').value = byId('newContactSeller').dataset.ownerId || ''; byId('newContactFeedback').textContent=''; byId('newContactDialog').showModal(); };
   byId('newContactForm').onsubmit = async event => {
     event.preventDefault();
     const form = byId('newContactForm');
