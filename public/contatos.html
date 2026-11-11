@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css?v=20261028-beta-contact-1">
   <link rel="stylesheet" href="/sidebar-collapse.css?v=20261028-footer-grid-1">
-  <link rel="stylesheet" href="/cobrancas-phone-choice.css?v=20261005"><link rel="stylesheet" href="/bko-whatsapp-shortcut.css?v=20260903-1"><link rel="stylesheet" href="/contatos.css?v=20261111-delete-modal-polish-11">
+  <link rel="stylesheet" href="/cobrancas-phone-choice.css?v=20261005"><link rel="stylesheet" href="/bko-whatsapp-shortcut.css?v=20260903-1"><link rel="stylesheet" href="/contatos.css?v=20261111-seller-filter-13">
   <style>
     /* Confirmação de exclusão: estilos locais para garantir o visual mesmo com CSS em cache */
     dialog#contactDeleteDialog {
@@ -63,6 +63,7 @@
           <label>Situação<select id="contactStatus">
             <option value="">Todas</option><option id="contactLeadOption" value="sem_venda" hidden disabled>Sem venda</option><option value="conectado">Aprovadas (conectadas)</option><option value="reprovada">Reprovadas</option><option value="ambas">Aprovadas e reprovadas</option>
           </select></label>
+          <label>Vendedora<select id="contactSellerFilter"><option value="">Todas as vendedoras</option><option value="__unassigned">Sem vendedora</option></select></label>
           <label>Status do atendimento<select id="contactTreatmentFilter">
             <option value="">Todos os status</option>
             <option value="sem_status">Sem status</option>
@@ -146,6 +147,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-config.js"></script>
   <script src="auth-access-v2.js?v=20261111-contatos-admin"></script>
-  <script src="contatos.js?v=20261111-seller-leads-12"></script>
+  <script src="contatos.js?v=20261111-seller-filter-13"></script>
 </body>
 </html>
