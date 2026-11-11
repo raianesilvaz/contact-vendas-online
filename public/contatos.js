@@ -120,6 +120,7 @@
         if (phone) contact.phones.add(phone);
       }
       contact.sales.push({
+        createdAt:sale.created_at || '',
         status:sale.status,
         operator:sale.operators?.name || 'Operadora não informada',
         day:sale.created_at ? isoDate.format(new Date(sale.created_at)) : ''
@@ -127,7 +128,7 @@
     }
     return [...groups.values()].map(contact => {
       const phones = [...contact.phones].map(phoneLabel);
-      return { ...contact, phones, title:contact.name || phones[0] || 'Cliente sem nome' };
+      return { ...contact, createdAt:contact.sales[0]?.createdAt || '', phones, title:contact.name || phones[0] || 'Cliente sem nome' };
     });
   }
 
@@ -188,7 +189,8 @@
       if (status && status !== 'ambas' && !statuses.includes(status)) return [];
       return [{ contact,index,sales,statuses }];
     });
-    matches.sort((a,b) => (b.sales[0]?.day || '').localeCompare(a.sales[0]?.day || ''));
+    // Mais recentes primeiro; contatos importados sem data permanecem ao final.
+    matches.sort((a,b) => (b.contact.createdAt || '').localeCompare(a.contact.createdAt || '') || a.index - b.index);
     const pages = Math.max(1, Math.ceil(matches.length/pageSize));
     page = Math.min(page,pages);
     byId('contactsCount').textContent = matches.length + (matches.length === 1 ? ' contato encontrado' : ' contatos encontrados');
@@ -326,7 +328,7 @@
       const sellers = await window.supabaseClient.from('profiles').select('id,full_name,role,active').eq('active',true);
       if (sellers.error) throw sellers.error;
       const sellerNames = new Map((sellers.data || []).map(item => [item.id,item.full_name]));
-      const manualContacts = manual.map(item => ({lead:true,manual:true,manualId:item.id,createdBy:item.created_by,sellerId:item.seller_id,name:item.name || '',title:item.name || phoneLabel('+' + item.phone),city:item.city,phones:[phoneLabel('+' + item.phone)],seller:sellerNames.get(item.seller_id) || '',manualStatus:item.status,sales:[]}));
+      const manualContacts = manual.map(item => ({lead:true,manual:true,manualId:item.id,createdBy:item.created_by,sellerId:item.seller_id,createdAt:item.created_at || '',name:item.name || '',title:item.name || phoneLabel('+' + item.phone),city:item.city,phones:[phoneLabel('+' + item.phone)],seller:sellerNames.get(item.seller_id) || '',manualStatus:item.status,sales:[]}));
       contacts = [...customers, ...organizeLeads(leads, customers), ...manualContacts];
       const sellerSelect = byId('newContactSeller');
       sellerSelect.replaceChildren(new Option('Selecione a vendedora',''));
