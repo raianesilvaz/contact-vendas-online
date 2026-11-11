@@ -5,6 +5,19 @@
   }[char]));
   const digits = value => String(value ?? '').replace(/\D/g, '');
   const normalize = value => value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+  const whatsappMessage = "🤔 POSSO TE CONTAR UMA COISA?\n\nVocê pode ter internet em casa, internet no celular e Globoplay pagando apenas **R$ 89,90 por mês!** 😍\n\nIsso mesmo!\n\n🌐 600 MEGA\n📱 CHIP com 40GB\n🎬 Globoplay incluso\n\nUma oferta dessas merece pelo menos uma olhadinha, né?\n\nMe responde **QUERO SABER** que te explico! 💬";
+  function whatsappLink(phone) {
+    const number = digits(phone);
+    return /^55[1-9]\d{9,10}$/.test(number)
+      ? 'https://api.whatsapp.com/send?phone=' + number + '&text=' + encodeURIComponent(whatsappMessage)
+      : '';
+  }
+  function phoneWithWhatsapp(phone) {
+    const link = whatsappLink(phone);
+    return '<span class="contacts-phone-line"><span class="contacts-number">' + safe(phone) + '</span>' +
+      (link ? '<a class="contacts-whatsapp" href="' + safe(link) + '" target="_blank" rel="noopener noreferrer" aria-label="Abrir WhatsApp para ' + safe(phone) + '" title="Abrir no WhatsApp">☎</a>' : '') + '</span>';
+  }
+
   const statusLabels = {
     sem_venda:'Sem venda',
     conectado:'Conectada', reprovada:'Reprovada', cancelada:'Cancelada',
@@ -166,9 +179,9 @@
     byId('contactNext').disabled = page === pages;
     byId('contactRows').innerHTML = matches.slice((page-1)*pageSize,page*pageSize).map(({contact,index,sales,statuses}) => {
       const initials = contact.name.split(/\s+/).slice(0,2).map(part => part[0]).join('').toUpperCase();
-      return `<button type="button" class="contacts-row" data-contact-index="${index}" aria-label="Abrir contato ${safe(contact.title)}">
+      return `<div class="contacts-row" role="button" tabindex="0" data-contact-index="${index}" aria-label="Abrir contato ${safe(contact.title)}">
         <span class="contacts-person"><span class="avatar" aria-hidden="true">${safe(initials || '#')}</span><span><strong>${safe(contact.title)}</strong>${contact.city ? `<span class="contacts-label contacts-city">${safe(contact.city)}</span>` : ''}</span></span>
-        <span><span class="contacts-label">Telefones</span>${contact.phones.map(phone => `<span class="contacts-number">${safe(phone)}</span>`).join('') || 'Telefone não informado'}</span>
+        <span><span class="contacts-label">Telefones</span>${contact.phones.map(phoneWithWhatsapp).join('') || 'Telefone não informado'}</span>
         <span class="contacts-statuses">
           <span><span class="contacts-label">${contact.lead ? 'Vendas no período' : `Vendas no período · ${sales.length}`}</span><span class="contacts-sale-badges">${contact.lead ? statusBadge('sem_venda') : statuses.map(statusBadge).join('')}</span></span>
           <span class="contacts-treatment"><span class="contacts-label">Atendimento</span><strong class="contacts-treatment-badge" data-treatment-status>Carregando…</strong><span data-treatment-note class="contacts-treatment-note" hidden></span></span>
@@ -178,7 +191,7 @@
           <span><span class="contacts-label">Vendedora da última venda</span><strong>${safe(contact.seller || 'Não informada')}</strong></span>
         </span>`}
         <span class="contacts-arrow" aria-hidden="true">›</span>
-      </button>`;
+      </div>`;
     }).join('') || '<p class="contacts-empty">Nenhum contato encontrado com esses filtros.</p>';
     void renderTreatmentSummaries();
   }
@@ -394,7 +407,14 @@
   };
   byId('contactPrevious').onclick = () => { page--; render(); };
   byId('contactNext').onclick = () => { page++; render(); };
+  byId('contactRows').addEventListener('keydown', event => {
+    if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('.contacts-row')) {
+      event.preventDefault();
+      event.target.click();
+    }
+  });
   byId('contactRows').onclick = event => {
+    if (event.target.closest('.contacts-whatsapp')) return;
     const row = event.target.closest('[data-contact-index]');
     if (!row) return;
     const contact = contacts[Number(row.dataset.contactIndex)];
