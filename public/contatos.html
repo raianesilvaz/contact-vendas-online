@@ -12,7 +12,33 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css?v=20261028-beta-contact-1">
   <link rel="stylesheet" href="/sidebar-collapse.css?v=20261028-footer-grid-1">
-  <link rel="stylesheet" href="/cobrancas-phone-choice.css?v=20261005"><link rel="stylesheet" href="/bko-whatsapp-shortcut.css?v=20260903-1"><link rel="stylesheet" href="/contatos.css?v=20261111-delete-manual-10">
+  <link rel="stylesheet" href="/cobrancas-phone-choice.css?v=20261005"><link rel="stylesheet" href="/bko-whatsapp-shortcut.css?v=20260903-1"><link rel="stylesheet" href="/contatos.css?v=20261111-delete-modal-polish-11">
+  <style>
+    /* Confirmação de exclusão: estilos locais para garantir o visual mesmo com CSS em cache */
+    dialog#contactDeleteDialog {
+      box-sizing:border-box;position:fixed;inset:0;margin:auto;
+      width:min(420px,calc(100vw - 32px));max-width:calc(100vw - 32px);
+      padding:24px;border:1px solid #dce5eb;border-radius:14px;
+      background:#fff;color:#1f2937;box-shadow:0 24px 72px rgba(10,30,40,.24);
+      font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.5;
+    }
+    dialog#contactDeleteDialog::backdrop{background:rgba(16,32,40,.48)}
+    #contactDeleteDialog .contact-delete-symbol{display:flex;align-items:center;justify-content:center;width:42px;height:42px;margin-bottom:13px;border-radius:12px;background:#fff1f0;color:#b42318}
+    #contactDeleteDialog h2{font-size:19px;line-height:1.3;font-weight:700;margin:0 0 9px;color:#182c35}
+    #contactDeleteDialog p{font-size:13px;line-height:1.55;margin:0 0 12px;color:#667085}
+    #contactDeleteDialog p strong{color:#1f2937}
+    #contactDeleteDialog #contactDeleteFeedback{min-height:0;color:#b42318;font-weight:600}
+    #contactDeleteDialog #contactDeleteFeedback:empty{display:none}
+    #contactDeleteDialog .contact-delete-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:22px}
+    #contactDeleteDialog .contact-delete-actions form{margin:0}
+    #contactDeleteDialog .contact-delete-actions button{box-sizing:border-box;min-height:38px;padding:9px 13px;border-radius:8px;font:700 12px 'DM Sans',sans-serif;cursor:pointer;white-space:nowrap}
+    #contactDeleteDialog .contact-delete-actions form button{background:#fff;border:1px solid #d0d5dd;color:#344054}
+    #contactDeleteDialog #contactDeleteConfirm{background:#b42318;border:1px solid #b42318;color:#fff}
+    #contactDeleteDialog #contactDeleteConfirm:hover:not(:disabled){background:#912018}
+    #contactDeleteDialog #contactDeleteConfirm:disabled{opacity:.6;cursor:wait}
+    #contactDetail #contactDelete{font:700 12px 'DM Sans',sans-serif;padding:9px 13px;border:1px solid #f2b8b5;border-radius:8px;background:#fff5f4;color:#b42318;cursor:pointer}
+    #contactDetail #contactDelete[hidden]{display:none}
+  </style>
 </head>
 <body>
   <aside class="sidebar" id="sidebar">
@@ -110,6 +136,7 @@
       </div>
     </dialog>
     <dialog class="contact-delete-dialog" id="contactDeleteDialog" aria-labelledby="contactDeleteTitle">
+      <span class="contact-delete-symbol" aria-hidden="true"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m5 4v7m4-7v7"/></svg></span>
       <h2 id="contactDeleteTitle">Excluir contato?</h2>
       <p>Deseja realmente excluir <strong id="contactDeleteName"></strong>? Essa ação não poderá ser desfeita.</p>
       <p id="contactDeleteFeedback" role="status"></p>
