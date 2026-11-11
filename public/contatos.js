@@ -381,7 +381,7 @@
   let cityMatches = [];
   let citySelected = '';
   let cityActive = -1;
-  const cityNormalize = value => String(value || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().trim();
+  const cityNormalize = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
   async function loadCities() {
     if (cityCatalog) return cityCatalog;
     const response = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios?view=nivelado');
@@ -403,7 +403,7 @@
   function showCityOptions() {
     const term=cityNormalize(cityInput.value);
     citySelected=citySelected===cityInput.value ? citySelected : '';
-    cityMatches=term.length>=2 && cityCatalog ? cityCatalog.filter(item => item.name.startsWith(term) || cityNormalize(item.label).startsWith(term)).slice(0,9) : [];
+    cityMatches=term.length>=2 && cityCatalog ? cityCatalog.filter(item => item.name.startsWith(term)).sort((a,b) => a.name.localeCompare(b.name,'pt-BR')).slice(0,9) : [];
     cityOptions.replaceChildren(...cityMatches.map((item,index) => {
       const option=document.createElement('button');
       option.type='button';option.className='contact-city-option';option.setAttribute('role','option');
