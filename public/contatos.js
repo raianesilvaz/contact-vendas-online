@@ -141,7 +141,7 @@
           !(phoneTerm && contact.phones.some(phone => digits(phone).includes(phoneTerm)))) return [];
       if (treatmentIndex) {
         const phones = treatmentPhones(contact);
-        const status = latestTreatmentStatus(phones, treatmentIndex);
+        const status = effectiveTreatmentStatus(contact, latestTreatmentStatus(phones, treatmentIndex));
         if (!phones.length || (treatmentFilter === 'sem_status' ? status : status !== treatmentFilter)) return [];
       }
       if (contact.lead) {
@@ -198,6 +198,11 @@
     }
   }
 
+  // Vendas conectadas recebem atendimento Venda apenas quando não há status manual.
+  function effectiveTreatmentStatus(contact, manualStatus) {
+    return manualStatus || (contact.sales?.some(sale => sale.status === 'conectado') ? 'venda' : '');
+  }
+
   function latestTreatmentStatus(phones, index) {
     let latest;
     for (const phone of phones) {
@@ -231,7 +236,8 @@
     const statusIndex = new Map(events.filter(event => event.status).map(event => [event.phone, event]));
     rows.forEach((row,index) => {
       const linked = phonesByRow[index];
-      const status = latestTreatmentStatus(linked, statusIndex);
+      const contact = contacts[Number(row.dataset.contactIndex)];
+      const status = effectiveTreatmentStatus(contact, latestTreatmentStatus(linked, statusIndex));
       const badge = row.querySelector('[data-treatment-status]');
       badge.dataset.tone = linked.length && !failed ? status : 'neutral';
       badge.textContent =
@@ -309,7 +315,7 @@
       const events = await loadPages('contact_treatments', 'id,phone,status,note,author_name,created_at', 'id', undefined, phones);
       if (revision !== detailRevision) return;
       events.sort(newestFirst);
-      const currentStatus = events.find(event => event.status)?.status || '';
+      const currentStatus = effectiveTreatmentStatus(contact, events.find(event => event.status)?.status || '');
       detail = {contact,phone:phones[0],status:currentStatus,retry:null};
       const isNewStatus = Object.hasOwn(treatmentLabels, currentStatus);
       byId('contactTreatmentPlaceholder').textContent = previousTreatmentLabels[currentStatus] || 'Selecione um status';
