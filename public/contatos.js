@@ -321,7 +321,7 @@
       const seller = user.profile.role === 'vendedora';
       const [sales, leads, manual] = await Promise.all([
         loadPages('sales', 'id,cpf,customer_name,phone_1,phone_2,status,created_at,full_address,operators(name),seller:profiles!sales_seller_id_fkey(full_name)', 'id', seller ? user.id : undefined),
-        seller ? [] : loadPages('contact_leads', 'phone,city', 'phone'),
+        loadPages('contact_leads', 'phone,city', 'phone'),
         loadPages('contact_manual', 'id,name,phone,city,seller_id,status,created_by,created_at', 'id', seller ? user.id : undefined)
       ]);
       const customers = organizeSales(sales);
@@ -335,8 +335,8 @@
       for (const item of (sellers.data || []).filter(item => item.role === 'vendedora' || item.role === 'admin')) sellerSelect.add(new Option(item.full_name,item.id));
       if (seller) { sellerSelect.value=user.id; sellerSelect.dataset.ownerId=user.id; sellerSelect.disabled=true; }
       else sellerSelect.disabled=false;
-      byId('contactLeadOption').hidden = seller;
-      byId('contactLeadOption').disabled = seller;
+      byId('contactLeadOption').hidden = false;
+      byId('contactLeadOption').disabled = false;
       render();
       byId('contactsSummary').textContent = contacts.length + (contacts.length === 1 ? ' contato no total' : ' contatos no total');
       status.hidden = true;
