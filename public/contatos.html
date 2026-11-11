@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css?v=20261028-beta-contact-1">
   <link rel="stylesheet" href="/sidebar-collapse.css?v=20261028-footer-grid-1">
-  <link rel="stylesheet" href="/contatos.css?v=20261111-whatsapp-1">
+  <link rel="stylesheet" href="/bko-whatsapp-shortcut.css?v=20260903-1"><link rel="stylesheet" href="/contatos.css?v=20261111-whatsapp-selector-2">
 </head>
 <body>
   <aside class="sidebar" id="sidebar">
@@ -56,6 +56,12 @@
         </section>
       </div>
     </div>
+    <dialog class="contact-whatsapp-dialog" id="contactWhatsappDialog" aria-labelledby="contactWhatsappTitle">
+      <h2 id="contactWhatsappTitle">Escolher número do WhatsApp</h2>
+      <p id="contactWhatsappName"></p>
+      <div class="contact-whatsapp-options" id="contactWhatsappNumbers"></div>
+      <form method="dialog"><button class="contact-whatsapp-cancel" type="submit">Cancelar</button></form>
+    </dialog>
     <dialog class="contacts-detail" id="contactDetail" aria-labelledby="contactName">
       <header class="contacts-detail-head">
         <div><p class="contacts-kicker">Ficha do contato</p><h2 id="contactName"></h2></div>
@@ -93,6 +99,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-config.js"></script>
   <script src="auth-access-v2.js?v=20261111-contatos-admin"></script>
-  <script src="contatos.js?v=20261111-whatsapp-1"></script>
+  <script src="contatos.js?v=20261111-whatsapp-selector-2"></script>
 </body>
 </html>
