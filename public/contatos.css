@@ -164,3 +164,9 @@
 .contact-delete-actions form button{background:#fff;color:#475467;border:1px solid #d0d5dd}
 #contactDeleteConfirm{background:#b42318;color:#fff;border:1px solid #b42318}
 #contactDeleteConfirm:disabled{opacity:.6;cursor:wait}
+
+/* Filtro por vendedora: mantém campos e botão no mesmo padrão visual */
+.contacts-filters{grid-template-columns:minmax(170px,1.5fr) repeat(3,minmax(135px,1fr));gap:12px}
+.contacts-filters .search-submit{justify-self:end;align-self:end}
+@media(max-width:850px){.contacts-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.contacts-filters .search-submit{justify-self:start}}
+@media(max-width:520px){.contacts-filters{grid-template-columns:1fr}}
