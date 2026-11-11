@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#151921">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Contatos — CONTACT</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css?v=20261028-beta-contact-1">
+  <link rel="stylesheet" href="/sidebar-collapse.css?v=20261028-footer-grid-1">
+  <link rel="stylesheet" href="/contatos.css?v=20261111">
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><span class="brand-mark">C</span><span class="brand-name">CONTACT</span></div><nav aria-label="Menu principal"><a class="nav-item" href="painel.html"><span>◫</span><span>Painel</span></a>
+      <a class="nav-item" href="vendas.html"><span>▤</span><span>Minhas vendas</span></a>
+      <a class="nav-item" href="chips.html"><span>▣</span><span>Gestão de chips</span></a>
+      <a class="nav-item" href="instalacoes.html" data-admin-only hidden><span>▦</span><span>Gestão de instalações</span></a>
+      <a class="nav-item" href="bko.html" data-admin-only hidden><span>☷</span><span>Fila BKO</span></a>
+      <a class="nav-item" href="financeiro.html" data-admin-only hidden><span>▦</span><span>Financeiro</span></a>
+      <span class="nav-section-title" data-admin-only hidden>CONFIGURAÇÕES</span><a class="nav-item" href="usuarios.html" data-admin-only hidden><span>♙</span><span>Usuários</span></a>
+      <a class="nav-item" href="saude.html" data-admin-only hidden><span>♡</span><span>Saúde do sistema</span></a>
+      </nav>
+    <div class="user-mini"><div class="avatar" data-user-initials>--</div><div><strong data-user-name>Carregando...</strong><small data-user-role>Usuário</small></div><button class="logout-button" data-logout aria-label="Sair">↪</button></div></aside>
+  <main aria-label="Contatos">
+    <header class="topbar"><button class="menu-button" id="menuButton" aria-label="Abrir menu">☰</button><div class="topbar-title"><span>Operação</span><b>/</b><strong>Contatos</strong></div><div class="profile"><div class="avatar" data-user-initials>--</div><span data-user-name>Carregando...</span></div></header>
+    <div class="content contacts-content">
+      <div class="page-heading"><div><h1>Contatos</h1><p id="contactsSummary">Clientes cadastrados em vendas</p></div></div>
+      <p id="contactsStatus" role="status">Verificando acesso…</p>
+      <div id="contactsDirectory" hidden>
+        <section class="contacts-filters" aria-label="Filtros de contatos">
+          <label>Buscar contato<input id="contactSearch" type="search" placeholder="Nome ou telefone"></label>
+          <label>Situação da venda<select id="contactStatus">
+            <option value="">Todas</option><option value="conectado">Aprovadas (conectadas)</option><option value="reprovada">Reprovadas</option><option value="ambas">Aprovadas e reprovadas</option>
+          </select></label>
+          <label>Vendas a partir de<input id="contactStart" type="date"></label>
+          <label>Vendas até<input id="contactEnd" type="date"></label>
+          <button type="button" class="search-submit" id="contactClear">Limpar filtros</button>
+        </section>
+        <section class="contacts-list" aria-label="Lista de contatos">
+          <p class="contacts-count" id="contactsCount" aria-live="polite"></p>
+          <div id="contactRows"></div>
+          <div class="contacts-pager" id="contactsPager" hidden>
+            <button type="button" id="contactPrevious">Anterior</button>
+            <span id="contactsPage"></span>
+            <button type="button" id="contactNext">Próxima</button>
+          </div>
+        </section>
+      </div>
+    </div>
+    <dialog class="contacts-detail" id="contactDetail" aria-labelledby="contactName">
+      <div class="contacts-detail-head"><h2 id="contactName"></h2><form method="dialog"><button type="submit">Fechar</button></form></div>
+      <h3>Telefones</h3><ul id="contactPhones"></ul>
+      <h3>Histórico de vendas</h3><ul id="contactSales"></ul>
+    </dialog>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="auth-access-v2.js?v=20261111-contatos"></script>
+  <script src="contatos.js?v=20261111-contatos"></script>
+</body>
+</html>
