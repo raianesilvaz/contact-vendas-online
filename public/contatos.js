@@ -198,9 +198,10 @@
     }
   }
 
-  // Vendas conectadas recebem atendimento Venda apenas quando não há status manual.
+  // Todo contato originado de uma venda recebe Venda como status padrão.
+  // Um atendimento classificado manualmente mantém sua classificação.
   function effectiveTreatmentStatus(contact, manualStatus) {
-    return manualStatus || (contact.sales?.some(sale => sale.status === 'conectado') ? 'venda' : '');
+    return manualStatus || (contact.sales?.length ? 'venda' : '');
   }
 
   function latestTreatmentStatus(phones, index) {
