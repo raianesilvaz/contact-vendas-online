@@ -22,7 +22,12 @@ const nums=new Set([1,pages]);for(let n=Math.max(1,page-2);n<=Math.min(pages,pag
 $('#commissionPagination').innerHTML='<button data-page="'+(page-1)+'" '+(page===1?'disabled':'')+' aria-label="Página anterior">‹</button>'+[...nums].sort((a,b)=>a-b).map(n=>{const gap=prev&&n>prev+1?'<span>…</span>':'';prev=n;return gap+'<button data-page="'+n+'" class="'+(n===page?'active':'')+'" '+(n===page?'aria-current="page"':'')+'>'+n+'</button>'}).join('')+'<button data-page="'+(page+1)+'" '+(page===pages?'disabled':'')+' aria-label="Próxima página">›</button>';
 $('#commissionPagination').hidden=!filtered.length;$('#commissionRange').textContent=filtered.length?'Mostrando '+((page-1)*size+1)+'–'+Math.min(page*size,filtered.length)+' de '+filtered.length+' vendas':'';
 }
-async function load(){if(!['claro','desktop','vero'].includes(selectedOperator))return;const token=++request;const month=$('#commissionMonth').value;if(!/^\d{4}-\d{2}$/.test(month))return;$('#commissionStatus').textContent='Carregando instalações…';$('#commissionResults').hidden=true;$('#commissionDashboard').hidden=true;
+async function load(){if(!['claro','desktop','vero'].includes(selectedOperator))return;const token=++request;const month=$('#commissionMonth').value;$('#commissionResults').hidden=true;$('#commissionDashboard').hidden=true;
+if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)){
+ $('#commissionStatus').textContent='Selecione o mês da instalação para consultar as comissões.';
+ return;
+}
+$('#commissionStatus').textContent='Carregando instalações…';
 try{const user=await window.authReady;if(user?.profile?.role!=='admin')return;if(token!==request)return;const db=window.supabaseClient;const operators=await db.from('operators').select('id,name').ilike('name','%'+selectedOperator+'%');if(operators.error)throw operators.error;const ids=(operators.data||[]).map(o=>o.id);let loaded=[];const year=Number(month.slice(0,4)),m=Number(month.slice(5,7)),next=m===12?(year+1)+'-01':year+'-'+String(m+1).padStart(2,'0');
 if(ids.length){for(let offset=0;;offset+=500){const r=await db.from('sales').select('id,customer_name,contract_number,plan_name,partner_company,value,is_multi,has_promotion,post_promo_value,installation_date,seller:profiles!sales_seller_id_fkey(full_name)').in('operator_id',ids).not('status','in','(cancelada,reprovada)').gte('installation_date',month+'-01').lt('installation_date',next+'-01').order('installation_date',{ascending:false}).order('id',{ascending:false}).range(offset,offset+499);if(token!==request)return;if(r.error)throw r.error;loaded.push(...(r.data||[]));if((r.data||[]).length<500)break}}
 if(token!==request)return;rows=loaded;page=1;render();$('#commissionResults').hidden=false;$('#commissionDashboard').hidden=false;

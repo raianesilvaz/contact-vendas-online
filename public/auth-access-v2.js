@@ -1,5 +1,5 @@
 /* Shared CONTACT date controls, including forms inserted after page load. */
-(()=>{const base=new URL('.',document.currentScript.src),version='20261103-global-calendar-1';const css=document.createElement('link');css.rel='stylesheet';css.href=new URL('contact-date-picker.css?v='+version,base).href;document.head.append(css);const script=document.createElement('script');script.src=new URL('contact-date-picker.js?v='+version,base).href;document.head.append(script)})();
+(()=>{const base=new URL('.',document.currentScript.src),version='20261111-month-calendar';const css=document.createElement('link');css.rel='stylesheet';css.href=new URL('contact-date-picker.css?v='+version,base).href;document.head.append(css);const script=document.createElement('script');script.src=new URL('contact-date-picker.js?v='+version,base).href;document.head.append(script)})();
 (() => {
   if (!document.querySelector('link[rel="icon"]')) {
     const favicon = document.createElement('link'); favicon.rel='icon'; favicon.type='image/svg+xml'; favicon.href='favicon.svg'; document.head.appendChild(favicon);
