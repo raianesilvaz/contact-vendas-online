@@ -61,6 +61,8 @@
   let pageRevision = 0;
   let detailRevision = 0;
   let detail = null;
+  let selectedContact = null;
+  let currentUser = null;
   let contacts = [];
   let page = 1;
   let filterRevision = 0;
@@ -312,18 +314,19 @@
     try {
       const user = await window.authReady;
       if (!user || !['admin','vendedora','financeiro'].includes(user.profile?.role)) return;
+      currentUser = user;
       status.textContent = 'Carregando contatos…';
       const seller = user.profile.role === 'vendedora';
       const [sales, leads, manual] = await Promise.all([
         loadPages('sales', 'id,cpf,customer_name,phone_1,phone_2,status,created_at,full_address,operators(name),seller:profiles!sales_seller_id_fkey(full_name)', 'id', seller ? user.id : undefined),
         seller ? [] : loadPages('contact_leads', 'phone,city', 'phone'),
-        loadPages('contact_manual', 'id,name,phone,city,seller_id,status,created_at', 'id', seller ? user.id : undefined)
+        loadPages('contact_manual', 'id,name,phone,city,seller_id,status,created_by,created_at', 'id', seller ? user.id : undefined)
       ]);
       const customers = organizeSales(sales);
       const sellers = await window.supabaseClient.from('profiles').select('id,full_name,role,active').eq('active',true);
       if (sellers.error) throw sellers.error;
       const sellerNames = new Map((sellers.data || []).map(item => [item.id,item.full_name]));
-      const manualContacts = manual.map(item => ({lead:true,manual:true,name:item.name || '',title:item.name || phoneLabel('+' + item.phone),city:item.city,phones:[phoneLabel('+' + item.phone)],seller:sellerNames.get(item.seller_id) || '',manualStatus:item.status,sales:[]}));
+      const manualContacts = manual.map(item => ({lead:true,manual:true,manualId:item.id,createdBy:item.created_by,sellerId:item.seller_id,name:item.name || '',title:item.name || phoneLabel('+' + item.phone),city:item.city,phones:[phoneLabel('+' + item.phone)],seller:sellerNames.get(item.seller_id) || '',manualStatus:item.status,sales:[]}));
       contacts = [...customers, ...organizeLeads(leads, customers), ...manualContacts];
       const sellerSelect = byId('newContactSeller');
       sellerSelect.replaceChildren(new Option('Selecione a vendedora',''));
@@ -524,9 +527,39 @@
     }
   };
 
+  byId('contactDelete').onclick = () => {
+    const contact = selectedContact;
+    if (!contact?.manualId || byId('contactDelete').hidden) return;
+    byId('contactDeleteName').textContent = contact.title;
+    byId('contactDeleteFeedback').textContent = '';
+    byId('contactDeleteConfirm').disabled = false;
+    byId('contactDeleteDialog').showModal();
+  };
+  byId('contactDeleteConfirm').onclick = async () => {
+    const contact = selectedContact;
+    const button = byId('contactDeleteConfirm');
+    const feedback = byId('contactDeleteFeedback');
+    if (!contact?.manualId || button.disabled) return;
+    button.disabled = true;
+    feedback.textContent = 'Excluindo contato…';
+    try {
+      const {data,error} = await window.supabaseClient.from('contact_manual').delete().eq('id',contact.manualId).select('id');
+      if (error) throw error;
+      if (!data?.length) throw Error('Exclusão não autorizada');
+      byId('contactDeleteDialog').close();
+      byId('contactDetail').close();
+      selectedContact = null;
+      treatmentIndexRequest = null;
+      await load();
+    } catch {
+      feedback.textContent = 'Não foi possível excluir. Verifique suas permissões e tente novamente.';
+    } finally { button.disabled = false; }
+  };
+
   byId('contactDetail').addEventListener('close', () => {
     detailRevision++;
     detail = null;
+    selectedContact = null;
   });
 
   for (const filter of filters) filter.addEventListener('input', () => {
@@ -557,6 +590,8 @@
     const row = event.target.closest('[data-contact-index]');
     if (!row) return;
     const contact = contacts[Number(row.dataset.contactIndex)];
+    selectedContact = contact;
+    byId('contactDelete').hidden = !(contact.manual && (currentUser?.profile?.role === 'admin' || (currentUser?.profile?.role === 'vendedora' && contact.createdBy === currentUser.id && contact.sellerId === currentUser.id)));
     byId('contactName').textContent = contact.title;
     byId('contactCity').textContent = contact.city || 'Não informada';
     byId('contactSeller').parentElement.hidden = Boolean(contact.lead && !contact.manual);
