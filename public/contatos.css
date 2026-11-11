@@ -17,30 +17,56 @@
 .contacts-pager[hidden],#contactsDirectory[hidden]{display:none}
 .contacts-pager button,.contacts-detail button{border:1px solid var(--line);border-radius:8px;background:var(--card,#fff);color:var(--ink);font:inherit;padding:8px 12px;cursor:pointer}
 .contacts-pager button:disabled{opacity:.5;cursor:default}
-.contacts-detail{width:min(440px,100%);max-width:100%;height:100%;max-height:100%;margin:0 0 0 auto;padding:22px;border:1px solid var(--line);border-radius:12px 0 0 12px;background:var(--card,#fff);color:var(--ink);overflow:auto}
-.contacts-detail::backdrop{background:#172b4055}
-.contacts-detail-head,.contacts-sale{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.contacts-detail{
+  --contacts-accent:#00786f;
+  --contacts-tint:#ecf8f5;
+  --contacts-tint-line:#cbe8e2;
+  position:fixed;inset:0 0 0 auto;width:min(460px,100%);max-width:100%;height:100%;max-height:100%;
+  margin:0;padding:0;border:0;border-left:1px solid var(--line);border-radius:14px 0 0 14px;
+  background:var(--bg,#f3f6f8);color:var(--ink);overflow:auto;box-shadow:-14px 0 48px #102a3726;
+}
+.contacts-detail::backdrop{background:#132a3966}
+.contacts-detail-head{
+  position:sticky;top:0;z-index:1;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+  padding:20px 22px;border-bottom:1px solid var(--contacts-tint-line);background:var(--contacts-tint);
+}
+.contacts-kicker{margin:0 0 5px;color:var(--contacts-accent);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em}
 .contacts-detail-head h2{margin:0;font-size:20px;overflow-wrap:anywhere}
-.contacts-detail h3{font-size:14px;margin:22px 0 7px}
+.contacts-detail-head button{font-size:20px;line-height:1;padding:5px 9px;color:var(--contacts-accent);border-color:var(--contacts-tint-line)}
+.contacts-detail-body{display:grid;gap:12px;padding:16px 18px 24px}
+.contacts-section{padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface,#fff)}
+.contacts-section h3{margin:0 0 9px;font-size:14px}
+.contacts-profile h3{margin-top:12px;color:var(--contacts-accent)}
+.contacts-section-treatment{border-color:var(--contacts-tint-line);box-shadow:inset 3px 0 var(--contacts-accent)}
+.contacts-section-treatment h3{color:var(--contacts-accent)}
 .contacts-detail ul{list-style:none;margin:0;padding:0}
-.contacts-detail li{padding:9px 0;border-top:1px solid var(--line)}
+.contacts-detail li{padding:8px 0;border-top:1px solid var(--line)}
+.contacts-sale{display:flex;justify-content:space-between;align-items:center;gap:10px}
 @media(max-width:1150px){.contacts-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.contacts-filters .search-submit{justify-self:start}}
 @media(max-width:650px){.contacts-row{grid-template-columns:repeat(2,minmax(0,1fr))}.contacts-arrow{display:none}.contacts-filters label:first-child{grid-column:1/-1}}
 
 .contacts-city,.contacts-seller{margin:4px 0 0;overflow-wrap:anywhere}
-.contacts-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0 0}
+.contacts-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0}
 .contacts-meta dt{color:var(--muted);font-size:11px}
 .contacts-meta dd{margin:4px 0 0;font-weight:600;overflow-wrap:anywhere}
 
 .contacts-treatment{min-width:0}
+.contacts-treatment-badge{display:inline-block;border-radius:999px;padding:3px 8px;background:#eef2f6;color:#42566a;font-size:11px;line-height:1.4}
+.contacts-treatment-badge[data-tone="em_atendimento"]{background:#dff4ee;color:#06675c}
+.contacts-treatment-badge[data-tone="aguardando_retorno"]{background:#fff1d8;color:#774807}
+.contacts-treatment-badge[data-tone="encerrado_sem_venda"]{background:#eceefa;color:#4d4a86}
+.contacts-treatment-badge[data-tone="nao_contatar"]{background:#fbe7e7;color:#8e3037}
 .contacts-treatment-note{display:block;color:var(--muted);margin-top:4px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .contacts-treatment-form{display:grid;gap:10px}
 .contacts-treatment-form[hidden]{display:none}
 .contacts-treatment-form label{display:grid;gap:5px;font-weight:600;font-size:12px}
 .contacts-treatment-form select,.contacts-treatment-form textarea{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:var(--card,#fff);font:inherit}
 .contacts-treatment-form textarea{resize:vertical}
-.contacts-treatment-form button{justify-self:start}
+.contacts-treatment-form .contacts-primary{width:100%;background:var(--contacts-accent);border-color:var(--contacts-accent);color:#fff;font-weight:700}
+.contacts-treatment-form .contacts-primary:hover:not(:disabled){background:#00675f}
+.contacts-treatment-form select:focus,.contacts-treatment-form textarea:focus{outline:2px solid var(--contacts-accent);outline-offset:1px}
 .contacts-treatment-form button:disabled{opacity:.6;cursor:default}
-#contactTreatmentFeedback{color:var(--muted);font-size:12px}
+#contactTreatmentFeedback{color:var(--muted);font-size:12px;margin:0 0 8px}
+#contactTreatmentFeedback:empty{display:none}
 #contactTreatmentHistory p{white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0}
 #contactTreatmentHistory small{color:var(--muted)}
