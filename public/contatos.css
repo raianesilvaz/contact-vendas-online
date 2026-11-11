@@ -26,3 +26,8 @@
 .contacts-detail li{padding:9px 0;border-top:1px solid var(--line)}
 @media(max-width:1150px){.contacts-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.contacts-filters .search-submit{justify-self:start}}
 @media(max-width:650px){.contacts-row{grid-template-columns:repeat(2,minmax(0,1fr))}.contacts-arrow{display:none}.contacts-filters label:first-child{grid-column:1/-1}}
+
+.contacts-city,.contacts-seller{margin:4px 0 0;overflow-wrap:anywhere}
+.contacts-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0 0}
+.contacts-meta dt{color:var(--muted);font-size:11px}
+.contacts-meta dd{margin:4px 0 0;font-weight:600;overflow-wrap:anywhere}
