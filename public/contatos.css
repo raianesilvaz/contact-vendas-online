@@ -113,3 +113,9 @@
 #contactTreatmentFeedback:empty{display:none}
 #contactTreatmentHistory p{white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0}
 #contactTreatmentHistory small{color:var(--muted);font-size:12px}
+
+/* Acesso direto ao WhatsApp sem ampliar a altura das linhas */
+.contacts-phone-line{display:flex;align-items:center;gap:5px;min-width:0}
+.contacts-phone-line .contacts-number{display:inline;min-width:0}
+.contacts-whatsapp{display:inline-flex;align-items:center;justify-content:center;flex:none;width:18px;height:18px;border-radius:5px;background:#e0f7e9;color:#087b44;font-size:12px;font-weight:700;text-decoration:none;line-height:1}
+.contacts-whatsapp:hover,.contacts-whatsapp:focus-visible{background:#25d366;color:#fff;outline-offset:2px}
