@@ -141,3 +141,10 @@
 .contacts-heading #newContactOpen:focus-visible,.contact-new-actions #newContactSave:focus-visible{outline:2px solid #008f8d;outline-offset:3px}
 .contact-new-actions #newContactSave:disabled{opacity:.55;cursor:wait}
 @media(max-width:520px){.contacts-heading{align-items:flex-start}.contacts-heading #newContactOpen{padding:9px 11px;font-size:11px}}
+
+/* Autocomplete de municípios (IBGE) */
+.contact-city-field{position:relative}
+.contact-city-suggestions{position:absolute;z-index:15;top:100%;left:0;right:0;max-height:210px;overflow-y:auto;background:#fff;border:1px solid #d5dfe8;border-radius:9px;box-shadow:0 12px 28px #10202822;padding:4px}
+.contact-city-suggestions[hidden]{display:none}
+.contact-city-option{display:block;width:100%;padding:9px 11px;border:0;border-radius:6px;background:#fff;color:#1d2939;font:500 12px 'DM Sans',sans-serif;text-align:left;cursor:pointer}
+.contact-city-option:hover,.contact-city-option.is-active{background:#e8f6f4;color:#007a78}
