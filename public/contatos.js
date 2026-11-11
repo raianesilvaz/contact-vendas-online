@@ -341,13 +341,6 @@
     byId('contactTreatmentFilter').add(new Option(label, value));
   }
 
-  const legacyFilters = document.createElement('optgroup');
-  legacyFilters.label = 'Status anteriores';
-  byId('contactTreatmentFilter').append(legacyFilters);
-  for (const [value, label] of Object.entries(previousTreatmentLabels)) {
-    legacyFilters.append(new Option(label, value));
-  }
-
   byId('contactTreatmentForm').onsubmit = async event => {
     event.preventDefault();
     const session = detail;
