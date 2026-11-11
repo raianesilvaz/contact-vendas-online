@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css?v=20261028-beta-contact-1">
   <link rel="stylesheet" href="/sidebar-collapse.css?v=20261028-footer-grid-1">
-  <link rel="stylesheet" href="/cobrancas-phone-choice.css?v=20261005"><link rel="stylesheet" href="/bko-whatsapp-shortcut.css?v=20260903-1"><link rel="stylesheet" href="/contatos.css?v=20261111-new-contact-style-6">
+  <link rel="stylesheet" href="/cobrancas-phone-choice.css?v=20261005"><link rel="stylesheet" href="/bko-whatsapp-shortcut.css?v=20260903-1"><link rel="stylesheet" href="/contatos.css?v=20261111-city-ibge-7">
 </head>
 <body>
   <aside class="sidebar" id="sidebar">
@@ -61,7 +61,7 @@
       <p>Cadastre um contato para acompanhamento comercial.</p>
       <form id="newContactForm" class="contact-new-form">
         <label>Nome (opcional)<input id="newContactName" maxlength="150" placeholder="Nome do contato"></label>
-        <label>Cidade *<input id="newContactCity" maxlength="120" required placeholder="Cidade/UF"></label>
+        <label class="contact-city-field">Cidade *<input id="newContactCity" maxlength="120" required autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="newContactCitySuggestions" placeholder="Comece a digitar a cidade"><span id="newContactCitySuggestions" class="contact-city-suggestions" role="listbox" hidden></span></label>
         <label>Telefone *<input id="newContactPhone" type="tel" required inputmode="tel" placeholder="(DDD) 99999-9999"></label>
         <label>Vendedora responsável *<select id="newContactSeller" required></select></label>
         <label>Status do atendimento *<select id="newContactStatus" required><option value="">Selecione um status</option></select></label>
@@ -112,6 +112,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
   <script src="supabase-config.js"></script>
   <script src="auth-access-v2.js?v=20261111-contatos-admin"></script>
-  <script src="contatos.js?v=20261111-phone-validation-6"></script>
+  <script src="contatos.js?v=20261111-city-ibge-7"></script>
 </body>
 </html>
