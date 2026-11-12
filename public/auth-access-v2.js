@@ -56,7 +56,7 @@ function addPanelSubmenu(currentPath,isAdmin) {
     const panel=nav.querySelector('a[href="painel.html"]');
     if(!panel||nav.querySelector('#panel-submenu-'+index))return;
     panel.classList.toggle('active',onOverview);
-    panel.lastElementChild.textContent='Visão geral';
+    panel.lastElementChild.textContent='Produtividade da equipe';
     const links=[panel];
     if(isAdmin){
       const intelligence=document.createElement('a');
