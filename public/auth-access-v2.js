@@ -241,21 +241,21 @@ document.querySelectorAll('[data-logout]').forEach(button => button.addEventList
 
 ;(()=>{const css=document.createElement('link');css.rel='stylesheet';css.href='team-goal.css?v=8';document.head.appendChild(css);const script=document.createElement('script');script.src='team-goal.js?v=6';document.body.appendChild(script)})();
 
-/* CONTACT Indica: add the inbox entry alongside Minhas vendas. */
+/* CONTACT Indica: keep the referral entry immediately below Minhas vendas. */
 (()=>{
-  function addReferralMenu(){
+  function placeReferralMenu(){
     const current=location.pathname.split('/').pop();
     document.querySelectorAll('.sidebar nav').forEach(nav=>{
-      if(nav.querySelector('a[href="indicacoes.html"]'))return;
       const sales=nav.querySelector('a[href="vendas.html"]');
       if(!sales)return;
-      const link=document.createElement('a');
+      let link=nav.querySelector('a[href="indicacoes.html"]');
+      if(!link){link=document.createElement('a');link.href='indicacoes.html';}
       link.className='nav-item'+(current==='indicacoes.html'?' active':'');
-      link.href='indicacoes.html';
-      link.innerHTML='<span aria-hidden="true">♡</span><span>Indicações</span>';
+      link.innerHTML='<span aria-hidden="true">♧</span><span>Indicações</span>';
       sales.insertAdjacentElement('afterend',link);
     });
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addReferralMenu,{once:true});else addReferralMenu();
-  setTimeout(addReferralMenu,500);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',placeReferralMenu,{once:true});else placeReferralMenu();
+  window.authReady?.then(placeReferralMenu).catch(()=>{});
+  setTimeout(placeReferralMenu,700);
 })();
