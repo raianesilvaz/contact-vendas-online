@@ -190,4 +190,4 @@ document.querySelectorAll('[data-logout]').forEach(button => button.addEventList
 ;(()=>{if(location.pathname.endsWith('/configuracoes.html'))return;const s=document.createElement('script');s.src='referral-reminder.js?v=20261029-admin-test-2';document.body.appendChild(s)})();
 
 
-;(()=>{const css=document.createElement('link');css.rel='stylesheet';css.href='team-goal.css?v=5';document.head.appendChild(css);const script=document.createElement('script');script.src='team-goal.js?v=4';document.body.appendChild(script)})();
+;(()=>{const css=document.createElement('link');css.rel='stylesheet';css.href='team-goal.css?v=6';document.head.appendChild(css);const script=document.createElement('script');script.src='team-goal.js?v=5';document.body.appendChild(script)})();
