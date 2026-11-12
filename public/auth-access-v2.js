@@ -112,7 +112,7 @@ function organizeContactSidebar(role,currentPath){
   // Preserve the existing expandable Analítico and Ranking menus, including their sublinks.
   function disclosure(href){const a=byHref(href);if(a){const box=a.closest('.nav-submenu');if(box){const trigger=box.previousElementSibling;if(trigger?.classList.contains('nav-disclosure')){used.add(a);[...box.querySelectorAll('a')].forEach(x=>used.add(x));return [trigger,box]}}}return a?[take(href)]:[]}
   const panel=disclosure('painel.html');const ranking=disclosure('ranking-produtividade.html');
-  const home=take('inicio.html');const newSale=take('index.html');const mySales=take('vendas.html');
+  const home=take('inicio.html');let newSale=take('index.html');if(!newSale&&!finance){newSale=document.createElement('a');newSale.href='index.html';newSale.className='nav-item'+(['index.html',''].includes(currentPath)?' active':'');newSale.innerHTML='<span aria-hidden="true">＋</span><span>'+(partner?'Nova indicação':'Nova venda')+'</span>';if(currentPath==='index.html')newSale.setAttribute('aria-current','page')}const mySales=take('vendas.html');
   section('PRINCIPAL',[home,...(newSale?[newSale]:[]),mySales]);
   section('DESEMPENHO',[...panel,...ranking,take('comissao.html')]);
   section('OPERAÇÃO',[take('cobertura.html'),take('contatos.html'),take('tarefas.html'),take('chips.html'),take('instalacoes.html'),take('bko.html')]);
