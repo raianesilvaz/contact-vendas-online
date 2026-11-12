@@ -39,3 +39,18 @@
 .topbar .contact-goal-pill[data-fire-stage="2"]{background:#103c3d}
 .topbar .contact-goal-pill.goal-complete{background:#655019;border-color:#e6bc4b}
 @media(max-width:700px){.topbar .contact-goal-pill{height:52px;min-height:52px;width:185px;min-width:185px;max-width:185px;padding:6px 8px;gap:5px}.topbar .contact-goal-pill .goal-flame-wrap{width:26px;min-width:26px;height:36px}.topbar .contact-goal-pill[data-fire-stage="0"] .goal-fire{font-size:17px}.topbar .contact-goal-pill[data-fire-stage="1"] .goal-fire{font-size:21px}.topbar .contact-goal-pill[data-fire-stage="2"] .goal-fire{font-size:25px}.topbar .contact-goal-pill .goal-progress{gap:3px}.topbar .contact-goal-pill .goal-label{font-size:9px}.topbar .contact-goal-pill .goal-count{font-size:12px}.topbar .contact-goal-pill .goal-track{height:6px}.topbar .contact-goal-pill .goal-motivation{font-size:8px}}
+
+/* Card compacto definitivo: mesma altura visual dos controles vizinhos */
+.topbar .contact-goal-pill{box-sizing:border-box;height:48px!important;min-height:48px!important;width:155px!important;min-width:155px!important;max-width:155px!important;padding:5px 9px!important;gap:6px!important;border-radius:12px!important;align-self:center!important}
+.topbar .contact-goal-pill .goal-flame-wrap{width:25px!important;min-width:25px!important;height:36px!important}
+.topbar .contact-goal-pill .goal-progress{gap:5px!important;min-width:0!important;justify-content:center}
+.topbar .contact-goal-pill .goal-heading{gap:4px!important}
+.topbar .contact-goal-pill .goal-label{font-size:10px!important;line-height:1!important}
+.topbar .contact-goal-pill .goal-count{font-size:12px!important;line-height:1!important}
+.topbar .contact-goal-pill .goal-track{height:5px!important;margin:0!important}
+.topbar .contact-goal-pill .goal-motivation{display:none!important}
+.topbar .contact-goal-pill[data-fire-stage="0"] .goal-fire{font-size:16px!important}
+.topbar .contact-goal-pill[data-fire-stage="1"] .goal-fire{font-size:20px!important}
+.topbar .contact-goal-pill[data-fire-stage="2"] .goal-fire{font-size:25px!important}
+.topbar .contact-goal-pill[data-fire-stage="3"] .goal-fire{font-size:22px!important}
+@media(max-width:700px){.topbar .contact-goal-pill{height:42px!important;min-height:42px!important;width:135px!important;min-width:135px!important;max-width:135px!important;padding:4px 6px!important;gap:4px!important}.topbar .contact-goal-pill .goal-flame-wrap{width:20px!important;min-width:20px!important;height:30px!important}.topbar .contact-goal-pill .goal-label{font-size:9px!important}.topbar .contact-goal-pill .goal-count{font-size:11px!important}}
