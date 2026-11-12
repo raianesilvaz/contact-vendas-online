@@ -176,3 +176,66 @@
 @media(max-width:1250px){.home-dashboard{grid-template-columns:minmax(0,1fr) 250px}.home-filterbar{grid-template-columns:repeat(2,minmax(0,1fr))}.home-field.home-type{grid-column:1/-1}.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(210px,70%)}}
 @media(max-width:980px){.home-dashboard{grid-template-columns:minmax(0,1fr)}.home-aside{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(210px,calc((100% - 12px)/2))}}
 @media(max-width:640px){.home-filterbar{grid-template-columns:1fr}.home-field.home-type{grid-column:auto}.home-filterbar .home-plan-filter{overflow-x:auto}.home-primary .home-showcase{grid-template-columns:1fr}.home-primary .home-showcase .home-grid,.home-primary .home-showcase:has(.home-spotlight[hidden]) .home-grid{grid-auto-columns:minmax(220px,82%)}.home-aside{grid-template-columns:1fr}.home-promo-list{grid-template-columns:1fr}.home-primary .home-spotlight{min-height:0}.home-benefits{gap:10px}}
+
+
+/* CONTACT Home 2.1 — vitrine editorial alinhada à identidade do produto */
+.home-content{max-width:1540px;padding-bottom:46px}
+.home-content .page-heading{background:linear-gradient(115deg,#0d3039 0%,#0d5057 68%,#087d80 100%);border:1px solid #135b60;border-radius:21px;padding:27px 30px;margin-bottom:21px;position:relative;overflow:hidden;box-shadow:0 12px 25px #07363c12}
+.home-content .page-heading:after{content:"";position:absolute;width:240px;height:240px;right:16%;top:-165px;border:48px solid #ffffff0a;border-radius:50%;pointer-events:none}
+.home-content .page-heading .eyebrow{color:#75e8dc;letter-spacing:.14em;font-size:10px}
+.home-content .page-heading h1{color:#fff;font-size:clamp(25px,2.5vw,35px);letter-spacing:-.04em;margin:8px 0}
+.home-content .page-heading p{color:#c0dfe1;font-size:13px;line-height:1.6}
+.home-content .page-heading .home-coverage{background:#fff;color:#075c64;border:0;box-shadow:0 4px 14px #0002;position:relative;z-index:1}
+.home-dashboard{margin-top:0;grid-template-columns:minmax(0,1fr) 275px;gap:18px}
+.home-filterbar{border:1px solid #dbe8e9;box-shadow:0 3px 13px #123b4207;padding:17px;border-radius:17px}
+.home-field{font-size:11px;color:#42616a}
+.home-field input,.home-field select{font-size:12px;height:42px;border-color:#d6e4e7}
+.home-filterbar .home-mode{font-size:11px}
+.home-primary .home-section-heading{margin-top:22px;margin-bottom:9px}
+.home-section-heading h2{font-size:19px;letter-spacing:-.025em;color:#15333d}
+.home-primary .home-tabs{border-color:#e2e9ec}
+.home-tab.active{color:#007f84;border-bottom-color:#00b5aa}
+.home-primary .home-showcase{grid-template-columns:minmax(180px,215px) minmax(0,1fr);gap:14px}
+.home-primary .home-spotlight{min-height:445px;background:linear-gradient(160deg,#0b343c,#00656b 75%,#00a99e);box-shadow:0 10px 24px #003e481a;border-radius:18px;padding:21px 17px}
+.home-primary .home-spotlight h3{font-size:24px;line-height:1.17}
+.home-primary .spotlight-panel{border:1px solid #8ee3da55;background:#062b34b0;border-radius:13px}
+.home-primary .spotlight-price{background:#f1fffd;border-radius:13px}
+.home-primary .spotlight-button{background:#00cbb8;color:#05353b;border-radius:11px}
+.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(210px,calc((100% - 28px)/3));gap:14px;padding-bottom:10px}
+.home-primary .home-showcase:has(.home-spotlight[hidden]) .home-grid{grid-auto-columns:minmax(210px,calc((100% - 42px)/4))}
+.home-dashboard-card{border:1px solid #dce9e9;border-radius:17px;box-shadow:0 5px 16px #133a430b;transition:transform .18s,box-shadow .18s}
+.home-dashboard-card:hover{transform:translateY(-3px);box-shadow:0 11px 22px #133a4315}
+.home-dashboard-card .offer-top{padding:18px 15px 8px}
+.home-dashboard-card .offer-provider{font-size:10px;letter-spacing:.12em;color:#008b8b}
+.home-dashboard-card .offer-category{font-size:16px;color:#123e47;margin-top:6px}
+.home-dashboard-card .offer-main{padding:10px 13px 4px;min-height:0;gap:8px}
+.home-dashboard-card .offer-main h3{font-size:17px;color:#102f39;margin:2px 0 4px}
+.home-dashboard-card .offer-feature{background:#eff6f6;border:1px solid #e4eeee;border-radius:11px;min-height:88px;padding:11px}
+.home-dashboard-card .offer-feature-label{color:#597b82;font-size:9px;letter-spacing:.09em}
+.home-dashboard-card .offer-feature-line{margin-top:9px;gap:8px}
+.home-dashboard-card .offer-icon{color:#008f91;font-size:20px}
+.home-dashboard-card .offer-feature-line strong{color:#24424b;font-size:15px}
+.home-dashboard-card .offer-feature-line small{font-size:10px;color:#668087}
+.home-dashboard-card .offer-bottom{padding:12px 13px 17px;gap:9px}
+.home-dashboard-card .offer-price{min-height:83px}
+.home-dashboard-card .offer-price strong{font-size:27px;color:#008b8b}
+.home-dashboard-card .offer-price strong small{font-size:12px}
+.home-dashboard-card .offer-price>span{font-size:10px}
+.home-dashboard-card .offer-primary{background:#008e91;border-radius:10px;padding:12px 7px;box-shadow:none;font-size:10px}
+.home-dashboard-card .offer-primary:hover{background:#006c75}
+.home-dashboard-card .offer-more{color:#007c83;font-size:11px}
+.home-benefits{background:#fff;border-color:#dce9e9;padding:14px 17px}
+.home-benefits strong{color:#0d4650}
+.home-promos{box-shadow:0 4px 16px #153a4308}
+.home-promo-list article{background:#e9f7f5;border-color:#d1ebe7}
+.home-promo-list article+article{background:#f4f7fb;border-color:#e1e8ef}
+.home-promo-list span,.home-promo-list article+article span{color:#007d82}
+.home-promo-list strong{color:#007d82}
+.home-info-panel{box-shadow:0 4px 15px #123b4208}
+.home-info-panel h3{font-size:15px}
+.home-info-panel p{font-size:12px}
+.home-city-info{background:linear-gradient(145deg,#e3f8f5,#f6fffd);border-color:#c6e7e2}
+.home-footnote{background:#f0faf9;border-color:#cceae5;color:#335d63}
+@media(max-width:1200px){.home-dashboard{grid-template-columns:minmax(0,1fr) 245px}.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(205px,68%)}}
+@media(max-width:980px){.home-dashboard{grid-template-columns:minmax(0,1fr)}.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(210px,calc((100% - 14px)/2))}}
+@media(max-width:640px){.home-content .page-heading{padding:23px 18px}.home-content .page-heading h1{font-size:25px}.home-primary .home-showcase{grid-template-columns:1fr}.home-primary .home-showcase .home-grid,.home-primary .home-showcase:has(.home-spotlight[hidden]) .home-grid{grid-auto-columns:minmax(220px,82%)}.home-primary .home-spotlight{min-height:0}.home-filterbar{padding:13px}}
