@@ -239,3 +239,37 @@
 @media(max-width:1200px){.home-dashboard{grid-template-columns:minmax(0,1fr) 245px}.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(205px,68%)}}
 @media(max-width:980px){.home-dashboard{grid-template-columns:minmax(0,1fr)}.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(210px,calc((100% - 14px)/2))}}
 @media(max-width:640px){.home-content .page-heading{padding:23px 18px}.home-content .page-heading h1{font-size:25px}.home-primary .home-showcase{grid-template-columns:1fr}.home-primary .home-showcase .home-grid,.home-primary .home-showcase:has(.home-spotlight[hidden]) .home-grid{grid-auto-columns:minmax(220px,82%)}.home-primary .home-spotlight{min-height:0}.home-filterbar{padding:13px}}
+
+
+/* Home 2.2 — identidade visual e cartões comerciais mais legíveis */
+.home-content{max-width:1680px}
+.home-dashboard{grid-template-columns:minmax(0,1fr) 260px}
+.home-primary .home-showcase{grid-template-columns:minmax(205px,240px) minmax(0,1fr);gap:16px}
+.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(238px,calc((100% - 16px)/2));gap:16px;scroll-snap-type:x mandatory;overflow-x:auto;scrollbar-width:thin;scrollbar-color:#a5cacc #eef5f5}
+.home-primary .home-showcase:has(.home-spotlight[hidden]) .home-grid{grid-auto-columns:minmax(238px,calc((100% - 32px)/3))}
+.home-dashboard-card{scroll-snap-align:start;min-height:455px}
+.home-dashboard-card .offer-top{padding:17px 15px 6px}
+.home-dashboard-card .offer-brand{display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:normal}
+.home-brand-mark,.offer-brand-mark{position:relative;display:inline-flex;align-items:center;font-weight:900;font-size:23px;letter-spacing:-.07em;line-height:1;color:#d92130;font-family:Arial,Helvetica,sans-serif}
+.offer-brand-sun{font-size:12px;align-self:flex-start;margin-left:2px;letter-spacing:0}
+.offer-brand-tag{font-size:9px;font-weight:900;letter-spacing:.1em;color:#fff;background:#d92130;border-radius:5px;padding:5px 7px}
+.home-dashboard-card .offer-category{font-size:16px;font-weight:800;margin-top:11px}
+.home-dashboard-card .offer-card-badges{display:flex;justify-content:space-between;align-items:center;gap:6px;min-height:25px}
+.offer-speed-badge{font-size:9px;font-weight:800;color:#007e82;background:#dcf7f2;border-radius:7px;padding:5px 7px}
+.offer-group-badge{font-size:9px;font-weight:800;color:#507078;background:#f0f5f6;border-radius:7px;padding:5px 7px}
+.home-dashboard-card .offer-main{gap:9px}
+.home-dashboard-card .offer-main h3{font-size:21px;letter-spacing:-.04em;margin:3px 0 5px}
+.home-dashboard-card .offer-feature{min-height:100px}
+.home-dashboard-card .offer-feature-line strong{font-size:17px}
+.home-dashboard-card .offer-feature-line small{font-size:11px}
+.home-dashboard-card .offer-price{min-height:84px}
+.home-dashboard-card .offer-price strong{font-size:31px;letter-spacing:-.05em}
+.home-dashboard-card .offer-primary{font-size:11px;padding:13px 8px}
+.home-primary .home-spotlight{min-height:465px}
+.home-primary .spotlight-panel{padding:19px 10px}
+.home-primary .spotlight-price{padding:17px 10px}
+.home-primary .spotlight-label{font-size:11px}
+.home-primary .home-spotlight h3{font-size:27px}
+@media(max-width:1200px){.home-dashboard{grid-template-columns:minmax(0,1fr) 235px}.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(230px,80%)}}
+@media(max-width:980px){.home-dashboard{grid-template-columns:minmax(0,1fr)}.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(235px,calc((100% - 16px)/2))}}
+@media(max-width:640px){.home-primary .home-showcase{grid-template-columns:1fr}.home-primary .home-showcase .home-grid,.home-primary .home-showcase:has(.home-spotlight[hidden]) .home-grid{grid-auto-columns:minmax(230px,86%)}}
