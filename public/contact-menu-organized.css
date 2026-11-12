@@ -1,0 +1,10 @@
+/* CONTACT: agrupamento funcional do menu compartilhado. */
+.sidebar nav .contact-nav-heading{display:block;margin:19px 12px 7px;padding:0;color:#78949b;font-size:9px;font-weight:800;letter-spacing:.13em;line-height:1.4;user-select:none}
+.sidebar nav .contact-nav-heading:first-child{margin-top:7px}
+.sidebar nav .contact-nav-heading[hidden]{display:none!important}
+.sidebar nav .nav-item{transition:background-color .18s,color .18s,border-color .18s}
+.sidebar nav .nav-item:focus-visible{outline:2px solid #12d3c6;outline-offset:2px}
+.sidebar nav .nav-disclosure{width:100%;text-align:left}
+.sidebar nav .nav-submenu{margin-bottom:4px}
+body.sidebar-collapsed .sidebar nav .contact-nav-heading{font-size:0;height:1px;padding:0;margin:14px 8px 9px;border-top:1px solid #315057;overflow:hidden}
+@media(max-width:900px){.sidebar nav .contact-nav-heading{margin-top:16px}}
