@@ -152,10 +152,10 @@
     }
     list.innerHTML = notifications.map(item => `
       <div class="notification-item ${item.read_at ? '' : 'unread'}" data-notification-id="${item.id}">
-        <span class="notification-item-icon">${iconByType[item.type] || '🔔'}</span>
+        <span class="notification-item-icon">${(item.title === '💚 Nova indicação recebida' ? '💚' : iconByType[item.type] || '🔔')}</span>
         <div class="notification-item-body"><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.message)}</p><small>${formatRelative(item.created_at)}</small>
           <div class="notification-actions">
-            <button type="button" class="notification-action-sale" data-notification-action="sale" data-notification-id="${item.id}">${item.type.startsWith('team_') ? '✓ Marcar como lida' : (item.task_id ? '☑ Ver tarefa' : '👁 Ver venda')}</button>
+            <button type="button" class="notification-action-sale" data-notification-action="sale" data-notification-id="${item.id}">${item.type.startsWith('team_') ? '✓ Marcar como lida' : (item.title === '💚 Nova indicação recebida' ? '💚 Ver indicação' : (item.task_id ? '☑ Ver tarefa' : '👁 Ver venda'))}</button>
             ${item.type === 'installation_reminder' ? `<button type="button" class="notification-action-whatsapp" data-notification-action="whatsapp" data-notification-id="${item.id}">💬 Avisar cliente</button>` : ''}
           </div>
         </div>
@@ -234,7 +234,7 @@
       const { error } = await window.supabaseClient.from('notifications').update({ read_at:now }).eq('id', item.id);
       if (!error) { item.read_at = now; render(); }
     }
-    if(item.task_id){window.location.href='tarefas.html?task='+encodeURIComponent(item.task_id);return;}
+    if(item.title === '💚 Nova indicação recebida'){window.location.href='indicacoes.html';return;}\n    if(item.task_id){window.location.href='tarefas.html?task='+encodeURIComponent(item.task_id);return;}
     if (!item.sale_id) return;
     if (item.type === 'installation_reminder' && action === 'whatsapp') {
       const {data:sale,error} = await window.supabaseClient.from('sales').select('customer_name,phone_1,phone_2,scheduled_installation_date,scheduled_installation_start,scheduled_installation_end,full_address,address_complement').eq('id',item.sale_id).maybeSingle();
