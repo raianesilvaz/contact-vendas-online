@@ -176,3 +176,7 @@
 @media(max-width:1250px){.home-dashboard{grid-template-columns:minmax(0,1fr) 250px}.home-filterbar{grid-template-columns:repeat(2,minmax(0,1fr))}.home-field.home-type{grid-column:1/-1}.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(210px,70%)}}
 @media(max-width:980px){.home-dashboard{grid-template-columns:minmax(0,1fr)}.home-aside{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(210px,calc((100% - 12px)/2))}}
 @media(max-width:640px){.home-filterbar{grid-template-columns:1fr}.home-field.home-type{grid-column:auto}.home-filterbar .home-plan-filter{overflow-x:auto}.home-primary .home-showcase{grid-template-columns:1fr}.home-primary .home-showcase .home-grid,.home-primary .home-showcase:has(.home-spotlight[hidden]) .home-grid{grid-auto-columns:minmax(220px,82%)}.home-aside{grid-template-columns:1fr}.home-promo-list{grid-template-columns:1fr}.home-primary .home-spotlight{min-height:0}.home-benefits{gap:10px}}
+
+/* Home sem coluna lateral: vitrine ocupa toda a largura disponível */
+.home-dashboard{grid-template-columns:minmax(0,1fr)}
+.home-primary{width:100%;min-width:0}
