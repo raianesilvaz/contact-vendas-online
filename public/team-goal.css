@@ -20,3 +20,22 @@
 @keyframes contact-goal-flicker{0%,100%{transform:rotate(-3deg) scale(.97)}50%{transform:rotate(3deg) scale(1.1)}}
 @keyframes contact-goal-victory{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 @media(prefers-reduced-motion:reduce){.topbar .contact-goal-pill .goal-fire,.topbar .contact-goal-pill .goal-fill{animation:none!important;transition:none!important}}
+
+/* Layout aprovado: fogo grande à esquerda, título e contagem na mesma linha, barra e mensagem */
+.topbar .contact-goal-pill{height:64px;min-height:64px;width:265px;min-width:265px;max-width:265px;padding:9px 12px;gap:9px;display:flex;align-items:center;text-align:left;background:#103c3d;border:1px solid #2b817a;border-radius:14px;box-shadow:0 3px 12px #063a3b25;white-space:normal}
+.topbar .contact-goal-pill .goal-flame-wrap{display:flex;align-items:center;justify-content:center;width:38px;min-width:38px;height:46px}
+.topbar .contact-goal-pill .goal-fire{font-size:23px;min-width:0;line-height:1}
+.topbar .contact-goal-pill[data-fire-stage="0"] .goal-fire{font-size:20px}
+.topbar .contact-goal-pill[data-fire-stage="1"] .goal-fire{font-size:27px}
+.topbar .contact-goal-pill[data-fire-stage="2"] .goal-fire{font-size:34px}
+.topbar .contact-goal-pill[data-fire-stage="3"] .goal-fire{font-size:29px}
+.topbar .contact-goal-pill .goal-progress{display:flex;flex:1;min-width:0;gap:5px}
+.topbar .contact-goal-pill .goal-heading{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%}
+.topbar .contact-goal-pill .goal-label{font-size:11px;font-weight:750;white-space:nowrap;color:#fff}
+.topbar .contact-goal-pill .goal-count{font-size:15px;font-weight:800;white-space:nowrap;color:#fff}
+.topbar .contact-goal-pill .goal-track{width:100%;height:8px;margin:0;background:#356765;border-radius:20px;overflow:hidden}
+.topbar .contact-goal-pill .goal-fill{display:block;height:100%;background:linear-gradient(90deg,#5dd5ac,#ffb83e)}
+.topbar .contact-goal-pill .goal-motivation{font-size:9px;font-weight:600;color:#d8f5e9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .contact-goal-pill[data-fire-stage="2"]{background:#103c3d}
+.topbar .contact-goal-pill.goal-complete{background:#655019;border-color:#e6bc4b}
+@media(max-width:700px){.topbar .contact-goal-pill{height:52px;min-height:52px;width:185px;min-width:185px;max-width:185px;padding:6px 8px;gap:5px}.topbar .contact-goal-pill .goal-flame-wrap{width:26px;min-width:26px;height:36px}.topbar .contact-goal-pill[data-fire-stage="0"] .goal-fire{font-size:17px}.topbar .contact-goal-pill[data-fire-stage="1"] .goal-fire{font-size:21px}.topbar .contact-goal-pill[data-fire-stage="2"] .goal-fire{font-size:25px}.topbar .contact-goal-pill .goal-progress{gap:3px}.topbar .contact-goal-pill .goal-label{font-size:9px}.topbar .contact-goal-pill .goal-count{font-size:12px}.topbar .contact-goal-pill .goal-track{height:6px}.topbar .contact-goal-pill .goal-motivation{font-size:8px}}
