@@ -123,6 +123,23 @@ function organizeContactSidebar(role,currentPath){
   if(!groups.length)return;
   nav.replaceChildren(...groups);
   nav.dataset.organized='1';
+  // Transform category headings into accessible, collapsible groups.
+  const headings=[...nav.querySelectorAll('.contact-nav-heading')];
+  headings.forEach((heading,index)=>{
+   const items=[];let node=heading.nextElementSibling;
+   while(node&&!node.classList.contains('contact-nav-heading')){const next=node.nextElementSibling;items.push(node);node=next}
+   if(!items.length)return;
+   const group=document.createElement('div');group.className='contact-nav-group';
+   const toggle=document.createElement('button');toggle.type='button';toggle.className='contact-nav-toggle';
+   const label=heading.textContent.trim();const key='contact-nav-section-'+label.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-z0-9]+/g,'-');
+   const content=document.createElement('div');content.className='contact-nav-group-content';content.id='contact-nav-content-'+index;
+   toggle.setAttribute('aria-controls',content.id);toggle.innerHTML='<span>'+label+'</span><span class="contact-nav-chevron" aria-hidden="true">⌄</span>';
+   const hasActive=items.some(el=>el.classList.contains('active')||!!el.querySelector('.active'));
+   let saved=null;try{saved=sessionStorage.getItem(key)}catch(_){}let expanded=hasActive||saved!=='closed';
+   const setExpanded=value=>{expanded=value;content.hidden=!value;toggle.setAttribute('aria-expanded',String(value));toggle.title=(value?'Recolher ':'Expandir ')+label};
+   toggle.addEventListener('click',()=>{setExpanded(!expanded);try{sessionStorage.setItem(key,expanded?'open':'closed')}catch(_){}});
+   heading.replaceWith(group);content.append(...items);group.append(toggle,content);setExpanded(expanded);
+  });
   nav.querySelectorAll('.contact-nav-heading').forEach(heading=>{
    let next=heading.nextElementSibling,hasVisible=false;
    while(next&&!next.classList.contains('contact-nav-heading')){if(!next.hidden&&(!next.hasAttribute('data-admin-only')||admin))hasVisible=true;next=next.nextElementSibling}
