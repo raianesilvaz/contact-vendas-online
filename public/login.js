@@ -4,7 +4,7 @@ const loginError = document.querySelector('#loginError');
 
 (async () => {
   const { data: { user } } = await window.supabaseClient.auth.getUser();
-  if (user) window.location.replace('index.html');
+  if (user) window.location.replace('inicio.html');
 })();
 
 loginForm.addEventListener('submit', async event => {
@@ -16,5 +16,5 @@ loginForm.addEventListener('submit', async event => {
     loginError.textContent = error.message === 'Invalid login credentials' ? 'E-mail ou senha incorretos.' : 'Não foi possível entrar. Tente novamente.';
     loginButton.disabled = false; loginButton.querySelector('span').textContent = 'Entrar no sistema'; return;
   }
-  window.location.replace('index.html');
+  window.location.replace('inicio.html');
 });
