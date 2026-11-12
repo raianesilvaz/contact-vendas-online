@@ -6,13 +6,22 @@ let sales=[],operators=new Map();
 function dates(){const today=new Date(),end=day(today),type=$('period').value;if(type==='today')return[end,end];if(type==='week'){today.setDate(today.getDate()-6);return[day(today),end]}if(type==='previous'){today.setDate(1);today.setDate(0);const last=day(today);today.setDate(1);return[day(today),last]}if(type==='custom')return[$('from').value||end,$('to').value||end];today.setDate(1);return[day(today),end]}
 function barList(id,items){const max=Math.max(1,...items.map(x=>x.value));$(id).innerHTML=items.length?items.map(x=>'<div class="intel-bar"><span class="intel-bar-name" title="'+esc(x.name)+'">'+esc(x.name)+'</span><strong>'+fmt(x.value)+'</strong><div class="intel-track"><i style="width:'+(x.value/max*100)+'%"></i></div></div>').join(''):'<p style="color:#73858e;font-size:13px">Sem dados para este período.</p>'}
 function cityOf(address){
-const text=String(address||'').normalize('NFC').replace(/\s+/g,' ').trim();
-if(!text)return '';
-// Aceita somente campo CIDADE explicitamente rotulado; não deduz pelo CEP ou bairro.
-const match=text.match(/\bCIDADE\s*[:=,-]?\s*([\p{L}][\p{L} .'-]{1,55}?)(?=\s*(?:[,;\/]|\bESTADO\b|\bUF\b|\bCEP\b|\bBAIRRO\b|\bN[ÚU]MERO\b|\d{5}[- ]?\d{3}\b|$))/iu);
-if(!match)return '';
-let city=match[1].trim().replace(/[-.,\s]+$/,'').replace(/\s*-\s*(?:SP|RJ|MG|PR|SC|RS|BA|GO|DF|ES|MS|MT|PA|PE|CE|MA|PB|RN|PI|AL|SE|TO|RO|RR|AP|AC|AM)\s*$/i,'').trim();
-if(!city||city.length<3||/\d/.test(city)||/^(?:estado|cep|rua|bairro)$/i.test(city))return '';
+const raw=String(address||'').normalize('NFC').replace(/\s+/g,' ').trim();
+if(!raw)return '';
+const uf='(?:SP|RJ|MG|PR|SC|RS|BA|GO|DF|ES|MS|MT|PA|PE|CE|MA|PB|RN|PI|AL|SE|TO|RO|RR|AP|AC|AM)';
+const cityLabel=raw.match(/\bCIDADE\s*[:=,-]?\s*([\p{L}][\p{L} .'-]{1,65}?)(?=\s*(?:[,;\/]|\bESTADO\b|\bUF\b|\bCEP\b|\bBAIRRO\b|\bN[ÚU]MERO\b|\d{5}[- ]?\d{3}|$))/iu);
+let city=cityLabel?.[1]||'';
+if(!city){
+ const re=new RegExp('(?:^|[,;\\s-])([\\p{L}][\\p{L} .\\x27-]{2,55}?)\\s*[-/]\\s*'+uf+'(?=\\s|[,;.)]|$)','giu');
+ const hits=[...raw.matchAll(re)];
+ if(hits.length)city=hits[hits.length-1][1].split(/\s+-\s+|,\s*/).pop().trim();
+}
+if(!city){
+ const re=new RegExp('(?:^|,)\\s*([\\p{L}][\\p{L} .\\x27-]{2,55}?)\\s*\\('+uf+'\\)','iu');
+ city=raw.match(re)?.[1]||'';
+}
+city=city.replace(/\s*[-,;.]?\s*(?:ESTADO|UF|CEP)\b.*$/iu,'').replace(/^\s*(?:em|cidade de)\s+/iu,'').trim().replace(/[-.,\s]+$/,'');
+if(!city||city.length<3||/\d/.test(city)||/^(?:estado|cep|rua|bairro|avenida)$/i.test(city))return '';
 return city.toLocaleLowerCase('pt-BR').replace(/(^|[\s'-])\p{L}/gu,x=>x.toLocaleUpperCase('pt-BR'));
 }
 function interpretPlan(sale){
@@ -48,7 +57,7 @@ $('kCities').textContent=fmt(cities.size);
 $('kOperators').textContent=fmt(ops.size);
 barList('operators',[...ops].map(([id,value])=>({name:operators.get(id)||'Não informada',value})).sort((a,b)=>b.value-a.value));
 barList('plans',[...plans].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value).slice(0,12));
-barList('cities',[...cities].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value).slice(0,12));
+barList('cities',[...cities].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value).slice(0,5));
 const chart=$('trend');chart.replaceChildren();const keys=[...days.keys()].sort(),max=Math.max(1,...days.values());
 if(!keys.length){chart.innerHTML='<p style="color:#73858e;font-size:13px">Sem cadastros neste período.</p>'}else{keys.forEach(d=>{const n=days.get(d),item=document.createElement('div');item.className='intel-day';item.title=d.split('-').reverse().join('/')+' — '+n+' cadastros';item.innerHTML='<i style="height:'+Math.max(3,n/max*155)+'px"></i><small>'+d.slice(8)+'</small>';chart.append(item)})}
 $('intelStatus').textContent=fmt(a.length)+' cadastros no período • '+fmt(unidentified)+' sem cidade identificável • '+fmt(unknownPlans)+' planos sem velocidade identificável • '+fmt(conflicts)+' cadastros antigos com chip no texto e flag MULTI desligada.';
