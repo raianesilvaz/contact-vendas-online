@@ -51,25 +51,6 @@ html.modern-visual-enabled .modern-sale-top .card-badges{min-height:22px;flex-wr
 .queue-content .seller-copy-button{flex:0 0 auto;border:1px solid #d6e8e6;border-radius:6px;background:#f1faf9;color:#008d88;font-size:15px;line-height:1;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
 .queue-content .seller-copy-button:hover{background:#d9f4ef;border-color:#008d88}
 
-/* Cards comerciais 2026-11: estrutura visual uniforme e responsiva. */
-html.modern-visual-enabled .queue-content .sales-list{grid-auto-rows:auto!important;align-items:stretch}
-html.modern-visual-enabled .modern-sale-card[data-operator]{display:flex!important;flex-direction:column!important;gap:10px!important;height:auto!important;min-height:235px!important;max-height:none!important;overflow:visible!important;padding:14px!important;border-left:1px solid #dbe5ec!important;border-radius:14px!important;box-shadow:0 3px 12px rgba(26,56,72,.035)!important;transition:border-color .15s,box-shadow .15s}
-html.modern-visual-enabled .modern-sale-card:hover{border-color:#0da99e!important;box-shadow:0 7px 20px rgba(16,87,85,.10)!important}
-html.modern-visual-enabled .modern-sale-top{overflow:visible!important;min-height:32px}
-html.modern-visual-enabled .modern-sale-top .card-badges{display:flex;gap:5px;flex-wrap:wrap!important;white-space:normal!important}
-html.modern-visual-enabled .modern-sale-top small{margin-top:4px;font-size:10px}
-html.modern-visual-enabled .modern-sale-person{min-width:0;flex:1}
-html.modern-visual-enabled .modern-sale-card h2{font-size:15px!important;line-height:1.3!important;max-height:none!important;overflow-wrap:anywhere}
-html.modern-visual-enabled .modern-sale-plan{margin-top:8px!important;line-height:1.45!important;max-height:none!important;display:block!important;overflow-wrap:anywhere;color:#667d91!important;font-size:12px!important}
-html.modern-visual-enabled .modern-sale-separator{color:#c5d5d9;padding:0 5px}
-html.modern-visual-enabled .modern-sale-facts{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:0;background:#eff8f7;border-radius:9px;padding:10px 9px}
-html.modern-visual-enabled .modern-sale-facts>div{display:flex;align-items:flex-start;gap:8px;min-width:0;text-align:left}
-html.modern-visual-enabled .modern-sale-facts>div+div{border-left:1px solid #cddfdf;padding-left:10px}
-html.modern-visual-enabled .modern-sale-facts small{display:block;color:#607b80;font-size:10px;line-height:1.25}
-html.modern-visual-enabled .modern-sale-facts strong{display:block;color:#203940;font-size:11px;line-height:1.4;overflow-wrap:anywhere}
-html.modern-visual-enabled .modern-fact-icon{color:#008c83;font-size:17px;line-height:1.1}
-html.modern-visual-enabled .modern-sale-bottom{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;gap:8px!important;align-items:center;margin-top:auto}
-html.modern-visual-enabled .modern-sale-obs{display:-webkit-box!important;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal!important;line-height:1.4!important;max-height:48px;overflow:hidden!important;background:#f0f8f7!important;text-align:left;padding:8px!important;overflow-wrap:anywhere}
-html.modern-visual-enabled .modern-sale-arrow{color:#008d86;font-size:24px;font-weight:700}
-html.modern-visual-enabled .modern-sale-logo img{object-fit:contain!important}
-@media(max-width:650px){html.modern-visual-enabled .queue-content .sales-list{grid-template-columns:1fr!important}html.modern-visual-enabled .modern-sale-card[data-operator]{min-height:215px!important}}
+/* Ajustes seguros: manter a estrutura original e melhorar somente a leitura. */
+html.modern-visual-enabled .modern-sale-obs{white-space:normal!important;display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.35!important;max-height:38px;overflow:hidden!important;overflow-wrap:anywhere}
+html.modern-visual-enabled .modern-sale-card h2{overflow-wrap:anywhere}
