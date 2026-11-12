@@ -234,7 +234,8 @@
       const { error } = await window.supabaseClient.from('notifications').update({ read_at:now }).eq('id', item.id);
       if (!error) { item.read_at = now; render(); }
     }
-    if(item.title === '💚 Nova indicação recebida'){window.location.href='indicacoes.html';return;}\n    if(item.task_id){window.location.href='tarefas.html?task='+encodeURIComponent(item.task_id);return;}
+    if(item.title === '💚 Nova indicação recebida'){window.location.href='indicacoes.html';return;}
+    if(item.task_id){window.location.href='tarefas.html?task='+encodeURIComponent(item.task_id);return;}
     if (!item.sale_id) return;
     if (item.type === 'installation_reminder' && action === 'whatsapp') {
       const {data:sale,error} = await window.supabaseClient.from('sales').select('customer_name,phone_1,phone_2,scheduled_installation_date,scheduled_installation_start,scheduled_installation_end,full_address,address_complement').eq('id',item.sale_id).maybeSingle();
