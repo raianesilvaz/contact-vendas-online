@@ -63,3 +63,36 @@
 .offer-more,.offer-detail a{color:#007e83}
 .home-footnote{background:#effaf8;border-color:#cbeae4;color:#355d61}
 .home-footnote strong,.home-footnote b{color:#075c60}
+
+/* Refinamento tipográfico: hierarquia legível sem fugir da DM Sans do CONTACT */
+.home-content{font-family:"DM Sans",Arial,sans-serif}
+.home-content .page-heading h1{font-size:clamp(26px,2.5vw,34px);font-weight:800;letter-spacing:-.045em;line-height:1.18}
+.home-content .page-heading p{font-size:13px;line-height:1.55}
+.home-section-heading h2{font-size:20px;font-weight:800;letter-spacing:-.025em}
+.home-section-heading p,.home-source{font-size:12px;line-height:1.5}
+.home-tab{font-size:12px;font-weight:700;letter-spacing:.005em}
+.home-spotlight h3{font-size:26px;font-weight:800;letter-spacing:-.035em;line-height:1.15}
+.spotlight-label{font-size:11px;letter-spacing:.095em}
+.spotlight-panel span{font-size:12px}
+.spotlight-panel strong{font-size:39px;font-weight:800;letter-spacing:-.055em}
+.spotlight-panel small{font-size:11px;line-height:1.5}
+.spotlight-price>span{font-size:12px}
+.spotlight-price strong{font-size:34px;font-weight:800;letter-spacing:-.05em}
+.spotlight-price p{font-size:11px;line-height:1.45}
+.spotlight-button{font-size:13px;font-weight:800}
+.home-showcase .offer-top{padding-top:19px}
+.offer-provider{font-size:12px;font-weight:800;letter-spacing:.07em}
+.home-showcase .offer-category{font-size:19px;font-weight:800;letter-spacing:-.02em}
+.home-showcase .offer-main h3{font-size:16px;font-weight:800;letter-spacing:-.025em}
+.home-showcase .offer-feature-label{font-size:11px;font-weight:800;letter-spacing:.075em}
+.home-showcase .offer-feature-line strong{font-size:19px;font-weight:800;letter-spacing:-.025em;line-height:1.2}
+.home-showcase .offer-feature-line small{font-size:11px;line-height:1.45;margin-top:5px}
+.home-showcase .offer-pill{font-size:11px;font-weight:700}
+.home-showcase .offer-price strong{font-size:31px;font-weight:800;letter-spacing:-.045em}
+.home-showcase .offer-price strong small{font-size:13px;font-weight:600;letter-spacing:0}
+.home-showcase .offer-price>span{font-size:11px;line-height:1.5}
+.home-showcase .offer-primary{font-size:12px;font-weight:800;letter-spacing:.01em}
+.offer-more{font-size:12px;font-weight:600}
+.offer-detail{font-size:12px;line-height:1.6}
+.home-footnote{font-size:12px;line-height:1.6}
+@media(max-width:780px){.home-content .page-heading h1{font-size:27px}.home-spotlight h3{font-size:24px}}
