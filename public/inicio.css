@@ -34,3 +34,32 @@
 @media(max-width:1150px){.home-showcase{grid-template-columns:240px minmax(0,1fr)}.home-showcase .home-grid{grid-template-columns:repeat(2,minmax(230px,1fr))}}
 @media(max-width:780px){.home-showcase{grid-template-columns:1fr}.home-spotlight{min-height:0;gap:12px}.home-spotlight h3{max-width:none}.home-showcase .home-grid{grid-template-columns:repeat(2,minmax(250px,1fr))}}
 @media(max-width:550px){.home-showcase .home-grid{grid-template-columns:repeat(2,minmax(245px,1fr))}.home-spotlight h3{font-size:22px}}
+
+/* Identidade visual CONTACT — turquesa, petróleo e superfícies neutras */
+.home-content{--home-teal:#008b8b;--home-deep:#101c22;--home-mint:#00d7bd;--home-soft:#e9f8f6}
+.home-tab.active{color:#007e83;border-bottom-color:#00b9aa}
+.home-tab:hover{color:#006e73}
+.home-coverage{color:#006e73;border-color:#c8e5e2}
+.home-showcase .home-offer{border-color:#dce7e9}
+.home-spotlight{background:linear-gradient(155deg,#10323a 0%,#07515a 58%,#008b8b 100%);color:#fff}
+.home-spotlight:after{border-color:#ffffff10}
+.spotlight-label{color:#7ff7e8}
+.spotlight-panel{background:#0b252cc9;border-color:#42cabb7a}
+.spotlight-panel small{color:#d4f4ef}
+.spotlight-price{color:#122c33;background:#f5fffd}
+.spotlight-price>span,.spotlight-price p{color:#56717a}
+.spotlight-button{background:#00d7bd;color:#08292e}
+.spotlight-button:hover{background:#48e7d5}
+.offer-provider,.offer-category{color:#007e83}
+.home-showcase .offer-feature{background:#edf4f5}
+.offer-feature-label{color:#637b83}
+.offer-feature-line strong{color:#274650}
+.offer-feature-line small{color:#647d85}
+.offer-icon{color:#008b8b}
+.offer-pill{color:#006e73;background:#d9f6f0}
+.offer-price strong{color:#007e83}
+.offer-primary{background:#008b8b;color:#fff;box-shadow:0 3px 8px #008b8b30}
+.offer-primary:hover{background:#006e73}
+.offer-more,.offer-detail a{color:#007e83}
+.home-footnote{background:#effaf8;border-color:#cbeae4;color:#355d61}
+.home-footnote strong,.home-footnote b{color:#075c60}
