@@ -273,3 +273,9 @@
 @media(max-width:1200px){.home-dashboard{grid-template-columns:minmax(0,1fr) 235px}.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(230px,80%)}}
 @media(max-width:980px){.home-dashboard{grid-template-columns:minmax(0,1fr)}.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(235px,calc((100% - 16px)/2))}}
 @media(max-width:640px){.home-primary .home-showcase{grid-template-columns:1fr}.home-primary .home-showcase .home-grid,.home-primary .home-showcase:has(.home-spotlight[hidden]) .home-grid{grid-auto-columns:minmax(230px,86%)}}
+
+.offer-service-logos{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.service-logo{display:inline-flex;align-items:center;justify-content:center;border-radius:6px;padding:5px 8px;font-size:10px;line-height:1.1;font-weight:900;letter-spacing:-.02em}
+.service-globoplay{background:linear-gradient(135deg,#fa382d,#ec1459);color:#fff}
+.service-5g{background:#003e47;color:#80ffeb}
+.service-wifi{background:#d4f3ed;color:#007e82}
