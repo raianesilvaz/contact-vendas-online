@@ -194,3 +194,52 @@
 /* Globoplay sem caixa: apenas marca e indicação de inclusão */
 .home-dashboard-card .offer-service-logos .service-globoplay{background:transparent;border:0;box-shadow:none;border-radius:0;padding:0;gap:5px}
 .home-dashboard-card .offer-service-logos .globoplay-included{color:#397269;font-size:10px;font-weight:700;margin-left:3px}
+
+
+/* Home — padronização tipográfica CONTACT (DM Sans) */
+.home-content,.home-content button,.home-content input,.home-content select,.home-content a{
+ font-family:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+.home-content{font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.home-content h1,.home-content h2,.home-content h3,.home-content h4,
+.home-content strong,.home-content b{letter-spacing:-.025em}
+.home-content .page-heading h1{font-size:clamp(24px,2.2vw,30px);font-weight:700;line-height:1.25}
+.home-content .page-heading p{font-size:13px;line-height:1.5}
+.home-content .home-section-heading h2{font-size:19px;font-weight:700;line-height:1.35}
+.home-content .home-section-heading p,.home-content .home-source{font-size:12px;line-height:1.5}
+.home-content .home-field{font-size:12px;font-weight:600}
+.home-content .home-field input,.home-content .home-field select{font-size:13px;font-weight:500;letter-spacing:0}
+.home-content .home-tab,.home-content .home-mode{font-size:12px;font-weight:600;letter-spacing:0}
+.home-content .home-offer,.home-content .home-dashboard-card{font-size:13px;line-height:1.45}
+.home-content .offer-provider,.home-content .offer-category{font-family:inherit;letter-spacing:0;text-transform:none}
+.home-content .offer-provider{font-size:12px;font-weight:700}
+.home-content .offer-category{font-size:14px;font-weight:700;line-height:1.3}
+.home-content .offer-brand-mark{font-family:inherit;font-size:17px;letter-spacing:-.04em;font-weight:800}
+.home-content .offer-brand-tag{font-size:9px;letter-spacing:.02em}
+.home-content .offer-card-badges{font-size:11px}
+.home-content .offer-speed-badge,.home-content .offer-group-badge{font-size:10px;letter-spacing:0;font-weight:600}
+.home-content .offer-main h3{font-size:17px;font-weight:700;line-height:1.25;letter-spacing:-.025em}
+.home-content .offer-feature-label{font-size:10px;letter-spacing:.015em;font-weight:700;text-transform:none}
+.home-content .offer-feature-line strong{font-size:14px;font-weight:700;line-height:1.3}
+.home-content .offer-feature-line small{font-size:11px;line-height:1.4;font-weight:400;letter-spacing:0}
+.home-content .offer-price strong{font-size:25px;font-weight:700;letter-spacing:-.045em;line-height:1.15}
+.home-content .offer-price span,.home-content .offer-price small,.home-content .offer-bottom small{font-size:11px;letter-spacing:0}
+.home-content .offer-primary{font-size:11px;font-weight:700;letter-spacing:0;text-transform:none;line-height:1.3}
+.home-content .offer-more{font-size:11px;font-weight:600}
+.home-content .globoplay-wordmark{font-family:inherit;font-size:14px;font-weight:800;letter-spacing:-.04em}
+.home-content .globoplay-included{font-size:10px;font-weight:600;letter-spacing:0}
+.home-content .spotlight-label{font-size:11px;letter-spacing:.025em;font-weight:700}
+.home-content .home-spotlight h3{font-size:22px;line-height:1.2;font-weight:700}
+.home-content .spotlight-panel span{font-size:11px;letter-spacing:.015em;font-weight:700}
+.home-content .spotlight-panel strong{font-size:29px;letter-spacing:-.045em;font-weight:700}
+.home-content .spotlight-panel small{font-size:11px;line-height:1.45}
+.home-content .spotlight-price span,.home-content .spotlight-price p{font-size:11px;line-height:1.45}
+.home-content .spotlight-price strong{font-size:26px;letter-spacing:-.04em;font-weight:700}
+.home-content .spotlight-button{font-size:12px;font-weight:700;letter-spacing:0}
+.home-content .home-benefits{font-size:12px;line-height:1.55}
+.home-content .home-benefits strong{font-size:12px;font-weight:700}
+.home-content .home-benefits span{font-size:12px}
+.home-content .home-promo-list h3{font-size:15px;font-weight:700;line-height:1.3}
+.home-content .home-promo-list strong{font-size:19px;font-weight:700}
+.home-content .home-promo-list p,.home-content .home-footnote{font-size:12px;line-height:1.6}
+@media(max-width:640px){.home-content .offer-main h3{font-size:16px}.home-content .offer-price strong{font-size:23px}}
