@@ -38,7 +38,11 @@
       @media(max-width:900px){.price-grid{grid-column:span 1;grid-template-columns:repeat(2,minmax(0,1fr))}}
       @media(max-width:600px){.price-grid{grid-column:1;grid-template-columns:1fr 1fr;gap:10px}.plan-input-row{grid-template-columns:minmax(0,1fr) 104px}.multi-toggle{padding:0 9px;gap:7px}.multi-toggle-track{width:38px;height:22px}.multi-toggle-track::after{width:16px;height:16px}.multi-toggle input:checked+.multi-toggle-track::after{transform:translateX(16px)}}
     </style>
-  <link rel="stylesheet" href="sidebar-collapse.css?v=20260914-1"></head>
+  <link rel="stylesheet" href="sidebar-collapse.css?v=20260914-1">
+<style>
+.contact-plan-picker{position:relative;flex:1;min-width:0}.contact-plan-picker-button{width:100%;height:43px;padding:0 13px;border:1px solid #cbd7e2;border-radius:8px;background:#fff;color:#102a43;font:inherit;font-size:13px;text-align:left;display:flex;align-items:center;justify-content:space-between;cursor:pointer}.contact-plan-picker-button:focus-visible,.contact-plan-picker-button[aria-expanded="true"]{outline:2px solid #00bdb4;outline-offset:1px}.contact-plan-picker-list{position:absolute;z-index:100;top:calc(100% + 5px);left:0;right:0;max-height:260px;overflow-y:auto;padding:5px;background:white;border:1px solid #d8e4e8;border-radius:10px;box-shadow:0 12px 30px rgba(12,38,48,.14)}.contact-plan-picker-list[hidden]{display:none}.contact-plan-picker-option{display:block;width:100%;border:0;border-radius:6px;background:transparent;padding:10px 12px;text-align:left;color:#173443;font:inherit;font-size:13px;cursor:pointer}.contact-plan-picker-option:hover,.contact-plan-picker-option:focus-visible{background:#e7f6f5;outline:none}.contact-plan-picker-option[aria-selected="true"]{background:#d6f4f0;color:#007e80;font-weight:700}
+</style>
+</head>
   <body>
     <aside class="sidebar" id="sidebar">
       <div class="brand"><span class="brand-mark">C</span><span class="brand-name">CONTACT</span></div>
@@ -78,7 +82,7 @@
               <div class="field plan-field">
                 <label for="plano">Plano <em>*</em></label>
                 <div class="plan-input-row">
-                  <select id="plano" name="plano" required aria-label="Selecione o plano"><option value="">Selecione o plano</option><option value="200 MEGA">200 MEGA</option><option value="300 MEGA">300 MEGA</option><option value="350 MEGA">350 MEGA</option><option value="400 MEGA">400 MEGA</option><option value="500 MEGA">500 MEGA</option><option value="600 MEGA">600 MEGA</option><option value="700 MEGA">700 MEGA</option><option value="750 MEGA">750 MEGA</option><option value="800 MEGA">800 MEGA</option><option value="850 MEGA">850 MEGA</option><option value="1 GIGA">1 GIGA</option><option value="outro">Outro plano</option></select>
+                  <div class="contact-plan-picker"><button type="button" id="planoPickerButton" class="contact-plan-picker-button" aria-haspopup="listbox" aria-expanded="false">Selecione o plano <span aria-hidden="true">⌄</span></button><div id="planoPickerList" class="contact-plan-picker-list" role="listbox" hidden></div><select id="plano" name="plano" required style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px" tabindex="-1" aria-label="Selecione o plano"><option value="">Selecione o plano</option><option value="200 MEGA">200 MEGA</option><option value="300 MEGA">300 MEGA</option><option value="350 MEGA">350 MEGA</option><option value="400 MEGA">400 MEGA</option><option value="500 MEGA">500 MEGA</option><option value="600 MEGA">600 MEGA</option><option value="700 MEGA">700 MEGA</option><option value="750 MEGA">750 MEGA</option><option value="800 MEGA">800 MEGA</option><option value="850 MEGA">850 MEGA</option><option value="1 GIGA">1 GIGA</option><option value="outro">Outro plano</option></select></div>
                   <label class="multi-toggle" id="multiToggleWrap" hidden>
                     <input id="isMulti" name="is_multi" type="checkbox" />
                     <span class="multi-toggle-track" aria-hidden="true"></span>
@@ -152,6 +156,6 @@
 
     <div class="toast" id="toast" role="status"><span>✓</span><div><strong id="toastTitle">Venda cadastrada!</strong><small id="toastMessage">Os dados foram gravados com segurança.</small></div></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/dist/umd/supabase.min.js"></script>
-    <script src="supabase-config.js?v=2"></script><script src="auth-access-v2.js?v=20261110-menu"></script><script src="address-cep.js?v=20261022-clean"></script><script src="birth-date-mask.js?v=20261106-numeric"></script><script src="script.js?v=20261112-plan-select-1"></script><script src="sale-attachments-form.js?v=20261001"></script><script src="seller-note-form.js?v=2"></script>
+    <script src="supabase-config.js?v=2"></script><script src="auth-access-v2.js?v=20261110-menu"></script><script src="address-cep.js?v=20261022-clean"></script><script src="birth-date-mask.js?v=20261106-numeric"></script><script src="script.js?v=20261112-plan-picker-2"></script><script src="sale-attachments-form.js?v=20261001"></script><script src="seller-note-form.js?v=2"></script>
   </body>
 </html>
