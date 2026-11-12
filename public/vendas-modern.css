@@ -50,7 +50,3 @@ html.modern-visual-enabled .modern-sale-top .card-badges{min-height:22px;flex-wr
 .queue-content .seller-detail-value strong{min-width:0;overflow-wrap:anywhere}
 .queue-content .seller-copy-button{flex:0 0 auto;border:1px solid #d6e8e6;border-radius:6px;background:#f1faf9;color:#008d88;font-size:15px;line-height:1;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
 .queue-content .seller-copy-button:hover{background:#d9f4ef;border-color:#008d88}
-
-/* Ajustes seguros: manter a estrutura original e melhorar somente a leitura. */
-html.modern-visual-enabled .modern-sale-obs{white-space:normal!important;display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.35!important;max-height:38px;overflow:hidden!important;overflow-wrap:anywhere}
-html.modern-visual-enabled .modern-sale-card h2{overflow-wrap:anywhere}
