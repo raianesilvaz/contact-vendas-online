@@ -8,3 +8,15 @@
 .sidebar nav .nav-submenu{margin-bottom:4px}
 body.sidebar-collapsed .sidebar nav .contact-nav-heading{font-size:0;height:1px;padding:0;margin:14px 8px 9px;border-top:1px solid #315057;overflow:hidden}
 @media(max-width:900px){.sidebar nav .contact-nav-heading{margin-top:16px}}
+
+/* Categorias expansíveis */
+.sidebar nav .contact-nav-group{min-width:0}
+.sidebar nav .contact-nav-toggle{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;margin:15px 0 6px;padding:7px 12px;border:0;background:transparent;color:#8ca8b0;font:800 9px/1.4 "DM Sans",sans-serif;letter-spacing:.13em;text-align:left;cursor:pointer;border-radius:7px}
+.sidebar nav .contact-nav-toggle:hover{background:#18373d;color:#d4f4ef}
+.sidebar nav .contact-nav-toggle:focus-visible{outline:2px solid #12d3c6;outline-offset:1px}
+.sidebar nav .contact-nav-chevron{font-size:17px;line-height:9px;letter-spacing:0;transition:transform .2s ease}
+.sidebar nav .contact-nav-toggle[aria-expanded="false"] .contact-nav-chevron{transform:rotate(-90deg)}
+.sidebar nav .contact-nav-group-content[hidden]{display:none!important}
+.sidebar nav .contact-nav-group-content{display:flex;flex-direction:column;gap:2px}
+body.sidebar-collapsed .sidebar nav .contact-nav-toggle{justify-content:center;margin:12px 0 6px;padding:6px 0;font-size:0;border-top:1px solid #315057}
+body.sidebar-collapsed .sidebar nav .contact-nav-chevron{font-size:15px}
