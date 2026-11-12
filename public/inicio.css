@@ -1,1 +1,36 @@
 .home-content{max-width:1480px}.home-content .page-heading{display:flex;justify-content:space-between;align-items:center;gap:20px}.home-content .page-heading h1{font-size:clamp(23px,2.2vw,31px);line-height:1.2}.home-coverage{border:1px solid #d7e0e6;background:#fff;border-radius:10px;padding:12px 16px;color:#1a5662;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap}.home-section-heading{display:flex;justify-content:space-between;align-items:center;margin:25px 0 7px;gap:16px}.home-section-heading h2{font-size:20px;margin:0 0 4px}.home-section-heading p,.home-source{font-size:12px;color:#697c86;margin:0}.home-tabs{display:flex;gap:7px;margin:0 0 19px;border-bottom:1px solid #e1e5e8;overflow-x:auto}.home-tab{border:0;border-bottom:3px solid transparent;background:none;padding:12px 17px;color:#667780;font:inherit;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap}.home-tab.active{color:#bb2448;border-bottom-color:#c92c58}.home-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch}.home-offer{min-width:0;display:flex;flex-direction:column;background:#fff;border:1px solid #e8e9ed;border-radius:20px;overflow:hidden;box-shadow:0 4px 14px #0000000a}.offer-top{text-align:center;padding:22px 18px 5px}.offer-provider{display:block;color:#ce254c;font-weight:900;font-size:13px;letter-spacing:.08em}.offer-category{display:block;color:#c42b51;font-weight:800;font-size:18px;margin-top:7px}.offer-main{padding:12px 18px 12px;display:flex;flex-direction:column;gap:12px;min-height:340px}.offer-main h3{font-size:15px;font-weight:800;color:#23333d;margin:0 0 2px;text-align:center}.offer-feature{border-radius:16px;background:#f0f0f1;padding:15px;min-height:128px}.offer-feature-label{font-size:11px;letter-spacing:.11em;color:#7d7f82;font-weight:900}.offer-feature-line{display:flex;gap:11px;align-items:center;margin-top:13px}.offer-icon{font-size:27px;color:#85888b;line-height:1}.offer-feature-line strong{display:block;color:#64676a;font-size:19px;line-height:1.2}.offer-feature-line small{display:block;color:#777b7e;font-size:10px;line-height:1.4;margin-top:3px}.offer-pill{display:inline-block;background:#fff;border-radius:7px;padding:6px 9px;color:#bc3153;font-size:10px;font-weight:800;margin-top:12px}.offer-bottom{margin-top:auto;padding:18px 20px 20px;display:flex;flex-direction:column;gap:11px}.offer-price{text-align:center;min-height:80px}.offer-price strong{display:block;color:#c62d58;font-size:27px;letter-spacing:-.04em;line-height:1.25}.offer-price strong small{font-size:15px;letter-spacing:0}.offer-price>span{display:block;font-size:11px;color:#777b80;margin-top:5px}.offer-primary{display:block;text-align:center;text-decoration:none;border-radius:30px;background:#f8993d;color:white;font-weight:900;font-size:12px;padding:13px 10px;box-shadow:0 3px 8px #f8993d35}.offer-primary:hover{background:#eb8128}.offer-more{align-self:center;background:transparent;border:0;color:#126477;text-decoration:underline;cursor:pointer;font:inherit;font-size:12px;padding:4px 8px}.offer-detail{border-top:1px solid #e6ebee;margin-top:3px;padding-top:10px;color:#53626c;font-size:11px;line-height:1.55;overflow-wrap:anywhere}.offer-detail[hidden],.home-empty[hidden]{display:none!important}.offer-detail p{margin:7px 0}.offer-detail a{color:#176777;font-weight:700}.home-empty{background:#fff;padding:20px;border-radius:12px;color:#64717a}.home-footnote{margin-top:20px;padding:14px 17px;background:#fff9e9;border:1px solid #f2dfb4;border-radius:10px;color:#745a27;font-size:11px;line-height:1.6}@media(max-width:1100px){.home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.home-grid{grid-template-columns:1fr}.home-content .page-heading,.home-section-heading{align-items:flex-start;flex-direction:column}.offer-main{min-height:0}}
+/* Vitrine horizontal inspirada na composição comercial de planos */
+.home-showcase{display:grid;grid-template-columns:minmax(240px,290px) minmax(0,1fr);align-items:stretch;gap:16px}
+.home-showcase .home-grid{grid-template-columns:repeat(3,minmax(230px,1fr));gap:14px;align-items:stretch;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:6px}
+.home-showcase .home-offer{scroll-snap-align:start;border-radius:18px;box-shadow:none}
+.home-spotlight{background:linear-gradient(155deg,#d82963 0%,#c81c55 58%,#9d1749 100%);color:#fff;border-radius:23px;padding:24px 20px;display:flex;flex-direction:column;gap:15px;min-height:510px;position:relative;overflow:hidden}
+.home-spotlight:after{content:'';position:absolute;width:260px;height:260px;border:30px solid #ffffff0e;border-radius:50%;right:-145px;bottom:-150px;pointer-events:none}
+.spotlight-label{font-size:11px;font-weight:900;letter-spacing:.1em;color:#fff3bb}
+.home-spotlight h3{font-size:25px;line-height:1.13;margin:5px 0 2px;max-width:220px;color:#fff}
+.spotlight-panel{border:1px solid #ffffff90;border-radius:16px;background:#18181db8;padding:17px 13px;text-align:center;display:flex;flex-direction:column;gap:6px}
+.spotlight-panel span{font-size:12px;font-weight:900;letter-spacing:.09em}
+.spotlight-panel strong{font-size:36px;letter-spacing:-.04em;line-height:1.15}
+.spotlight-panel small{font-size:10px;line-height:1.4;color:#f4dfe8}
+.spotlight-price{background:#fff;border-radius:18px;padding:17px 12px;text-align:center;color:#252329;margin-top:auto}
+.spotlight-price>span{font-size:11px;color:#6c6870}
+.spotlight-price strong{display:block;font-size:32px;letter-spacing:-.05em;line-height:1.3}
+.spotlight-price strong small{font-size:12px;letter-spacing:0}
+.spotlight-price p{font-size:10px;color:#77717a;margin:3px 0 0;line-height:1.4}
+.spotlight-button{display:block;background:#1c1b20;color:#fff;border-radius:30px;text-align:center;text-decoration:none;padding:13px;font-size:12px;font-weight:800;position:relative;z-index:1}
+.home-showcase .offer-top{padding:17px 14px 2px}
+.home-showcase .offer-category{font-size:17px;margin-top:4px}
+.home-showcase .offer-main{min-height:0;padding:8px 12px 6px;gap:9px}
+.home-showcase .offer-main h3{margin:0;font-size:13px}
+.home-showcase .offer-feature{min-height:110px;padding:12px;border-radius:14px}
+.home-showcase .offer-feature-label{font-size:10px}
+.home-showcase .offer-feature-line{margin-top:10px;gap:7px}
+.home-showcase .offer-feature-line strong{font-size:17px}
+.home-showcase .offer-feature-line small{font-size:10px}
+.home-showcase .offer-pill{margin-top:9px}
+.home-showcase .offer-bottom{padding:12px 15px 16px;gap:9px}
+.home-showcase .offer-price{min-height:68px}
+.home-showcase .offer-price strong{font-size:26px}
+.home-showcase .offer-primary{padding:11px 8px;font-size:11px}
+@media(max-width:1150px){.home-showcase{grid-template-columns:240px minmax(0,1fr)}.home-showcase .home-grid{grid-template-columns:repeat(2,minmax(230px,1fr))}}
+@media(max-width:780px){.home-showcase{grid-template-columns:1fr}.home-spotlight{min-height:0;gap:12px}.home-spotlight h3{max-width:none}.home-showcase .home-grid{grid-template-columns:repeat(2,minmax(250px,1fr))}}
+@media(max-width:550px){.home-showcase .home-grid{grid-template-columns:repeat(2,minmax(245px,1fr))}.home-spotlight h3{font-size:22px}}
