@@ -279,3 +279,81 @@
 .service-globoplay{background:linear-gradient(135deg,#fa382d,#ec1459);color:#fff}
 .service-5g{background:#003e47;color:#80ffeb}
 .service-wifi{background:#d4f3ed;color:#007e82}
+
+
+/* Home 2.3: reprodução da composição da referência, adaptada à barra lateral CONTACT */
+.home-content{max-width:none;width:100%;padding:25px 26px 45px;background:radial-gradient(circle at 46% 20%,#fff 0%,#f0fafb 72%);min-height:calc(100vh - 55px)}
+.home-content .page-heading{background:transparent;border:0;box-shadow:none;padding:8px 8px 18px;margin:0;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.home-content .page-heading:after{display:none}
+.home-content .page-heading .eyebrow{color:#008b86;font-size:12px;font-weight:900;letter-spacing:.06em}
+.home-content .page-heading h1{color:#071b29;font-size:clamp(24px,2.3vw,34px);margin:4px 0 3px;line-height:1.18}
+.home-content .page-heading p{color:#315266;font-size:12px;margin:0}
+.home-heading-actions{display:flex;align-items:center;gap:20px;flex-shrink:0}
+.home-content .page-heading .home-coverage{background:#fff;border:1px solid #00a89d;color:#007c78;box-shadow:none;border-radius:12px;font-size:12px;font-weight:800;padding:12px 15px;white-space:nowrap}
+.home-claro-logo{font:900 35px/1 Arial,sans-serif;letter-spacing:-.075em;color:#e51a25;white-space:nowrap}
+.home-claro-logo span{font-size:19px;vertical-align:top;letter-spacing:0;margin-left:3px}
+.home-dashboard{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,285px);gap:16px;margin:0}
+.home-filterbar{grid-template-columns:minmax(150px,1fr) minmax(140px,.85fr) minmax(260px,1.45fr);padding:12px;border-radius:14px;box-shadow:0 4px 9px #063a4410;gap:5px}
+.home-field{position:relative;padding:5px 10px;gap:5px;font-size:13px;color:#112c3a}
+.home-field input,.home-field select{border-radius:30px;box-shadow:0 2px 5px #0a384016;min-height:36px;height:36px;font-size:12px}
+.home-filterbar .home-plan-filter{gap:5px}
+.home-filterbar .home-mode{border-radius:25px;font-size:11px;padding:9px 11px}
+.home-filterbar .home-mode.active{background:linear-gradient(180deg,#04c9b9,#008e86);color:#fff;box-shadow:0 3px 8px #008c8033}
+.home-primary .home-section-heading{margin:12px 4px 7px}
+.home-section-heading h2{font-size:21px;color:#081c2b}
+.home-section-heading p,.home-source{font-size:11px}
+.home-primary .home-tabs{margin-bottom:8px}
+.home-tabs .home-tab{font-size:11px}
+.home-primary .home-showcase{grid-template-columns:230px minmax(0,1fr);gap:9px}
+.home-primary .home-spotlight{min-height:415px;border-radius:14px;padding:18px 14px;gap:10px;background:linear-gradient(160deg,#052c35 4%,#005c5b 70%,#00c9a8 100%);box-shadow:0 6px 14px #003f4824}
+.home-primary .home-spotlight h3{font-size:27px;line-height:1.02;margin:3px 0}
+.home-primary .spotlight-panel{padding:12px 9px;background:#0539439c;border:1px solid #1edec5}
+.home-primary .spotlight-panel strong{font-size:31px}
+.spotlight-benefits{list-style:none;padding:0;margin:0;display:grid;gap:8px;color:white;font-size:12px;font-weight:600}
+.spotlight-benefits li:before{content:'✓';display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;background:#00d9b1;color:#043d40;border-radius:50%;margin-right:8px;font-weight:900}
+.home-primary .spotlight-price{padding:10px;background:#fff}
+.home-primary .spotlight-price strong{font-size:27px;color:#0b2c37}
+.home-primary .spotlight-button{background:#00d5b2;color:#062d37;font-weight:900}
+.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(180px,calc((100% - 32px)/5));gap:8px;scrollbar-width:thin}
+.home-primary .home-showcase:has(.home-spotlight[hidden]) .home-grid{grid-auto-columns:minmax(185px,calc((100% - 32px)/5))}
+.home-dashboard-card{min-height:415px;border-radius:14px;box-shadow:0 4px 9px #003f481c}
+.home-dashboard-card .offer-top{padding:10px 8px 4px}
+.home-dashboard-card .offer-brand-mark{font-size:18px}
+.home-dashboard-card .offer-brand-tag{font-size:8px;padding:3px 4px}
+.home-dashboard-card .offer-category{font-size:13px;margin-top:5px}
+.home-dashboard-card .offer-main{padding:5px 9px;gap:7px}
+.home-dashboard-card .offer-main h3{font-size:20px;text-align:center;margin:5px 0}
+.home-dashboard-card .offer-card-badges{min-height:20px}
+.home-dashboard-card .offer-feature{background:#fff;border:0;border-bottom:1px solid #e5ecef;border-radius:0;min-height:74px;padding:8px 2px}
+.home-dashboard-card .offer-feature-label{font-size:9px;color:#4b7780}
+.home-dashboard-card .offer-feature-line{margin-top:6px}
+.home-dashboard-card .offer-feature-line strong{font-size:12px}
+.home-dashboard-card .offer-feature-line small{font-size:9px}
+.home-dashboard-card .offer-icon{font-size:20px;color:#009d85}
+.home-dashboard-card .offer-bottom{padding:8px 9px 13px;gap:8px}
+.home-dashboard-card .offer-price{min-height:68px}
+.home-dashboard-card .offer-price strong{font-size:23px;color:#0a1d2c}
+.home-dashboard-card .offer-price>span{font-size:9px}
+.home-dashboard-card .offer-primary{background:linear-gradient(180deg,#00cbb2,#007e7a);border-radius:22px;padding:11px 4px;font-size:9px;box-shadow:0 3px 5px #006c6730}
+.home-dashboard-card .offer-more{font-size:11px}
+.offer-speed-badge,.offer-group-badge{font-size:8px}
+.home-benefits{margin-top:10px;padding:13px 15px;border-radius:14px;display:flex;justify-content:space-between;align-items:center;gap:9px;background:#fff;box-shadow:0 3px 7px #06424c12}
+.home-benefits strong{font-size:15px;color:#092536;max-width:100px}
+.home-benefits span{font-size:11px;max-width:155px}
+.home-benefits span b{color:#092536}
+.home-promos{margin-top:10px;border-radius:14px;padding:12px 14px}
+.home-promo-list article{padding:12px;border-radius:12px;background:linear-gradient(110deg,#f5eaff,#eae9ff)}
+.home-promo-list article+article{background:linear-gradient(110deg,#fff5e2,#fffaf0)}
+.home-promo-list article span{color:#6d25b4}
+.home-promo-list article+article span{color:#a46b00}
+.home-promo-list strong{font-size:19px;color:#141e37}
+.home-aside{gap:10px}
+.home-info-panel{border:1px solid #b4dce0;box-shadow:0 3px 9px #05424d13;padding:15px;border-radius:15px}
+.home-info-panel h3{font-size:16px;line-height:1.3;color:#0a2834;margin-bottom:9px}
+.home-info-panel p{font-size:12px;line-height:1.55}
+.home-city-info{background:linear-gradient(135deg,#e4f8f5,#f1fafb)}
+.home-info-panel a{border-radius:11px;background:#fff}
+.home-footnote{font-size:10px;margin-top:12px}
+@media(max-width:1450px){.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(190px,calc((100% - 16px)/3))}.home-primary .home-showcase:has(.home-spotlight[hidden]) .home-grid{grid-auto-columns:minmax(190px,calc((100% - 24px)/4))}}
+@media(max-width:1100px){.home-dashboard{grid-template-columns:minmax(0,1fr)}.home-aside{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(195px,calc((100% - 16px)/3))}}
+@media(max-width:700px){.home-content{padding:14px 12px 30px}.home-content .page-heading{align-items:flex-start;flex-direction:column}.home-heading-actions{width:100%;justify-content:space-between}.home-claro-logo{font-size:28px}.home-filterbar{grid-template-columns:1fr}.home-primary .home-showcase{grid-template-columns:1fr}.home-primary .home-showcase .home-grid,.home-primary .home-showcase:has(.home-spotlight[hidden]) .home-grid{grid-auto-columns:minmax(225px,82%)}.home-primary .home-spotlight{min-height:0}.home-aside{grid-template-columns:1fr}.home-benefits{flex-wrap:wrap}.home-benefits strong{max-width:none;width:100%}}
