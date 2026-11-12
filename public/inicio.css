@@ -120,3 +120,5 @@
 .home-showcase:has(.home-spotlight[hidden]) .home-grid{grid-auto-columns:minmax(245px,calc((100% - 42px)/4))}
 @media(max-width:1150px){.home-showcase .home-grid{grid-auto-columns:minmax(245px,calc((100% - 14px)/2))}.home-showcase:has(.home-spotlight[hidden]) .home-grid{grid-auto-columns:minmax(245px,calc((100% - 28px)/3))}}
 @media(max-width:780px){.home-showcase .home-grid,.home-showcase:has(.home-spotlight[hidden]) .home-grid{grid-auto-columns:minmax(245px,75%)}.home-spotlight{min-height:0;height:auto}}
+
+.home-fiber-card .fiber-starting-label{display:block;font-size:11px;font-weight:700;color:#56717a;margin-bottom:4px}
