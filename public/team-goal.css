@@ -1,15 +1,15 @@
 /* Meta do dia: composição fiel à prévia de barra de energia aprovada. */
 .contact-goal-pill[hidden]{display:none!important}
-.topbar .contact-goal-pill{box-sizing:border-box;display:flex;align-items:center;flex-shrink:0;align-self:center;margin-left:auto;margin-right:10px;gap:12px;width:265px;min-width:265px;height:76px;min-height:76px;padding:10px 12px;border:1px solid #245b59;border-radius:20px;background:#1d3d3d;color:#fff;box-shadow:none;text-align:left;cursor:pointer;font-family:"DM Sans",system-ui,sans-serif;transition:background-color .3s}
-.topbar .contact-goal-pill .goal-flame-wrap{width:46px;min-width:46px;height:58px;display:flex;align-items:center;justify-content:center}
-.topbar .contact-goal-pill .goal-flame-art{display:block;width:46px;height:58px;transform-origin:50% 85%;transition:transform .35s,filter .35s}
-.topbar .contact-goal-pill .goal-progress{display:flex;flex-direction:column;justify-content:center;flex:1;min-width:0;gap:8px}
+.topbar .contact-goal-pill{box-sizing:border-box;display:flex;align-items:center;flex-shrink:0;align-self:center;margin-left:auto;margin-right:10px;gap:7px;width:230px;min-width:230px;height:48px;min-height:48px;padding:4px 9px;border:1px solid #245b59;border-radius:12px;background:#1d3d3d;color:#fff;box-shadow:none;text-align:left;cursor:pointer;font-family:"DM Sans",system-ui,sans-serif;transition:background-color .3s}
+.topbar .contact-goal-pill .goal-flame-wrap{width:32px;min-width:32px;height:40px;display:flex;align-items:center;justify-content:center}
+.topbar .contact-goal-pill .goal-flame-art{display:block;width:32px;height:40px;transform-origin:50% 85%;transition:transform .35s,filter .35s}
+.topbar .contact-goal-pill .goal-progress{display:flex;flex-direction:column;justify-content:center;flex:1;min-width:0;gap:3px}
 .topbar .contact-goal-pill .goal-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%}
-.topbar .contact-goal-pill .goal-label{font-size:12px;line-height:1.15;font-weight:750;white-space:nowrap;color:#fff}
-.topbar .contact-goal-pill .goal-count{font-size:17px;line-height:1.1;font-weight:800;white-space:nowrap;color:#fff;font-variant-numeric:tabular-nums}
-.topbar .contact-goal-pill .goal-track{display:block;width:100%;height:10px;background:#356765;border-radius:30px;overflow:hidden}
+.topbar .contact-goal-pill .goal-label{font-size:10px;line-height:1.1;font-weight:750;white-space:nowrap;color:#fff}
+.topbar .contact-goal-pill .goal-count{font-size:12px;line-height:1.1;font-weight:800;white-space:nowrap;color:#fff;font-variant-numeric:tabular-nums}
+.topbar .contact-goal-pill .goal-track{display:block;width:100%;height:5px;background:#356765;border-radius:30px;overflow:hidden}
 .topbar .contact-goal-pill .goal-fill{display:block;width:0;height:100%;border-radius:30px;background:#58c8a5;transition:width .5s ease,background .3s}
-.topbar .contact-goal-pill .goal-motivation{display:block;font-size:10px;line-height:1.15;font-weight:500;color:#d8f5e9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .contact-goal-pill .goal-motivation{display:block;font-size:8px;line-height:1.1;font-weight:500;color:#d8f5e9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .topbar .contact-goal-pill[data-fire-stage="1"] .goal-fill{background:#f6bc49}
 .topbar .contact-goal-pill[data-fire-stage="2"] .goal-fill{background:#ff8539}
 .topbar .contact-goal-pill[data-fire-stage="3"] .goal-fill{background:#ffce52}
@@ -17,7 +17,7 @@
 .topbar .contact-goal-pill[data-fire-stage="2"] .goal-flame-art{animation:contact-goal-flame 1.4s ease-in-out infinite;transform:scale(1.08);filter:drop-shadow(0 0 4px #ffb84d)}
 .topbar .contact-goal-pill[data-fire-stage="3"] .goal-flame-art{animation:contact-goal-flame 2.2s ease-in-out infinite;filter:drop-shadow(0 0 5px #ffcf59)}
 @keyframes contact-goal-flame{0%,100%{transform:rotate(-3deg) scale(.97)}50%{transform:rotate(3deg) scale(1.09)}}
-@media(max-width:700px){.topbar .contact-goal-pill{width:190px;min-width:190px;height:60px;min-height:60px;padding:7px 8px;gap:6px;border-radius:15px;margin-right:5px}.topbar .contact-goal-pill .goal-flame-wrap{width:30px;min-width:30px;height:44px}.topbar .contact-goal-pill .goal-flame-art{width:30px;height:44px}.topbar .contact-goal-pill .goal-progress{gap:5px}.topbar .contact-goal-pill .goal-label{font-size:10px}.topbar .contact-goal-pill .goal-count{font-size:13px}.topbar .contact-goal-pill .goal-track{height:7px}.topbar .contact-goal-pill .goal-motivation{font-size:8px}}
+@media(max-width:700px){.topbar .contact-goal-pill{width:170px;min-width:170px;height:42px;min-height:42px;padding:3px 6px;gap:6px;border-radius:15px;margin-right:5px}.topbar .contact-goal-pill .goal-flame-wrap{width:25px;min-width:25px;height:34px}.topbar .contact-goal-pill .goal-flame-art{width:25px;height:34px}.topbar .contact-goal-pill .goal-progress{gap:5px}.topbar .contact-goal-pill .goal-label{font-size:10px}.topbar .contact-goal-pill .goal-count{font-size:11px}.topbar .contact-goal-pill .goal-track{height:4px}.topbar .contact-goal-pill .goal-motivation{font-size:8px}}
 @media(prefers-reduced-motion:reduce){.topbar .contact-goal-pill .goal-flame-art{animation:none!important;transition:none!important}.topbar .contact-goal-pill .goal-fill{transition:none!important}}
 .contact-goal-dialog{position:fixed;inset:0;z-index:99998;background:#081f2c77;display:flex;align-items:center;justify-content:center;padding:18px}
 .contact-goal-card{width:min(100%,390px);background:#fff;color:#173641;border-radius:18px;padding:25px;box-shadow:0 15px 60px #0003;font:14px "DM Sans",sans-serif}
