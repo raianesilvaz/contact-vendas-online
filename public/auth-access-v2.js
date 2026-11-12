@@ -259,3 +259,22 @@ document.querySelectorAll('[data-logout]').forEach(button => button.addEventList
   window.authReady?.then(placeReferralMenu).catch(()=>{});
   setTimeout(placeReferralMenu,700);
 })();
+
+/* CONTACT Indica: unread referral counter in the navigation. */
+(()=>{
+ const title='💚 Nova indicação recebida';
+ async function updateReferralBadge(){
+  const client=window.supabaseClient,user=window.currentUser;
+  if(!client||!user?.id)return;
+  const {count,error}=await client.from('notifications').select('id',{count:'exact',head:true}).eq('user_id',user.id).eq('title',title).is('read_at',null);
+  if(error)return;
+  document.querySelectorAll('.sidebar nav a[href="indicacoes.html"]').forEach(link=>{
+   let badge=link.querySelector('.referral-menu-badge');
+   if(!badge){badge=document.createElement('span');badge.className='referral-menu-badge';badge.style.cssText='margin-left:auto;background:#e24d54;color:white;border-radius:999px;padding:2px 7px;font-size:11px;font-weight:800;line-height:1.5;';link.appendChild(badge);}
+   badge.textContent=count>99?'99+':String(count||0);badge.hidden=!count;
+  });
+ }
+ window.authReady?.then(()=>{updateReferralBadge();setInterval(updateReferralBadge,20000);}).catch(()=>{});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateReferralBadge();});
+ window.addEventListener('focus',updateReferralBadge);
+})();
