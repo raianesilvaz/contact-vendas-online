@@ -190,3 +190,7 @@
 .home-dashboard-card .globoplay-included{font-size:10px;font-weight:700;color:#397269;margin-left:1px}
 .home-dashboard-card .service-5g{border-radius:7px}
 @media(max-width:700px){.home-dashboard-card .globoplay-wordmark{font-size:13px}}
+
+/* Globoplay sem caixa: apenas marca e indicação de inclusão */
+.home-dashboard-card .offer-service-logos .service-globoplay{background:transparent;border:0;box-shadow:none;border-radius:0;padding:0;gap:5px}
+.home-dashboard-card .offer-service-logos .globoplay-included{color:#397269;font-size:10px;font-weight:700;margin-left:3px}
