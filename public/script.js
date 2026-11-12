@@ -182,6 +182,16 @@ document.querySelectorAll('.phone').forEach((input) => input.addEventListener('i
 }));
 const planoSelect=document.querySelector('#plano');
 const planoOutro=document.querySelector('#planoOutro');
+const planoPickerButton=document.querySelector('#planoPickerButton');
+const planoPickerList=document.querySelector('#planoPickerList');
+if(planoPickerButton&&planoPickerList){
+ const closePicker=()=>{planoPickerList.hidden=true;planoPickerButton.setAttribute('aria-expanded','false');};
+ const refreshPicker=()=>{planoPickerButton.firstChild.textContent=planoSelect.selectedOptions[0]?.textContent||'Selecione o plano';planoPickerList.innerHTML='';Array.from(planoSelect.options).forEach(option=>{if(!option.value)return;const item=document.createElement('button');item.type='button';item.className='contact-plan-picker-option';item.textContent=option.textContent;item.setAttribute('role','option');item.setAttribute('aria-selected',String(option.value===planoSelect.value));item.addEventListener('click',()=>{planoSelect.value=option.value;planoSelect.dispatchEvent(new Event('change',{bubbles:true}));closePicker();planoPickerButton.focus();});planoPickerList.appendChild(item);});};
+ planoPickerButton.addEventListener('click',()=>{const opening=planoPickerList.hidden;planoPickerList.hidden=!opening;planoPickerButton.setAttribute('aria-expanded',String(opening));if(opening)planoPickerList.querySelector('[aria-selected="true"]')?.scrollIntoView({block:'nearest'});});
+ document.addEventListener('click',e=>{if(!e.target.closest('.contact-plan-picker'))closePicker();});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')closePicker();if((e.key==='ArrowDown'||e.key==='Enter'||e.key===' ')&&document.activeElement===planoPickerButton){e.preventDefault();planoPickerButton.click();if(!planoPickerList.hidden)planoPickerList.querySelector('.contact-plan-picker-option')?.focus();}});
+ planoSelect.addEventListener('change',refreshPicker);refreshPicker();
+}
 planoSelect.addEventListener('change',()=>{const custom=planoSelect.value==='outro';planoOutro.hidden=!custom;planoOutro.required=custom;if(!custom)planoOutro.value='';});
 operatorSelect.addEventListener('change', syncPricingMode);
 isMulti.addEventListener('change', () => {
