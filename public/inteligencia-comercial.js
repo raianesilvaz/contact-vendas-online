@@ -2,11 +2,72 @@
 'use strict';
 const $=id=>document.getElementById(id),fmt=n=>Number(n||0).toLocaleString('pt-BR'),day=x=>{const d=new Date(x);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let sales=[],operators=new Map(),cepCities=new Map();
+let sales=[],operators=new Map(),cepCities=new Map(),cepUF=new Map(),municipalities=new Map(),commercialMap=null,mapBubbles=null,mapBounds=[];
 function normalizeCity(name){return String(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLocaleLowerCase('pt-BR').replace(/(^|[\s'-])\p{L}/gu,c=>c.toLocaleUpperCase('pt-BR'))}
 function cepOf(address){const m=String(address||'').match(/(?:^|\D)(\d{5})[-\s]?(\d{3})(?!\d)/);return m?m[1]+m[2]:''}
 function saleCity(sale){const cep=cepOf(sale.full_address),known=cep&&cepCities.get(cep);return known||normalizeCity(cityOf(sale.full_address))}
-async function loadCepCities(){const ceps=[...new Set(sales.map(x=>cepOf(x.full_address)).filter(Boolean))];for(let i=0;i<ceps.length;i+=100){const {data,error}=await window.supabaseClient.from('claro_cep_coverage').select('cep,city,uf').in('cep',ceps.slice(i,i+100));if(error){console.warn('Consulta de CEP indisponível:',error);return}for(const x of data||[]){if(x.city)cepCities.set(x.cep,normalizeCity(x.city))}}}
+async function loadCepCities(){const ceps=[...new Set(sales.map(x=>cepOf(x.full_address)).filter(Boolean))];for(let i=0;i<ceps.length;i+=100){const {data,error}=await window.supabaseClient.from('claro_cep_coverage').select('cep,city,uf').in('cep',ceps.slice(i,i+100));if(error){console.warn('Consulta de CEP indisponível:',error);return}for(const x of data||[]){if(x.city)cepCities.set(x.cep,normalizeCity(x.city));if(x.uf)cepUF.set(x.cep,String(x.uf).toUpperCase())}}}
+const ufByCode={'11':'RO','12':'AC','13':'AM','14':'RR','15':'PA','16':'AP','17':'TO','21':'MA','22':'PI','23':'CE','24':'RN','25':'PB','26':'PE','27':'AL','28':'SE','29':'BA','31':'MG','32':'ES','33':'RJ','35':'SP','41':'PR','42':'SC','43':'RS','50':'MS','51':'MT','52':'GO','53':'DF'};
+function saleUF(sale){const cep=cepOf(sale.full_address);if(cepUF.has(cep))return cepUF.get(cep);const m=String(sale.full_address||'').match(/(?:[-/,\s(])(?:SP|RJ|MG|PR|SC|RS|BA|GO|DF|ES|MS|MT|PA|PE|CE|MA|PB|RN|PI|AL|SE|TO|RO|RR|AP|AC|AM)(?=\s|[,;.)]|$)/i);return m?m[0].trim().replace(/^[-/,(]\s*/,'').toUpperCase():''}
+async function loadMunicipalities(){
+ try{
+  const response=await fetch('https://cdn.jsdelivr.net/gh/kelvins/Municipios-Brasileiros@master/csv/municipios.csv');
+  if(!response.ok)throw Error('Lista de municípios indisponível');
+  const lines=(await response.text()).replace(/^\uFEFF/,'').split(/\r?\n/);
+  const delimiter=lines[0].includes(';')?';':',',headers=lines.shift().split(delimiter).map(x=>x.trim().replace(/^"|"$/g,'').toLowerCase());
+  const idx=k=>headers.indexOf(k),nameIdx=idx('nome'),latIdx=idx('latitude'),lngIdx=idx('longitude'),ufIdx=idx('codigo_uf');
+  if([nameIdx,latIdx,lngIdx,ufIdx].some(x=>x<0))throw Error('Formato de municípios inesperado');
+  for(const line of lines){
+   const parts=line.split(delimiter).map(x=>x.trim().replace(/^"|"$/g,''));
+   const name=normalizeCity(parts[nameIdx]),uf=ufByCode[parts[ufIdx]],lat=Number(parts[latIdx]),lng=Number(parts[lngIdx]);
+   if(name&&uf&&Number.isFinite(lat)&&Number.isFinite(lng)&&lat>=-35&&lat<=6&&lng>=-75&&lng<=-30){
+    const key=name.toLowerCase();if(!municipalities.has(key))municipalities.set(key,[]);
+    municipalities.get(key).push({name,uf,lat,lng});
+   }
+  }
+ }catch(error){console.warn('Coordenadas municipais indisponíveis:',error)}
+}
+function initializeMap(){
+ if(commercialMap||!window.L)return;
+ commercialMap=L.map('salesMap',{scrollWheelZoom:false,zoomControl:true}).setView([-22.5,-48.5],7);
+ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:18}).addTo(commercialMap);
+ mapBubbles=L.layerGroup().addTo(commercialMap);
+ $('mapFit').addEventListener('click',()=>{if(mapBounds.length)commercialMap.fitBounds(mapBounds,{padding:[35,35],maxZoom:10})});
+}
+function renderMap(records){
+ initializeMap();
+ if(!commercialMap){$('mapSummary').textContent='Não foi possível iniciar o mapa.';return}
+ mapBubbles.clearLayers();mapBounds=[];
+ const byCity=new Map();
+ for(const sale of records){
+  const city=saleCity(sale);if(!city)continue;
+  const uf=saleUF(sale),key=city.toLowerCase()+'|'+uf;
+  if(!byCity.has(key))byCity.set(key,{city,uf,total:0,operators:new Map(),plans:new Map()});
+  const item=byCity.get(key);item.total++;
+  const op=operators.get(sale.operator_id)||'Não informada';item.operators.set(op,(item.operators.get(op)||0)+1);
+  const plan=interpretPlan(sale),planName=plan.speed==='Não identificado'?'Não identificado':plan.speed+' · '+(plan.multi?'MULTI':'SINGLE');
+  item.plans.set(planName,(item.plans.get(planName)||0)+1);
+ }
+ let mapped=0,unmapped=0;
+ for(const item of byCity.values()){
+  const options=municipalities.get(item.city.toLowerCase())||[];
+  const place=item.uf?options.find(x=>x.uf===item.uf):(options.length===1?options[0]:null);
+  if(!place){unmapped+=item.total;continue}
+  mapped+=item.total;mapBounds.push([place.lat,place.lng]);
+  const radius=Math.max(7,Math.min(32,6+Math.sqrt(item.total)*2.4));
+  const circle=L.circleMarker([place.lat,place.lng],{radius,color:'#fff',weight:2,fillColor:'#009f92',fillOpacity:.68});
+  circle.bindTooltip(item.city+' / '+place.uf+' — '+fmt(item.total)+' vendas');
+  circle.on('click',()=>{
+   const summary=(m)=>[...m].sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>'<span>'+esc(k)+': <strong>'+fmt(v)+'</strong></span>').join('');
+   $('mapDetails').innerHTML='<strong>'+esc(item.city)+' / '+esc(place.uf)+' — '+fmt(item.total)+' vendas</strong><div class="map-breakdown">'+summary(item.operators)+'</div><div class="map-breakdown">'+summary(item.plans)+'</div>';
+  });
+  circle.addTo(mapBubbles);
+ }
+ $('mapSummary').textContent=fmt(mapped)+' vendas posicionadas · '+fmt(unmapped)+' sem coordenada municipal';
+ if(mapBounds.length)commercialMap.fitBounds(mapBounds,{padding:[35,35],maxZoom:10});
+ else $('mapDetails').textContent=municipalities.size?'Nenhuma cidade com coordenada confiável neste período.':'Coordenadas municipais indisponíveis no momento. O restante do Analítico continua funcionando.';
+ setTimeout(()=>commercialMap.invalidateSize(),0);
+}
 function dates(){const today=new Date(),end=day(today),type=$('period').value;if(type==='all')return['0001-01-01','9999-12-31'];if(type==='today')return[end,end];if(type==='week'){today.setDate(today.getDate()-6);return[day(today),end]}if(type==='previous'){today.setDate(1);today.setDate(0);const last=day(today);today.setDate(1);return[day(today),last]}if(type==='custom')return[$('from').value||end,$('to').value||end];today.setDate(1);return[day(today),end]}
 function barList(id,items){const max=Math.max(1,...items.map(x=>x.value));$(id).innerHTML=items.length?items.map(x=>'<div class="intel-bar"><span class="intel-bar-name" title="'+esc(x.name)+'">'+esc(x.name)+'</span><strong>'+fmt(x.value)+'</strong><div class="intel-track"><i style="width:'+(x.value/max*100)+'%"></i></div></div>').join(''):'<p style="color:#73858e;font-size:13px">Sem dados para este período.</p>'}
 function cityOf(address){
@@ -62,6 +123,7 @@ $('kOperators').textContent=fmt(ops.size);
 barList('operators',[...ops].map(([id,value])=>({name:operators.get(id)||'Não informada',value})).sort((a,b)=>b.value-a.value));
 barList('plans',[...plans].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value).slice(0,12));
 barList('cities',[...cities].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value).slice(0,5));
+renderMap(a);
 const chart=$('trend');chart.replaceChildren();const keys=[...days.keys()].sort(),max=Math.max(1,...days.values());
 if(!keys.length){chart.innerHTML='<p style="color:#73858e;font-size:13px">Sem cadastros neste período.</p>'}else{keys.forEach(d=>{const n=days.get(d),item=document.createElement('div');item.className='intel-day';item.title=d.split('-').reverse().join('/')+' — '+n+' cadastros';item.innerHTML='<i style="height:'+Math.max(3,n/max*155)+'px"></i><small>'+d.slice(8)+'</small>';chart.append(item)})}
 $('intelStatus').textContent=fmt(a.length)+' cadastros no período • '+fmt(unidentified)+' sem cidade identificável • '+fmt(unknownPlans)+' planos sem velocidade identificável • '+fmt(conflicts)+' cadastros antigos com chip no texto e flag MULTI desligada.';
@@ -70,6 +132,6 @@ async function paged(table,columns){let all=[];for(let offset=0;offset<50000;off
 async function names(table,ids,cols,target){for(let i=0;i<ids.length;i+=150){const {data,error}=await window.supabaseClient.from(table).select(cols).in('id',ids.slice(i,i+150));if(error)throw error;(data||[]).forEach(x=>target.set(x.id,x.full_name||x.name||'Não informado'))}}
 async function init(){const user=await window.authReady;if(!user)return;if(user.profile?.role!=='admin'){location.replace('painel.html');return}
 $('from').value=day(new Date());$('to').value=day(new Date());$('period').addEventListener('change',()=>{$('customDates').hidden=$('period').value!=='custom';render()});['operator','from','to'].forEach(id=>$(id).addEventListener('change',render));
-try{sales=await paged('sales','id,operator_id,plan_name,is_multi,full_address,created_at');await loadCepCities();await names('operators',[...new Set(sales.map(x=>x.operator_id).filter(Boolean))],'id,name',operators);[...operators].sort((a,b)=>a[1].localeCompare(b[1],'pt-BR')).forEach(([id,name])=>$('operator').add(new Option(name,id)));render()}catch(err){console.error('Inteligência comercial:',err);$('intelStatus').textContent='Não foi possível carregar os indicadores. Verifique as permissões ou tente atualizar a página.'}}
+try{sales=await paged('sales','id,operator_id,plan_name,is_multi,full_address,created_at');await loadCepCities();await loadMunicipalities();await names('operators',[...new Set(sales.map(x=>x.operator_id).filter(Boolean))],'id,name',operators);[...operators].sort((a,b)=>a[1].localeCompare(b[1],'pt-BR')).forEach(([id,name])=>$('operator').add(new Option(name,id)));render()}catch(err){console.error('Inteligência comercial:',err);$('intelStatus').textContent='Não foi possível carregar os indicadores. Verifique as permissões ou tente atualizar a página.'}}
 $('menuButton')?.addEventListener('click',()=>$('sidebar').classList.toggle('open'));init();
 })();
