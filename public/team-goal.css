@@ -4,3 +4,19 @@
 
 /* Alinhamento com os botões vizinhos do cabeçalho */
 .topbar .contact-goal-pill{box-sizing:border-box;height:48px;min-height:48px;min-width:0;margin-right:10px;padding:5px 11px;border-radius:12px;gap:8px;align-self:center;line-height:1}.topbar .contact-goal-pill .goal-icon{font-size:18px;line-height:1}.topbar .contact-goal-pill .goal-progress{min-width:90px;gap:2px}.topbar .contact-goal-pill .goal-label{font-size:10px;line-height:1.1}.topbar .contact-goal-pill .goal-count{font-size:13px;line-height:1.1}.topbar .contact-goal-pill .goal-track{height:3px;margin-top:1px}@media(max-width:700px){.topbar .contact-goal-pill{height:42px;min-height:42px;padding:4px 7px;gap:5px;margin-right:5px}.topbar .contact-goal-pill .goal-progress{min-width:64px}.topbar .contact-goal-pill .goal-label{font-size:9px}.topbar .contact-goal-pill .goal-count{font-size:12px}}
+
+/* Evolução gamer: chama aumenta conforme a equipe se aproxima da meta */
+.topbar .contact-goal-pill{overflow:visible;transition:background-color .3s,border-color .3s,box-shadow .3s}
+.topbar .contact-goal-pill .goal-fire{display:inline-flex;align-items:center;justify-content:center;transform-origin:50% 85%;font-size:15px;filter:saturate(.7);transition:font-size .3s,filter .3s;min-width:22px}
+.topbar .contact-goal-pill .goal-fill{background:linear-gradient(90deg,#66dcb6,#f6bd4b);transition:width .5s ease,background .3s}
+.topbar .contact-goal-pill[data-fire-stage="0"] .goal-fire{font-size:13px;filter:saturate(.55)}
+.topbar .contact-goal-pill[data-fire-stage="1"] .goal-fire{font-size:17px;filter:saturate(1.1);animation:contact-goal-flicker 2.6s ease-in-out infinite}
+.topbar .contact-goal-pill[data-fire-stage="2"]{border-color:#f3ad55;box-shadow:0 2px 12px #ff9b383d}
+.topbar .contact-goal-pill[data-fire-stage="2"] .goal-fire{font-size:22px;filter:drop-shadow(0 0 5px #ffac4e);animation:contact-goal-flicker 1.35s ease-in-out infinite}
+.topbar .contact-goal-pill[data-fire-stage="2"] .goal-fill{background:linear-gradient(90deg,#ffc04d,#ff763b)}
+.topbar .contact-goal-pill[data-fire-stage="3"]{border-color:#f6d26c;box-shadow:0 2px 13px #dcae4660}
+.topbar .contact-goal-pill[data-fire-stage="3"] .goal-fire{font-size:20px;filter:drop-shadow(0 0 5px #ffe092);animation:contact-goal-victory 2.8s ease-in-out infinite}
+.topbar .contact-goal-pill[data-fire-stage="3"] .goal-fill{background:linear-gradient(90deg,#ffcf59,#fff1a2)}
+@keyframes contact-goal-flicker{0%,100%{transform:rotate(-3deg) scale(.97)}50%{transform:rotate(3deg) scale(1.1)}}
+@keyframes contact-goal-victory{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+@media(prefers-reduced-motion:reduce){.topbar .contact-goal-pill .goal-fire,.topbar .contact-goal-pill .goal-fill{animation:none!important;transition:none!important}}
