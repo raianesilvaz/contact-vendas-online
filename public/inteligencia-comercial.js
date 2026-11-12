@@ -2,7 +2,10 @@
 'use strict';
 const $=id=>document.getElementById(id),fmt=n=>Number(n||0).toLocaleString('pt-BR'),day=x=>{const d=new Date(x);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let sales=[],operators=new Map();
+let sales=[],operators=new Map(),cepCities=new Map();
+function cepOf(address){const m=String(address||'').match(/(?:^|\D)(\d{5})[-\s]?(\d{3})(?!\d)/);return m?m[1]+m[2]:''}
+function saleCity(sale){const cep=cepOf(sale.full_address),known=cep&&cepCities.get(cep);return known||cityOf(sale.full_address)}
+async function loadCepCities(){const ceps=[...new Set(sales.map(x=>cepOf(x.full_address)).filter(Boolean))];for(let i=0;i<ceps.length;i+=100){const {data,error}=await window.supabaseClient.from('claro_cep_coverage').select('cep,city,uf').in('cep',ceps.slice(i,i+100));if(error){console.warn('Consulta de CEP indisponível:',error);return}for(const x of data||[]){if(x.city)cepCities.set(x.cep,x.city.toLocaleLowerCase('pt-BR').replace(/(^|[\s'-])\p{L}/gu,c=>c.toLocaleUpperCase('pt-BR')))}}}
 function dates(){const today=new Date(),end=day(today),type=$('period').value;if(type==='today')return[end,end];if(type==='week'){today.setDate(today.getDate()-6);return[day(today),end]}if(type==='previous'){today.setDate(1);today.setDate(0);const last=day(today);today.setDate(1);return[day(today),last]}if(type==='custom')return[$('from').value||end,$('to').value||end];today.setDate(1);return[day(today),end]}
 function barList(id,items){const max=Math.max(1,...items.map(x=>x.value));$(id).innerHTML=items.length?items.map(x=>'<div class="intel-bar"><span class="intel-bar-name" title="'+esc(x.name)+'">'+esc(x.name)+'</span><strong>'+fmt(x.value)+'</strong><div class="intel-track"><i style="width:'+(x.value/max*100)+'%"></i></div></div>').join(''):'<p style="color:#73858e;font-size:13px">Sem dados para este período.</p>'}
 function cityOf(address){
@@ -47,7 +50,7 @@ $('kTotal').textContent=fmt(a.length);
 $('kPlans').textContent=fmt(new Set(a.map(x=>interpretPlan(x).speed).filter(x=>x!=='Não identificado')).size);
 const ops=new Map(),plans=new Map(),cities=new Map(),days=new Map();let unidentified=0,unknownPlans=0,conflicts=0;
 a.forEach(x=>{
-const k=x.operator_id||'sem-operadora',parsed=interpretPlan(x),p=parsed.speed==='Não identificado'?'Não identificado':parsed.speed+' · '+(parsed.multi?'MULTI':'SINGLE'),d=day(x.created_at),city=cityOf(x.full_address);
+const k=x.operator_id||'sem-operadora',parsed=interpretPlan(x),p=parsed.speed==='Não identificado'?'Não identificado':parsed.speed+' · '+(parsed.multi?'MULTI':'SINGLE'),d=day(x.created_at),city=saleCity(x);
 if(parsed.speed==='Não identificado')unknownPlans++;if(parsed.conflict)conflicts++;
 ops.set(k,(ops.get(k)||0)+1);plans.set(p,(plans.get(p)||0)+1);
 if(city)cities.set(city,(cities.get(city)||0)+1);else unidentified++;
@@ -66,6 +69,6 @@ async function paged(table,columns){let all=[];for(let offset=0;offset<50000;off
 async function names(table,ids,cols,target){for(let i=0;i<ids.length;i+=150){const {data,error}=await window.supabaseClient.from(table).select(cols).in('id',ids.slice(i,i+150));if(error)throw error;(data||[]).forEach(x=>target.set(x.id,x.full_name||x.name||'Não informado'))}}
 async function init(){const user=await window.authReady;if(!user)return;if(user.profile?.role!=='admin'){location.replace('painel.html');return}
 $('from').value=day(new Date());$('to').value=day(new Date());$('period').addEventListener('change',()=>{$('customDates').hidden=$('period').value!=='custom';render()});['operator','from','to'].forEach(id=>$(id).addEventListener('change',render));
-try{sales=await paged('sales','id,operator_id,plan_name,is_multi,full_address,created_at');await names('operators',[...new Set(sales.map(x=>x.operator_id).filter(Boolean))],'id,name',operators);[...operators].sort((a,b)=>a[1].localeCompare(b[1],'pt-BR')).forEach(([id,name])=>$('operator').add(new Option(name,id)));render()}catch(err){console.error('Inteligência comercial:',err);$('intelStatus').textContent='Não foi possível carregar os indicadores. Verifique as permissões ou tente atualizar a página.'}}
+try{sales=await paged('sales','id,operator_id,plan_name,is_multi,full_address,created_at');await loadCepCities();await names('operators',[...new Set(sales.map(x=>x.operator_id).filter(Boolean))],'id,name',operators);[...operators].sort((a,b)=>a[1].localeCompare(b[1],'pt-BR')).forEach(([id,name])=>$('operator').add(new Option(name,id)));render()}catch(err){console.error('Inteligência comercial:',err);$('intelStatus').textContent='Não foi possível carregar os indicadores. Verifique as permissões ou tente atualizar a página.'}}
 $('menuButton')?.addEventListener('click',()=>$('sidebar').classList.toggle('open'));init();
 })();
