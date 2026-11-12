@@ -96,3 +96,18 @@
 .offer-detail{font-size:12px;line-height:1.6}
 .home-footnote{font-size:12px;line-height:1.6}
 @media(max-width:780px){.home-content .page-heading h1{font-size:27px}.home-spotlight h3{font-size:24px}}
+
+/* Filtro de modalidades e cards de consulta de fibra avulsa */
+.home-plan-filter{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:0 0 17px}
+.home-plan-filter>span{font-size:12px;font-weight:800;color:#40565f;margin-right:10px}
+.home-mode{border:1px solid #d4e4e5;background:#fff;color:#4d6971;border-radius:999px;padding:9px 15px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s}
+.home-mode:hover{border-color:#008b8b;color:#006e73}
+.home-mode.active{background:#e5faf6;border-color:#00a899;color:#006e73}
+.home-spotlight[hidden]{display:none!important}
+.home-showcase:has(.home-spotlight[hidden]){grid-template-columns:minmax(0,1fr)}
+.home-fiber-card .offer-feature{min-height:112px}
+.home-fiber-card .offer-main{min-height:0}
+.home-fiber-card .fiber-unverified{font-size:12px;line-height:1.55;color:#5b727b;background:#f3f8f8;border:1px dashed #c7dcdf;border-radius:10px;padding:12px;margin:2px 0 0}
+.home-fiber-card .offer-price .fiber-price-pending{font-size:21px;color:#274650;letter-spacing:-.02em}
+.home-fiber-card .offer-price>span{font-size:11px}
+@media(max-width:780px){.home-plan-filter>span{width:100%}}
