@@ -6,14 +6,14 @@ let sales=[],operators=new Map();const money=n=>Number(n||0).toLocaleString('pt-
 function dates(){const today=new Date(),end=day(today),type=$('period').value;if(type==='today')return[end,end];if(type==='week'){today.setDate(today.getDate()-6);return[day(today),end]}if(type==='previous'){today.setDate(1);today.setDate(0);const last=day(today);today.setDate(1);return[day(today),last]}if(type==='custom')return[$('from').value||end,$('to').value||end];today.setDate(1);return[day(today),end]}
 function barList(id,items){const max=Math.max(1,...items.map(x=>x.value));$(id).innerHTML=items.length?items.map(x=>'<div class="intel-bar"><span class="intel-bar-name" title="'+esc(x.name)+'">'+esc(x.name)+'</span><strong>'+fmt(x.value)+'</strong><div class="intel-track"><i style="width:'+(x.value/max*100)+'%"></i></div></div>').join(''):'<p style="color:#73858e;font-size:13px">Sem dados para este período.</p>'}
 function cityOf(address){
-const text=String(address||'').normalize('NFC').replace(/\\s+/g,' ').trim();
+const text=String(address||'').normalize('NFC').replace(/\s+/g,' ').trim();
 if(!text)return '';
 // Aceita somente campo CIDADE explicitamente rotulado; não deduz pelo CEP ou bairro.
-const match=text.match(/\\bCIDADE\\s*[:=,-]?\\s*([\\p{L}][\\p{L} .'-]{1,55}?)(?=\\s*(?:[,;\\/]|\\bESTADO\\b|\\bUF\\b|\\bCEP\\b|\\bBAIRRO\\b|\\bN[ÚU]MERO\\b|\\d{5}[- ]?\\d{3}\\b|$))/iu);
+const match=text.match(/\bCIDADE\s*[:=,-]?\s*([\p{L}][\p{L} .'-]{1,55}?)(?=\s*(?:[,;\/]|\bESTADO\b|\bUF\b|\bCEP\b|\bBAIRRO\b|\bN[ÚU]MERO\b|\d{5}[- ]?\d{3}\b|$))/iu);
 if(!match)return '';
-let city=match[1].trim().replace(/[-.,\\s]+$/,'').replace(/\\s*-\\s*(?:SP|RJ|MG|PR|SC|RS|BA|GO|DF|ES|MS|MT|PA|PE|CE|MA|PB|RN|PI|AL|SE|TO|RO|RR|AP|AC|AM)\\s*$/i,'').trim();
-if(!city||city.length<3||/\\d/.test(city)||/^(?:estado|cep|rua|bairro)$/i.test(city))return '';
-return city.toLocaleLowerCase('pt-BR').replace(/(^|[\\s'-])\\p{L}/gu,x=>x.toLocaleUpperCase('pt-BR'));
+let city=match[1].trim().replace(/[-.,\s]+$/,'').replace(/\s*-\s*(?:SP|RJ|MG|PR|SC|RS|BA|GO|DF|ES|MS|MT|PA|PE|CE|MA|PB|RN|PI|AL|SE|TO|RO|RR|AP|AC|AM)\s*$/i,'').trim();
+if(!city||city.length<3||/\d/.test(city)||/^(?:estado|cep|rua|bairro)$/i.test(city))return '';
+return city.toLocaleLowerCase('pt-BR').replace(/(^|[\s'-])\p{L}/gu,x=>x.toLocaleUpperCase('pt-BR'));
 }
 function render(){
 const [from,to]=dates(),op=$('operator').value;
