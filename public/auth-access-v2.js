@@ -65,7 +65,7 @@ function addPanelSubmenu(currentPath,isAdmin) {
       intelligence.innerHTML='<span aria-hidden="true">◫</span><span>Inteligência comercial</span>';
       links.push(intelligence);
     }
-    addSidebarDisclosure(panel,'Painel','panel-submenu-'+index,links);
+    addSidebarDisclosure(panel,'Analítico','panel-submenu-'+index,links);
   });
 }
 
