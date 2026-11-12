@@ -111,3 +111,12 @@
 .home-fiber-card .offer-price .fiber-price-pending{font-size:21px;color:#274650;letter-spacing:-.02em}
 .home-fiber-card .offer-price>span{font-size:11px}
 @media(max-width:780px){.home-plan-filter>span{width:100%}}
+
+/* Correção da quebra: vitrine sempre horizontal, sem segunda linha */
+.home-showcase{align-items:start;min-width:0}
+.home-showcase .home-grid{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(245px,calc((100% - 28px)/3));grid-template-columns:none!important;overflow-x:auto;overflow-y:hidden;align-items:stretch;min-width:0;max-width:100%;scrollbar-width:thin;scrollbar-color:#a3d4d0 transparent;overscroll-behavior-inline:contain}
+.home-showcase .home-offer{min-width:0;min-height:0}
+.home-spotlight{height:fit-content;min-height:510px;align-self:start}
+.home-showcase:has(.home-spotlight[hidden]) .home-grid{grid-auto-columns:minmax(245px,calc((100% - 42px)/4))}
+@media(max-width:1150px){.home-showcase .home-grid{grid-auto-columns:minmax(245px,calc((100% - 14px)/2))}.home-showcase:has(.home-spotlight[hidden]) .home-grid{grid-auto-columns:minmax(245px,calc((100% - 28px)/3))}}
+@media(max-width:780px){.home-showcase .home-grid,.home-showcase:has(.home-spotlight[hidden]) .home-grid{grid-auto-columns:minmax(245px,75%)}.home-spotlight{min-height:0;height:auto}}
