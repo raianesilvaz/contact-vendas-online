@@ -180,3 +180,13 @@
 /* Home sem coluna lateral: vitrine ocupa toda a largura disponível */
 .home-dashboard{grid-template-columns:minmax(0,1fr)}
 .home-primary{width:100%;min-width:0}
+
+
+/* Globoplay — destaque de benefício consistente em todas as ofertas Claro */
+.home-dashboard-card .offer-service-logos{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:10px}
+.home-dashboard-card .service-globoplay{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #f1d6da;border-radius:9px;padding:7px 8px;box-shadow:0 2px 5px #8a1b2b0b}
+.home-dashboard-card .globoplay-play{display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;border-radius:50%;background:linear-gradient(135deg,#ff963c,#ed2350 65%,#b00eaa);color:white;font-size:10px;padding-left:2px}
+.home-dashboard-card .globoplay-wordmark{font-family:Arial,sans-serif;font-weight:800;letter-spacing:-.045em;font-size:14px;color:#e9283e}
+.home-dashboard-card .globoplay-included{font-size:10px;font-weight:700;color:#397269;margin-left:1px}
+.home-dashboard-card .service-5g{border-radius:7px}
+@media(max-width:700px){.home-dashboard-card .globoplay-wordmark{font-size:13px}}
