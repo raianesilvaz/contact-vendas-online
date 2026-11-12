@@ -6,7 +6,7 @@
   notificationAudio.preload = 'auto';
   notificationAudio.volume = 0.28;
 
-  const iconByType = { task_assigned: '☑️', task_reminder: '⏰', new_sale: '🛒', status_changed: '🔄', sale_cancelled: '⚠️', installation_reminder: '📅', team_info:'📢', team_important:'⚠️', team_urgent:'🚨', team_campaign:'🎁' };
+  const iconByType = { task_assigned: '☑️', task_reminder: '⏰', new_sale: '🛒', status_changed: '🔄', sale_cancelled: '⚠️', installation_reminder: '📅', team_info:'📢', team_important:'⚠️', team_urgent:'🚨', team_campaign:'🎁',team_goal_opening:'🌅',team_goal_behind:'💪',team_goal_on_track:'💚',team_goal_recovered:'🚀',team_goal_completed:'🏆' };
   const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
   const formatRelative = value => {
     const diff = Math.max(0, Date.now() - new Date(value).getTime());
