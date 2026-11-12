@@ -243,3 +243,37 @@
 .home-content .home-promo-list strong{font-size:19px;font-weight:700}
 .home-content .home-promo-list p,.home-content .home-footnote{font-size:12px;line-height:1.6}
 @media(max-width:640px){.home-content .offer-main h3{font-size:16px}.home-content .offer-price strong{font-size:23px}}
+
+
+/* Claro Multi Friday — destaque ao lado do card verde, sem alterar os cards existentes */
+.home-primary .home-showcase{display:grid;grid-template-columns:minmax(155px,.82fr) minmax(155px,.82fr) minmax(0,4.6fr);gap:10px;align-items:stretch}
+.home-primary .home-showcase .home-spotlight{min-width:0}
+.home-primary .home-showcase .home-grid{min-width:0;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(175px,1fr);overflow-x:auto;gap:10px}
+.home-black-friday{min-width:0;position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;align-items:stretch;gap:13px;padding:17px 12px;border-radius:15px;border:1px solid #a71b1b;background:radial-gradient(ellipse at 100% 4%,#7a080b 0%,transparent 52%),linear-gradient(160deg,#0d0809 0%,#1d0306 65%,#400408 100%);color:#fff;text-align:center;box-shadow:inset 0 0 24px #ff111112}
+.home-black-friday[hidden]{display:none!important}
+.home-black-friday::before,.home-black-friday::after{content:'';position:absolute;border:2px solid #f41928aa;border-radius:50%;width:230px;height:230px;pointer-events:none;z-index:-1;filter:drop-shadow(0 0 8px #f1192c)}
+.home-black-friday::before{right:-172px;top:-85px}.home-black-friday::after{left:-180px;bottom:-105px}
+.black-friday-top{display:flex;flex-direction:column;align-items:center;gap:5px}
+.black-friday-kicker{color:#ff8585;font-size:9px;font-weight:800;letter-spacing:.07em}
+.black-friday-bag{font-size:30px;line-height:1;color:#ff3c45;text-shadow:0 0 12px #f22}
+.home-black-friday h3{margin:0;display:flex;flex-direction:column;font-size:clamp(23px,2.1vw,33px);line-height:.93;letter-spacing:-.07em;font-weight:900;text-shadow:0 0 12px #f3212c}
+.home-black-friday h3 span:last-child{color:#ff3a43}
+.black-friday-claro{font-size:18px;letter-spacing:-.05em}
+.black-friday-claro span{font-size:10px;vertical-align:super}
+.black-friday-plan{display:flex;flex-direction:column;gap:8px;border:1px solid #ef2334;border-radius:12px;padding:13px 6px;background:#100507}
+.black-friday-plan>span{font-size:9px;font-weight:800;color:#ffb5b7}
+.black-friday-plan strong{font-size:clamp(20px,1.7vw,26px);line-height:1.08;letter-spacing:-.04em}
+.black-friday-plan small{font-size:10px;color:#f4ced0;line-height:1.3}
+.black-friday-price{margin-top:auto;background:linear-gradient(115deg,#a80b13,#e51c27 65%,#98060b);border-radius:12px;padding:12px 5px;display:flex;flex-direction:column;gap:3px;box-shadow:0 5px 20px #ed111c38}
+.black-friday-price>span{font-size:10px;color:#fff0f0}
+.black-friday-price strong{font-size:clamp(23px,2vw,30px);line-height:1.15;white-space:nowrap;letter-spacing:-.055em}
+.black-friday-price strong small{font-size:11px;letter-spacing:0}
+.black-friday-conditions{font-size:10px;line-height:1.4;color:#f1d2d2;margin:0}
+.black-friday-button{display:block;background:#ed1723;color:#fff;text-decoration:none;border-radius:30px;padding:11px 5px;font-size:11px;font-weight:800}
+.black-friday-button:hover{background:#ff3340}
+.home-primary .home-showcase:has(.home-black-friday[hidden]){grid-template-columns:minmax(155px,.82fr) minmax(0,5.42fr)}
+.home-primary .home-showcase:has(.home-spotlight[hidden]):not(:has(.home-black-friday[hidden])){grid-template-columns:minmax(155px,.82fr) minmax(0,5.42fr)}
+.home-primary .home-showcase:has(.home-spotlight[hidden]):has(.home-black-friday[hidden]){grid-template-columns:minmax(0,1fr)}
+@media(max-width:1150px){.home-primary .home-showcase{grid-template-columns:minmax(165px,1fr) minmax(165px,1fr) minmax(0,2fr)}.home-primary .home-showcase .home-grid{grid-auto-columns:minmax(190px,75%)}}
+@media(max-width:740px){.home-primary .home-showcase,.home-primary .home-showcase:has(.home-black-friday[hidden]),.home-primary .home-showcase:has(.home-spotlight[hidden]):not(:has(.home-black-friday[hidden])){grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.home-primary .home-showcase .home-grid{grid-column:1/-1;grid-auto-columns:minmax(205px,75%)}.home-black-friday{padding:15px 10px}.home-black-friday h3{font-size:25px}}
+@media(max-width:420px){.home-primary .home-showcase{grid-template-columns:1fr!important}.home-primary .home-showcase .home-grid{grid-column:1;grid-auto-columns:minmax(215px,85%)}}
