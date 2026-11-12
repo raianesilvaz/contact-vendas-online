@@ -180,6 +180,9 @@ document.querySelectorAll('.phone').forEach((input) => input.addEventListener('i
   if (input === valorInternet || input === valorMovel) recalculateTotal();
   if (input === postPromoValue) updateDiscountSummary();
 }));
+const planoSelect=document.querySelector('#plano');
+const planoOutro=document.querySelector('#planoOutro');
+planoSelect.addEventListener('change',()=>{const custom=planoSelect.value==='outro';planoOutro.hidden=!custom;planoOutro.required=custom;if(!custom)planoOutro.value='';});
 operatorSelect.addEventListener('change', syncPricingMode);
 isMulti.addEventListener('change', () => {
   if (!isMulti.checked) valorMovel.value = '';
@@ -241,7 +244,8 @@ form.addEventListener('submit', async (event) => {
     return;
   }
 
-  const sale = { seller_id: user.id, origin: isPartner ? 'parceiro' : 'interna', operator_id: data.get('operadora'), plan_name: data.get('plano').trim(), is_multi: multi, internet_value: internetValue, mobile_value: mobileValue, value: totalValue, promo_value: promoValue, has_promotion: promotionActive, promotion_months: promotionDuration, post_promo_value: afterPromotionValue, due_day: Number(digits(data.get('vencimento'))), customer_name: data.get('nome').trim(), mother_name: data.get('mae').trim(), birth_date: window.ContactBirthDate.toISO(data.get('nascimento')), cpf: digits(data.get('cpf')), full_address: data.get('endereco').trim(), address_complement: data.get('complemento').trim() || null, phone_1: digits(data.get('telefone1')), phone_2: digits(data.get('telefone2')) || null, email: data.get('email').trim().toLowerCase() };
+  if (planoSelect.value === 'outro' && !planoOutro.value.trim()) { planoOutro.focus(); showToast('Plano obrigatório', 'Informe o plano que não está na lista.', true); return; }
+  const sale = { seller_id: user.id, origin: isPartner ? 'parceiro' : 'interna', operator_id: data.get('operadora'), plan_name: (data.get('plano') === 'outro' ? planoOutro.value : data.get('plano')).trim(), is_multi: multi, internet_value: internetValue, mobile_value: mobileValue, value: totalValue, promo_value: promoValue, has_promotion: promotionActive, promotion_months: promotionDuration, post_promo_value: afterPromotionValue, due_day: Number(digits(data.get('vencimento'))), customer_name: data.get('nome').trim(), mother_name: data.get('mae').trim(), birth_date: window.ContactBirthDate.toISO(data.get('nascimento')), cpf: digits(data.get('cpf')), full_address: data.get('endereco').trim(), address_complement: data.get('complemento').trim() || null, phone_1: digits(data.get('telefone1')), phone_2: digits(data.get('telefone2')) || null, email: data.get('email').trim().toLowerCase() };
   const { data: savedSale, error } = await window.supabaseClient.from('sales').insert(sale).select('id').single();
 
   submitButton.disabled = false;
