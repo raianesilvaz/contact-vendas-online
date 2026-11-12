@@ -117,8 +117,8 @@ function organizeContactSidebar(role,currentPath){
   const home=take('inicio.html');let newSale=take('index.html');if(!newSale&&!finance){newSale=document.createElement('a');newSale.href='index.html';newSale.className='nav-item'+(['index.html',''].includes(currentPath)?' active':'');newSale.innerHTML='<span aria-hidden="true">＋</span><span>'+(partner?'Nova indicação':'Nova venda')+'</span>';if(currentPath==='index.html')newSale.setAttribute('aria-current','page')}const mySales=take('vendas.html');
   section('PRINCIPAL',[home,...(newSale?[newSale]:[]),mySales]);
   section('DESEMPENHO',[...panel,...ranking,take('comissao.html')]);
-  section('OPERAÇÃO',[take('cobertura.html'),take('contatos.html'),take('tarefas.html'),take('chips.html'),take('instalacoes.html'),take('bko.html')]);
-  section('ADMINISTRAÇÃO',[take('financeiro.html'),take('geral.html'),take('usuarios.html'),take('configuracoes.html'),take('saude.html')]);
+  section('OPERAÇÃO',[take('cobertura.html'),take('contatos.html'),take('tarefas.html'),take('chips.html'),take('instalacoes.html'),take('bko.html'),take('financeiro.html')]);
+  section('ADMINISTRAÇÃO',[take('geral.html'),take('usuarios.html'),take('configuracoes.html'),take('saude.html')]);
   // Keep any legacy links visible rather than silently removing a feature.
   const leftovers=original.filter(el=>el.matches('a[href]')&&!used.has(el)&&!el.hidden&&!(el.hasAttribute('data-admin-only')&&!admin));
   if(leftovers.length)section('OUTROS',leftovers);
