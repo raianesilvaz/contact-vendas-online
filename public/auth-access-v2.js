@@ -251,7 +251,7 @@ document.querySelectorAll('[data-logout]').forEach(button => button.addEventList
       let link=nav.querySelector('a[href="indicacoes.html"]');
       if(!link){link=document.createElement('a');link.href='indicacoes.html';}
       link.className='nav-item'+(current==='indicacoes.html'?' active':'');
-      link.innerHTML='<span aria-hidden="true">♧</span><span>Indicações</span>';
+      if(!link.querySelector('.referral-menu-label')){const existingBadge=link.querySelector('.referral-menu-badge');link.innerHTML='<span aria-hidden="true">♧</span><span class="referral-menu-label">Indicações</span>';if(existingBadge)link.appendChild(existingBadge);}
       sales.insertAdjacentElement('afterend',link);
     });
   }
@@ -274,7 +274,7 @@ document.querySelectorAll('[data-logout]').forEach(button => button.addEventList
    badge.textContent=count>99?'99+':String(count||0);badge.hidden=!count;badge.style.display=count?'inline-flex':'none';
   });
  }
- window.authReady?.then(()=>{updateReferralBadge();setInterval(updateReferralBadge,20000);}).catch(()=>{});
+ window.authReady?.then(()=>{updateReferralBadge();setTimeout(updateReferralBadge,1200);setInterval(updateReferralBadge,20000);}).catch(()=>{});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateReferralBadge();});
  window.addEventListener('focus',updateReferralBadge);
 })();
