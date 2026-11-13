@@ -266,7 +266,7 @@ document.querySelectorAll('[data-logout]').forEach(button => button.addEventList
   const client=window.supabaseClient,user=window.currentUser;
   if(!client||!user?.id)return;
   // Count actual new referrals visible under Supabase RLS, not unread bell notifications.
-  const {count,error}=await client.from('customer_referrals').select('id',{count:'exact',head:true}).eq('status','nova');
+  const {count,error}=await client.from('customer_referrals').select('id',{count:'exact',head:true}).eq('status','nova').is('deleted_at',null);
   if(error){console.warn('Não foi possível atualizar o contador de indicações:',error.message);return;}
   document.querySelectorAll('.sidebar nav a[href="indicacoes.html"]').forEach(link=>{
    let badge=link.querySelector('.referral-menu-badge');
