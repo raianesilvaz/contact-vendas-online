@@ -4,7 +4,7 @@ const now = '2026-11-13T12:00:00Z';
 const contacts = Array.from({length: 120}, (_, i) => ({id:i, phone:'(18) 9'+String(90000000+i), sms_consent:true}));
 const initial = prepareSmsQueue(contacts, [], 'promo-a', now);
 assert.deepEqual(initial.batches.map(b => b.length), [50,50,20]);
-assert.equal(normalizeBrazilPhone('(18) 99900-00000'), '5518999000000');
+assert.equal(normalizeBrazilPhone('(18) 99000-0000'), '5518990000000');
 const sent = initial.batches[0].map(c=>({phone:c.phone,campaign_id:'promo-a',status:'sent',sent_at:now}));
 const next = prepareSmsQueue(contacts, sent, 'promo-a', now);
 assert.equal(next.eligible.length, 70);
