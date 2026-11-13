@@ -252,7 +252,7 @@ document.querySelectorAll('[data-logout]').forEach(button => button.addEventList
       if(!link){link=document.createElement('a');link.href='indicacoes.html';}
       link.className='nav-item'+(current==='indicacoes.html'?' active':'');
       if(!link.querySelector('.referral-menu-label')){const existingBadge=link.querySelector('.referral-menu-badge');link.innerHTML='<span aria-hidden="true">♧</span><span class="referral-menu-label">Indicações</span>';if(existingBadge)link.appendChild(existingBadge);}
-      sales.insertAdjacentElement('afterend',link);
+      link.style.display='grid';link.style.gridTemplateColumns='18px minmax(0,1fr) 16px';link.style.alignItems='center';link.style.columnGap='12px';link.style.paddingRight='14px';link.querySelector('.referral-menu-label').style.minWidth='0';sales.insertAdjacentElement('afterend',link);
     });
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',placeReferralMenu,{once:true});else placeReferralMenu();
@@ -270,7 +270,7 @@ document.querySelectorAll('[data-logout]').forEach(button => button.addEventList
   if(error){console.warn('Não foi possível atualizar o contador de indicações:',error.message);return;}
   document.querySelectorAll('.sidebar nav a[href="indicacoes.html"]').forEach(link=>{
    let badge=link.querySelector('.referral-menu-badge');
-   if(!badge){badge=document.createElement('span');badge.className='referral-menu-badge';badge.style.cssText='margin-left:auto;display:inline-flex;align-items:center;justify-content:center;min-width:18px;width:18px;height:18px;box-sizing:border-box;background:#087e61;color:#fff;border:1px solid rgba(83,211,177,.24);border-radius:999px;padding:0 3px;font-family:inherit;font-size:10px;font-weight:700;line-height:1;flex-shrink:0;vertical-align:middle;';link.appendChild(badge);}
+   if(!badge){badge=document.createElement('span');badge.className='referral-menu-badge';badge.style.cssText='grid-column:3;justify-self:center;align-self:center;display:inline-flex;align-items:center;justify-content:center;min-width:16px;width:16px;height:16px;box-sizing:border-box;background:#087e61;color:#fff;border:1px solid rgba(83,211,177,.24);border-radius:999px;padding:0 3px;font-family:inherit;font-size:9px;font-weight:700;line-height:1;flex-shrink:0;vertical-align:middle;';link.appendChild(badge);}
    badge.textContent=count>99?'99+':String(count||0);badge.hidden=!count;badge.style.display=count?'inline-flex':'none';
   });
  }
