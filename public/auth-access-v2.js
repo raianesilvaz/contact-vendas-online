@@ -270,7 +270,7 @@ document.querySelectorAll('[data-logout]').forEach(button => button.addEventList
   if(error){console.warn('Não foi possível atualizar o contador de indicações:',error.message);return;}
   document.querySelectorAll('.sidebar nav a[href="indicacoes.html"]').forEach(link=>{
    let badge=link.querySelector('.referral-menu-badge');
-   if(!badge){badge=document.createElement('span');badge.className='referral-menu-badge';badge.style.cssText='margin-left:auto;display:inline-flex;align-items:center;justify-content:center;min-width:23px;height:23px;box-sizing:border-box;background:#087e61;color:#fff;border:1px solid rgba(83,211,177,.24);border-radius:999px;padding:0 6px;font-family:inherit;font-size:11px;font-weight:700;line-height:1;flex-shrink:0;';link.appendChild(badge);}
+   if(!badge){badge=document.createElement('span');badge.className='referral-menu-badge';badge.style.cssText='margin-left:auto;display:inline-flex;align-items:center;justify-content:center;min-width:18px;width:18px;height:18px;box-sizing:border-box;background:#087e61;color:#fff;border:1px solid rgba(83,211,177,.24);border-radius:999px;padding:0 3px;font-family:inherit;font-size:10px;font-weight:700;line-height:1;flex-shrink:0;vertical-align:middle;';link.appendChild(badge);}
    badge.textContent=count>99?'99+':String(count||0);badge.hidden=!count;badge.style.display=count?'inline-flex':'none';
   });
  }
