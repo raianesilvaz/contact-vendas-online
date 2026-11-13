@@ -12,8 +12,9 @@ begin
   if p_limit is null or p_limit < 1 or p_limit > 50 then
     raise exception 'Batch limit must be 1..50';
   end if;
-  -- One reservation at a time per campaign, including simultaneous requests.
-  perform pg_advisory_xact_lock(hashtextextended(p_campaign_id::text, 17413));
+  -- Global lock prevents cross-campaign race for the same phone.
+  -- Conservative by design: serialize reservations across campaigns.
+  perform pg_advisory_xact_lock(17413, 50);
   select c.status into v_campaign_status
   from contact_sms_private.campaigns c where c.id=p_campaign_id for update;
   if v_campaign_status is distinct from 'ready' then
