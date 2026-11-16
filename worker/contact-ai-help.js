@@ -22,6 +22,10 @@ export async function contactAiHelp(request,env,fetchApi=fetch){
   if(!auth.ok)return json({error:'invalid_session'},401);
   user=await auth.json();
   if(!user?.id)return json({error:'invalid_session'},401);
+  const profileUrl=new URL(env.SUPABASE_URL+'/rest/v1/profiles');profileUrl.search=new URLSearchParams({select:'active',id:'eq.'+user.id,limit:'1'});
+  const profileResponse=await fetchApi(profileUrl.toString(),{headers:{authorization:token,apikey:env.SUPABASE_PUBLISHABLE_KEY}});
+  if(!profileResponse.ok)return json({error:'profile_unavailable'},503);
+  const profiles=await profileResponse.json();if(!Array.isArray(profiles)||profiles[0]?.active!==true)return json({error:'forbidden'},403);
  }catch{return json({error:'authentication_unavailable'},503);}
  let body;
  try{body=await request.json()}catch{return json({error:'invalid_json'},400)}
