@@ -278,3 +278,6 @@ document.querySelectorAll('[data-logout]').forEach(button => button.addEventList
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateReferralBadge();});
  window.addEventListener('focus',updateReferralBadge);
 })();
+
+/* CONTACT IA: shared floating widget on screens loading auth-access-v2.js. */
+(()=>{if(document.querySelector('script[data-contact-ai]'))return;const script=document.createElement('script');script.src='contact-ai-widget.js?v=1';script.defer=true;script.dataset.contactAi='true';document.head.appendChild(script);})();

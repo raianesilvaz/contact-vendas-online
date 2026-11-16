@@ -1,0 +1,25 @@
+name: CONTACT IA checks
+on:
+  pull_request:
+    paths:
+      - 'worker/contact-ai-help.js'
+      - 'worker/cloudflare.js'
+      - 'public/contact-ai-widget.*'
+      - 'public/auth-access-v2.js'
+      - 'tests/contact-ai-help.test.js'
+      - '.github/workflows/contact-ai-checks.yml'
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/contact-ai-help.test.js
+      - run: node --check worker/contact-ai-help.js
+      - run: node --check public/contact-ai-widget.js
+      - run: node --check worker/cloudflare.js

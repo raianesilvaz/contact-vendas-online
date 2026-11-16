@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {contactAiHelp} from '../worker/contact-ai-help.js';
+const env={SUPABASE_URL:'https://example.supabase.co',SUPABASE_PUBLISHABLE_KEY:'test'};
+const fetchMock=async(url)=>new Response(JSON.stringify(String(url).includes('/profiles?')?[{active:true}]:{id:'user-1'}),{status:200,headers:{'content-type':'application/json'}});
+const request=(message,authorization='Bearer test')=>new Request('https://contact.example/api/contact-ai/help',{method:'POST',headers:{authorization,'content-type':'application/json'},body:JSON.stringify({message})});
+test('requires authentication',async()=>{const r=await contactAiHelp(request('onde lançar venda',''),env,fetchMock);assert.equal(r.status,401);});
+test('answers sales navigation without API key',async()=>{const r=await contactAiHelp(request('Onde lançar venda?'),env,fetchMock);assert.equal(r.status,200);const body=await r.json();assert.equal(body.mode,'guide');assert.match(body.answer,/Minhas Vendas/);});
+test('does not execute requested actions',async()=>{const r=await contactAiHelp(request('Crie tarefas para todos'),env,fetchMock);assert.equal(r.status,200);assert.equal((await r.json()).mode,'guide');});
+test('rejects oversized input',async()=>{const r=await contactAiHelp(request('a'.repeat(601)),env,fetchMock);assert.equal(r.status,400);});
