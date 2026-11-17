@@ -212,6 +212,7 @@
           <span><span class="contacts-label">Última venda no período</span>${sales[0].day ? `<time datetime="${safe(sales[0].day)}">${dateLabel(sales[0].day)}</time>` : dateLabel('')}</span>
           <span><span class="contacts-label">Vendedora da última venda</span><strong>${safe(contact.seller || 'Não informada')}</strong></span>
         </span>`}
+        <span class="contacts-owner"><span class="contacts-label">Responsável</span><strong class="contacts-owner-badge ${contact.sellerId ? (contact.sellerId === currentUser?.id ? 'is-mine' : 'is-assigned') : 'is-unassigned'}">${safe(contact.sellerId ? (contact.seller || 'Responsável cadastrada') : 'Sem vendedora')}</strong></span>
         <span class="contacts-arrow" aria-hidden="true">›</span>
       </div>`;
     }).join('') || '<p class="contacts-empty">Nenhum contato encontrado com esses filtros.</p>';
