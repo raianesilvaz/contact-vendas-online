@@ -359,7 +359,10 @@
       const assignSelect = byId('contactAssignSeller');
       assignSelect.replaceChildren(new Option('Sem vendedora',''));
       for (const item of (sellers.data || []).filter(item=>item.role==='vendedora' && item.full_name?.trim()).sort((a,b)=>a.full_name.localeCompare(b.full_name,'pt-BR'))) assignSelect.add(new Option(item.full_name,item.id));
-      if (seller && ![...assignSelect.options].some(option=>option.value===user.id)) assignSelect.add(new Option(user.profile.full_name || 'Meu usuário',user.id));
+      if (seller) {
+        // Vendedoras só podem assumir contatos livres; nunca transferir para terceiros.
+        assignSelect.replaceChildren(new Option('Sem vendedora',''),new Option(user.profile.full_name || 'Meu usuário',user.id));
+      }
       if (seller) { sellerSelect.value=user.id; sellerSelect.dataset.ownerId=user.id; sellerSelect.disabled=true; }
       else sellerSelect.disabled=false;
       byId('contactLeadOption').hidden = false;
@@ -642,14 +645,24 @@
     assignSection.hidden = !assignable;
     if (assignable) {
       assignSelect.value = contact.sellerId || '';
-      assignSelect.disabled = currentUser?.profile?.role !== 'admin' && Boolean(contact.sellerId);
-      assignFeedback.textContent = '';
+      const isAdmin = currentUser?.profile?.role === 'admin';
+      const isOwner = contact.sellerId === currentUser?.id;
+      assignSelect.disabled = !isAdmin && Boolean(contact.sellerId);
+      if (contact.sellerId && ![...assignSelect.options].some(option=>option.value===contact.sellerId)) {
+        assignSelect.add(new Option(contact.seller || 'Vendedora responsável',contact.sellerId));
+      }
+      assignSelect.value = contact.sellerId || '';
+      assignFeedback.textContent = contact.sellerId && !isAdmin
+        ? (isOwner ? 'Este contato já está atribuído a você. Somente a administração pode transferi-lo.' : 'Este contato já está atribuído a '+(contact.seller || 'outra vendedora')+'. Somente a administração pode alterar a responsável.')
+        : !contact.sellerId && currentUser?.profile?.role === 'vendedora'
+          ? 'Contato disponível. Selecione seu nome para assumir o atendimento.'
+          : '';
     }
     byId('contactDelete').hidden = !(contact.manual && (currentUser?.profile?.role === 'admin' || (currentUser?.profile?.role === 'vendedora' && contact.createdBy === currentUser.id && contact.sellerId === currentUser.id)));
     byId('contactName').textContent = contact.title;
     byId('contactCity').textContent = contact.city || 'Não informada';
-    byId('contactSeller').parentElement.hidden = Boolean(contact.lead && !contact.manual);
-    byId('contactSeller').textContent = contact.seller || 'Não informada';
+    byId('contactSeller').parentElement.hidden = false;
+    byId('contactSeller').textContent = contact.seller || (contact.sellerId ? 'Responsável cadastrada' : 'Sem vendedora responsável');
     byId('contactPhones').innerHTML = contact.phones.map(phone => `<li>${safe(phone)}</li>`).join('') || '<li>Telefone não informado</li>';
     byId('contactSales').innerHTML = contact.sales.map(sale => `<li class="contacts-sale"><span>${safe(sale.operator)} · ${dateLabel(sale.day)}</span>${statusBadge(sale.status)}</li>`).join('') || '<li>Sem venda registrada.</li>';
     byId('contactDetail').showModal();
