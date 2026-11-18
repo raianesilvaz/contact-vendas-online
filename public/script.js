@@ -28,6 +28,7 @@ const submitButton = document.querySelector('#submitButton');
 function digits(value) { return value.replace(/\D/g, ''); }
 function maskCpf(value) { return digits(value).slice(0, 11).replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2'); }
 function maskPhone(value) { const d = digits(value).slice(0, 11); return d.length <= 10 ? d.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d)/, '$1-$2') : d.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2'); }
+function validMobile(value) { const d = digits(value); return /^[1-9][0-9]9[0-9]{8}$/.test(d); }
 function validCpf(value) { const d = digits(value); if (d.length !== 11 || /^(\d)\1+$/.test(d)) return false; const calc = (base, factor) => { let sum = 0; for (const n of base) sum += Number(n) * factor--; const r = (sum * 10) % 11; return r === 10 ? 0 : r; }; return calc(d.slice(0, 9), 10) === Number(d[9]) && calc(d.slice(0, 10), 11) === Number(d[10]); }
 function parseMoney(value) { return Number(value.replace(/\./g, '').replace(',', '.')); }
 function formatMoneyInput(input) { const number = Number(digits(input.value)) / 100; input.value = number ? number.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''; }
@@ -174,7 +175,7 @@ function syncPricingMode() {
 
 cpf.addEventListener('input', () => { cpf.value = maskCpf(cpf.value); cpfError.textContent = defaultCpfError; cpfExistingHint.hidden = true; ++cpfLookupSequence; });
 cpf.addEventListener('blur', showExistingCpfHint);
-document.querySelectorAll('.phone').forEach((input) => input.addEventListener('input', () => { input.value = maskPhone(input.value); }));
+document.querySelectorAll('.phone').forEach((input) => { input.addEventListener('input', () => { input.value = maskPhone(input.value); input.setCustomValidity(''); }); input.addEventListener('blur', () => { const ok = (!input.required && !input.value.trim()) || validMobile(input.value); input.setCustomValidity(ok ? '' : 'Informe um celular válido com DDD e 11 dígitos.'); input.closest('.field')?.classList.toggle('invalid', !ok); }); });
 [valorInternet, valorMovel, valorTotal, valorPromo, postPromoValue].forEach((input) => input?.addEventListener('input', () => {
   formatMoneyInput(input);
   if (input === valorInternet || input === valorMovel) recalculateTotal();
@@ -211,7 +212,15 @@ form.addEventListener('submit', async (event) => {
   cpfError.textContent = defaultCpfError;
   let valid = true;
   form.querySelectorAll('[required]').forEach((input) => { const ok = input.checkValidity() && (input !== cpf || validCpf(input.value)); input.closest('.field').classList.toggle('invalid', !ok); if (!ok) valid = false; });
-  if (!valid) { form.querySelector('.invalid input, .invalid select')?.focus(); return; }
+  // Both fields must be Brazilian mobile numbers (DDD + 9 + 8 digits).
+  for (const [name,required] of [['telefone1',true],['telefone2',false]]) {
+    const input=form.elements[name];
+    const ok=(!input.value.trim()&&!required)||validMobile(input.value);
+    input.closest('.field').classList.toggle('invalid',!ok);
+    input.setCustomValidity(ok?'':'Informe um celular válido com DDD e 11 dígitos.');
+    if(!ok)valid=false;
+  }
+  if (!valid) { const invalid=form.querySelector('.invalid input, .invalid select'); invalid?.focus(); if(invalid?.classList.contains('phone')) invalid.reportValidity(); return; }
 
   const user = await window.authReady;
   if (!user) return;
