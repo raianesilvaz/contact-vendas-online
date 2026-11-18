@@ -57,18 +57,38 @@ $('#menuButton').addEventListener('click',()=>$('#sidebar').classList.toggle('op
   const today=new Date(todayISO()+'T12:00:00Z'),due=new Date(invoice.due_date+'T12:00:00Z');
   const days=Math.round((due-today)/86400000);
   if(days>3||days===1||days===2)return null;
-  const name=(account.sale?.customer_name||'').trim().split(/\\s+/)[0]||'cliente';
+  const name=(account.sale?.customer_name||'').trim().split(/\s+/)[0]||'cliente';
   const amount=money(invoice.amount),date=dateBR(invoice.due_date);
-  if(days===3)return `Olá, ${name}! Tudo bem por aí? ✨\\n\\nPassando para enviar o boleto do seu CLARO MULTI, no valor de ${amount}, com vencimento para o dia ${date}.\\n\\nEncaminho antecipadamente para que você possa se organizar da melhor forma. Muito obrigado(a) pela confiança de sempre!\\n\\nQualquer dúvida, estou à disposição. Tenha um ótimo dia! 💛`;
-  if(days===0)return `Olá, ${name}! Tudo bem? ✨\\n\\nPassando para lembrar que sua fatura CLARO MULTI, no valor de ${amount}, vence hoje, ${date}.\\n\\nCaso o pagamento já tenha sido realizado, pode desconsiderar esta mensagem.\\n\\nQualquer dúvida, estou à disposição! 💛`;
-  if(days>=-2)return `Olá, ${name}! Tudo bem?\\n\\nIdentificamos que sua fatura CLARO MULTI, no valor de ${amount}, com vencimento em ${date}, ainda consta em aberto.\\n\\nCaso já tenha realizado o pagamento, pode desconsiderar esta mensagem. Se precisar de auxílio para regularização, estou à disposição.`;
-  if(days>=-6)return `Olá, ${name}!\\n\\nIdentificamos que sua fatura CLARO MULTI, com vencimento em ${date}, no valor de ${amount}, continua em aberto.\\n\\nPedimos, por favor, que regularize o pagamento ou entre em contato conosco caso precise de auxílio.`;
-  if(days>=-9)return `Olá, ${name}.\\n\\nSua fatura CLARO MULTI, no valor de ${amount}, com vencimento em ${date}, permanece em aberto.\\n\\nSolicitamos a regularização do pagamento o quanto antes para evitar o avanço do processo de cobrança.\\n\\nCaso precise verificar as possibilidades de regularização, entre em contato conosco.`;
-  // Do not assert judicial action unless the company's records actually confirm it.
-  return `Olá, ${name}.\\n\\nConsta em nosso acompanhamento uma pendência referente à sua fatura Claro, no valor de ${amount}, com vencimento em ${date}.\\n\\nPedimos que entre em contato o quanto antes para verificar a situação e as possibilidades de regularização. Se o pagamento já foi realizado, desconsidere esta mensagem.`;
+  const details=['💰 *Valor:* '+amount,'📅 *Vencimento:* '+date].join('\n');
+  let opening='Olá, '+name+'! Tudo bem?';
+  let description='';
+  let request='';
+  if(days===3){
+    description='Passando para lembrar antecipadamente sobre sua próxima fatura Claro.';
+    request='Encaminhamos este lembrete para que você possa se organizar com tranquilidade.';
+  }else if(days===0){
+    description='Passando para lembrar que sua fatura Claro vence hoje.';
+    request='Caso precise de alguma orientação sobre o pagamento, estamos à disposição.';
+  }else if(days>=-2){
+    description='Identificamos que sua fatura Claro consta em aberto.';
+    request='Se precisar de auxílio para regularização, estamos à disposição.';
+  }else if(days>=-6){
+    description='Identificamos que sua fatura Claro continua em aberto.';
+    request='Pedimos, por gentileza, que verifique a pendência ou entre em contato para receber orientação.';
+  }else if(days>=-9){
+    opening='Olá, '+name+'.';
+    description='Sua fatura Claro permanece em aberto em nosso acompanhamento financeiro.';
+    request='Solicitamos que entre em contato o quanto antes para verificar as possibilidades de regularização.';
+  }else{
+    opening='Olá, '+name+'.';
+    description='Consta em nosso acompanhamento uma pendência financeira referente à sua fatura Claro.';
+    request='Pedimos que entre em contato conosco o quanto antes para verificar a situação e as possibilidades de regularização.';
+  }
+  const closing=days>=0?'Agradecemos sua atenção!':'Caso o pagamento já tenha sido realizado, por favor, desconsidere esta mensagem.\n\nAgradecemos sua atenção!';
+  return [opening,description,details,request,closing].join('\n\n');
 }
 function financeWhatsAppNumber(raw) {
-  const phone=String(raw||'').replace(/\\D/g,'');
+  const phone=String(raw||'').replace(/\D/g,'');
   if(phone.length===11||phone.length===10)return '55'+phone;
   if(phone.startsWith('55')&&(phone.length===12||phone.length===13))return phone;
   return null;
